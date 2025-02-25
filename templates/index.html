@@ -194,8 +194,9 @@
                 <div class="control-group">
                     <div class="global-controls">
                         <div class="slider-container">
-                            <label for="loop-factor">Loop Factor: <span id="loop-factor-value" class="value-display">1</span></label>
+                            <label for="loop-factor">Global Loop Factor: <span id="loop-factor-value" class="value-display">1</span></label>
                             <input type="range" id="loop-factor" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop-factor'); updateVisualization();">
+                            <small style="display: block; margin-top: 2px; color: #666;">Used for all sub-SKBs in merged mode</small>
                         </div>
                         
                         <div class="slider-container">
@@ -206,6 +207,10 @@
                     
                     <div class="sub-skb-section skb1">
                         <div class="sub-skb-title"><span class="color-indicator color-skb1"></span>Sub-SKB 1</div>
+                        <div class="slider-container">
+                            <label for="loop1">Loops 1: <span id="loop1-value" class="value-display">1</span></label>
+                            <input type="range" id="loop1" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop1'); updateVisualization();">
+                        </div>
                         <div class="twist-controls">
                             <div class="twist-axis">
                                 <label for="t1x">Twist X1: <span id="t1x-value" class="value-display">0</span></label>
@@ -224,6 +229,10 @@
                     
                     <div class="sub-skb-section skb2">
                         <div class="sub-skb-title"><span class="color-indicator color-skb2"></span>Sub-SKB 2</div>
+                        <div class="slider-container">
+                            <label for="loop2">Loops 2: <span id="loop2-value" class="value-display">1</span></label>
+                            <input type="range" id="loop2" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop2'); updateVisualization();">
+                        </div>
                         <div class="twist-controls">
                             <div class="twist-axis">
                                 <label for="t2x">Twist X2: <span id="t2x-value" class="value-display">0</span></label>
@@ -242,6 +251,10 @@
                     
                     <div class="sub-skb-section skb3">
                         <div class="sub-skb-title"><span class="color-indicator color-skb3"></span>Sub-SKB 3</div>
+                        <div class="slider-container">
+                            <label for="loop3">Loops 3: <span id="loop3-value" class="value-display">1</span></label>
+                            <input type="range" id="loop3" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop3'); updateVisualization();">
+                        </div>
                         <div class="twist-controls">
                             <div class="twist-axis">
                                 <label for="t3x">Twist X3: <span id="t3x-value" class="value-display">0</span></label>
@@ -287,7 +300,12 @@
                 </li>
                 <li><strong>Merged Mode:</strong> Shows a stable SKB representing a composite particle.</li>
                 <li><strong>Multi-Dimensional Twists:</strong> Control the topological properties along X, Y, and Z axes for each sub-SKB. Higher twist values create more complex structures.</li>
-                <li><strong>Loop Factor:</strong> Adjusts the number of topological loops in the structure, related to binding energy.</li>
+                <li><strong>Loop Controls:</strong>
+                    <ul>
+                        <li><strong>Global Loop Factor:</strong> Affects all sub-SKBs in merged mode.</li>
+                        <li><strong>Individual Loop Sliders:</strong> Each sub-SKB has its own loop control for fine-tuning the number of topological loops.</li>
+                    </ul>
+                </li>
                 <li><strong>Time Parameter:</strong> Simulates evolution along the time dimension, representing closed timelike curves (CTCs).</li>
             </ul>
             <p>You can rotate the 3D visualization by clicking and dragging, and zoom with the scroll wheel. The thicker lines and distinct colors make it easier to distinguish between different sub-SKBs and observe their twists and loops.</p>
@@ -351,6 +369,11 @@
             const time = document.getElementById('time').value;
             const merge = document.getElementById('merge-toggle').checked ? 1 : 0;
             
+            // Get individual loop factors
+            const loop1 = document.getElementById('loop1').value;
+            const loop2 = document.getElementById('loop2').value;
+            const loop3 = document.getElementById('loop3').value;
+            
             // Show loading state
             document.getElementById('plot').innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100%;"><p>Loading visualization...</p></div>';
             
@@ -370,6 +393,9 @@
                     t3y: t3y,
                     t3z: t3z,
                     loop_factor: loopFactor,
+                    loop1: loop1,
+                    loop2: loop2,
+                    loop3: loop3,
                     time: time,
                     merge: merge,
                     colors: {
@@ -432,7 +458,9 @@
                             y: 0.95,
                             xref: 'paper',
                             yref: 'paper',
-                            text: `Loop Factor: ${loopFactor}, Time: ${time.substring(0, 4)}`,
+                            text: merge ? 
+                                `Global Loop Factor: ${loopFactor}, Time: ${time.substring(0, 4)}` :
+                                `Global Loop: ${loopFactor}, SKB1: ${loop1}, SKB2: ${loop2}, SKB3: ${loop3}, Time: ${time.substring(0, 4)}`,
                             showarrow: false,
                             font: {
                                 family: 'Arial',

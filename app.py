@@ -53,9 +53,12 @@ def get_visualization():
         
         # Validate and convert input parameters
         try:
-            # Get time and loop factor
+            # Get time and loop factors
             t = float(data.get('time', 0))
             loop_factor = float(data.get('loop_factor', 1))
+            loop1 = float(data.get('loop1', 1))
+            loop2 = float(data.get('loop2', 1))
+            loop3 = float(data.get('loop3', 1))
             merge = int(data.get('merge', 0))
             
             # Get twist parameters for each sub-SKB
@@ -69,6 +72,9 @@ def get_visualization():
             # Ensure values are within valid ranges
             t = max(0, min(2 * np.pi, t))
             loop_factor = max(1, min(5, loop_factor))
+            loop1 = max(1, min(5, loop1))
+            loop2 = max(1, min(5, loop2))
+            loop3 = max(1, min(5, loop3))
             merge = 1 if merge else 0
             
             for i in range(3):
@@ -93,9 +99,10 @@ def get_visualization():
         fig = go.Figure()
         
         if merge == 0:
-            # Individual sub-SKBs
+            # Individual sub-SKBs with their own loop factors
+            loop_factors = [loop1, loop2, loop3]
             for i in range(3):
-                x, y, z = generate_twisted_strip(twists[i], [(i-1)*2, 0, 0], t, loop_factor)
+                x, y, z = generate_twisted_strip(twists[i], [(i-1)*2, 0, 0], t, loop_factors[i])
                 fig.add_trace(go.Surface(
                     x=x, y=y, z=z, 
                     colorscale=[[0, skb_colors[i]], [1, skb_colors[i]]], 
