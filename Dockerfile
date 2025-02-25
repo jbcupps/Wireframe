@@ -3,6 +3,9 @@ FROM python:3.9-slim
 # Set working directory
 WORKDIR /app
 
+# Update pip and setuptools to secure versions
+RUN pip install --no-cache-dir --upgrade pip setuptools>=70.0.0
+
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
