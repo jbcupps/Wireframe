@@ -44,6 +44,10 @@ def generate_klein_bottle(twists, t, loop_factor):
 
 @app.route('/')
 def index():
+    return render_template('landing.html')
+
+@app.route('/visualization')
+def visualization():
     return render_template('index.html')
 
 @app.route('/get_visualization', methods=['POST'])

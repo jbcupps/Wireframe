@@ -124,3 +124,14 @@ docker rm skb-visualization
   - Reduce the complexity of the visualization by using simpler configurations
   - Ensure your browser is up to date
   - Try using a device with better graphics capabilities
+
+## Recent Updates
+
+### Landing Page
+A new landing page has been added to provide an introduction to the Wireframe Explorer application. The landing page includes:
+- Overview of the application's purpose
+- Key features section
+- Research background information
+- Links to the interactive visualization
+
+To access the landing page, visit the root URL `/`. The interactive visualization is now available at `/visualization`.
