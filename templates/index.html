@@ -26,10 +26,9 @@
         }
         .controls {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 20px;
             margin-bottom: 20px;
-            justify-content: center;
         }
         .control-group {
             flex: 1;
@@ -66,6 +65,7 @@
         .plot-container {
             height: 600px;
             width: 100%;
+            min-width: 500px;
         }
         .toggle-container {
             display: flex;
@@ -126,63 +126,184 @@
             text-align: center;
             margin-top: 10px;
         }
+        .twist-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .twist-axis {
+            flex: 1;
+            min-width: 80px;
+        }
+        .sub-skb-section {
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .sub-skb-section.skb1 {
+            border-left: 5px solid #FF5733;
+        }
+        .sub-skb-section.skb2 {
+            border-left: 5px solid #33A1FF;
+        }
+        .sub-skb-section.skb3 {
+            border-left: 5px solid #33FF57;
+        }
+        .sub-skb-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .color-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .color-skb1 {
+            background-color: #FF5733;
+        }
+        .color-skb2 {
+            background-color: #33A1FF;
+        }
+        .color-skb3 {
+            background-color: #33FF57;
+        }
+        .global-controls {
+            background-color: #f0f8ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Spacetime Klein Bottle (SKB) Visualization</h1>
         
-        <div class="controls">
-            <div class="control-group">
-                <div class="slider-container">
-                    <label for="t1">Twist 1 (u quark): <span id="t1-value" class="value-display">2</span></label>
-                    <input type="range" id="t1" min="-5" max="5" value="2" step="1" oninput="updateSliderValue('t1'); updateVisualization();">
-                </div>
-                
-                <div class="slider-container">
-                    <label for="t2">Twist 2 (u quark): <span id="t2-value" class="value-display">2</span></label>
-                    <input type="range" id="t2" min="-5" max="5" value="2" step="1" oninput="updateSliderValue('t2'); updateVisualization();">
-                </div>
-                
-                <div class="slider-container">
-                    <label for="t3">Twist 3 (d quark): <span id="t3-value" class="value-display">-1</span></label>
-                    <input type="range" id="t3" min="-5" max="5" value="-1" step="1" oninput="updateSliderValue('t3'); updateVisualization();">
-                </div>
-            </div>
+        <div class="visualization-container" style="display: flex; flex-direction: row;">
+            <!-- Plot on the left -->
+            <div id="plot" class="plot-container" style="flex: 3; margin-right: 20px;"></div>
             
-            <div class="control-group">
-                <div class="toggle-container">
-                    <span class="toggle-label">Individual Quarks</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="merge-toggle" onchange="updateToggleValue(); updateVisualization();">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span class="toggle-label">Merged Baryon</span>
-                </div>
-                
-                <div class="info-note">
-                    <p><em>The visualization updates automatically as you adjust the parameters.</em></p>
+            <!-- Controls on the right -->
+            <div class="controls" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="control-group">
+                    <div class="global-controls">
+                        <div class="slider-container">
+                            <label for="loop-factor">Loop Factor: <span id="loop-factor-value" class="value-display">1</span></label>
+                            <input type="range" id="loop-factor" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop-factor'); updateVisualization();">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="time">Time: <span id="time-value" class="value-display">0</span></label>
+                            <input type="range" id="time" min="0" max="6.28" value="0" step="0.1" oninput="updateSliderValue('time'); updateVisualization();">
+                        </div>
+                    </div>
+                    
+                    <div class="sub-skb-section skb1">
+                        <div class="sub-skb-title"><span class="color-indicator color-skb1"></span>Sub-SKB 1</div>
+                        <div class="twist-controls">
+                            <div class="twist-axis">
+                                <label for="t1x">Twist X1: <span id="t1x-value" class="value-display">0</span></label>
+                                <input type="range" id="t1x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1x'); updateVisualization();">
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t1y">Twist Y1: <span id="t1y-value" class="value-display">0</span></label>
+                                <input type="range" id="t1y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1y'); updateVisualization();">
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t1z">Twist Z1: <span id="t1z-value" class="value-display">2</span></label>
+                                <input type="range" id="t1z" min="-5" max="5" value="2" step="1" oninput="updateSliderValue('t1z'); updateVisualization();">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-skb-section skb2">
+                        <div class="sub-skb-title"><span class="color-indicator color-skb2"></span>Sub-SKB 2</div>
+                        <div class="twist-controls">
+                            <div class="twist-axis">
+                                <label for="t2x">Twist X2: <span id="t2x-value" class="value-display">0</span></label>
+                                <input type="range" id="t2x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2x'); updateVisualization();">
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t2y">Twist Y2: <span id="t2y-value" class="value-display">0</span></label>
+                                <input type="range" id="t2y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2y'); updateVisualization();">
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t2z">Twist Z2: <span id="t2z-value" class="value-display">2</span></label>
+                                <input type="range" id="t2z" min="-5" max="5" value="2" step="1" oninput="updateSliderValue('t2z'); updateVisualization();">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-skb-section skb3">
+                        <div class="sub-skb-title"><span class="color-indicator color-skb3"></span>Sub-SKB 3</div>
+                        <div class="twist-controls">
+                            <div class="twist-axis">
+                                <label for="t3x">Twist X3: <span id="t3x-value" class="value-display">0</span></label>
+                                <input type="range" id="t3x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3x'); updateVisualization();">
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t3y">Twist Y3: <span id="t3y-value" class="value-display">0</span></label>
+                                <input type="range" id="t3y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3y'); updateVisualization();">
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t3z">Twist Z3: <span id="t3z-value" class="value-display">-1</span></label>
+                                <input type="range" id="t3z" min="-5" max="5" value="-1" step="1" oninput="updateSliderValue('t3z'); updateVisualization();">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="toggle-container">
+                        <span class="toggle-label">Individual Sub-SKBs</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="merge-toggle" onchange="updateToggleValue(); updateVisualization();">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Merged SKB</span>
+                    </div>
+                    
+                    <div class="info-note">
+                        <p><em>The visualization updates automatically as you adjust the parameters.</em></p>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div id="plot" class="plot-container"></div>
-        
         <div class="info-section">
             <h2>About this Visualization</h2>
-            <p>This interactive tool visualizes Spacetime Klein Bottles (SKBs) representing quark structures in a topological model:</p>
+            <p>This interactive tool visualizes Spacetime Klein Bottles (SKBs) as a topological model for fundamental particles:</p>
             <ul>
-                <li><strong>Individual Mode:</strong> Shows three sub-SKBs representing two up quarks (red and green) and one down quark (blue).</li>
-                <li><strong>Merged Mode:</strong> Shows a stable SKB representing a baryon (like a proton or neutron).</li>
-                <li><strong>Twist Parameters:</strong> Control the topological properties of each quark.</li>
+                <li><strong>Individual Mode:</strong> Shows three sub-SKBs with distinct colors:
+                    <ul>
+                        <li><span style="color:#FF5733">■</span> Sub-SKB 1 (Orange-red)</li>
+                        <li><span style="color:#33A1FF">■</span> Sub-SKB 2 (Blue)</li>
+                        <li><span style="color:#33FF57">■</span> Sub-SKB 3 (Green)</li>
+                    </ul>
+                </li>
+                <li><strong>Merged Mode:</strong> Shows a stable SKB representing a composite particle.</li>
+                <li><strong>Multi-Dimensional Twists:</strong> Control the topological properties along X, Y, and Z axes for each sub-SKB. Higher twist values create more complex structures.</li>
+                <li><strong>Loop Factor:</strong> Adjusts the number of topological loops in the structure, related to binding energy.</li>
+                <li><strong>Time Parameter:</strong> Simulates evolution along the time dimension, representing closed timelike curves (CTCs).</li>
             </ul>
-            <p>You can rotate the 3D visualization by clicking and dragging, and zoom with the scroll wheel.</p>
+            <p>You can rotate the 3D visualization by clicking and dragging, and zoom with the scroll wheel. The thicker lines and distinct colors make it easier to distinguish between different sub-SKBs and observe their twists and loops.</p>
         </div>
     </div>
 
     <script>
         let plotData = null;
         let updateTimer = null;
+        
+        // Define colors for each sub-SKB
+        const skbColors = {
+            skb1: '#FF5733', // Orange-red
+            skb2: '#33A1FF', // Blue
+            skb3: '#33FF57'  // Green
+        };
         
         // Initialize the visualization
         $(document).ready(function() {
@@ -212,9 +333,22 @@
         
         // Create a debounced version of the visualization update
         const debouncedUpdate = debounce(function() {
-            const t1 = document.getElementById('t1').value;
-            const t2 = document.getElementById('t2').value;
-            const t3 = document.getElementById('t3').value;
+            // Get all twist parameters for each sub-SKB
+            const t1x = document.getElementById('t1x').value;
+            const t1y = document.getElementById('t1y').value;
+            const t1z = document.getElementById('t1z').value;
+            
+            const t2x = document.getElementById('t2x').value;
+            const t2y = document.getElementById('t2y').value;
+            const t2z = document.getElementById('t2z').value;
+            
+            const t3x = document.getElementById('t3x').value;
+            const t3y = document.getElementById('t3y').value;
+            const t3z = document.getElementById('t3z').value;
+            
+            // Get global parameters
+            const loopFactor = document.getElementById('loop-factor').value;
+            const time = document.getElementById('time').value;
             const merge = document.getElementById('merge-toggle').checked ? 1 : 0;
             
             // Show loading state
@@ -226,10 +360,23 @@
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    t1: t1,
-                    t2: t2,
-                    t3: t3,
-                    merge: merge
+                    t1x: t1x,
+                    t1y: t1y,
+                    t1z: t1z,
+                    t2x: t2x,
+                    t2y: t2y,
+                    t2z: t2z,
+                    t3x: t3x,
+                    t3y: t3y,
+                    t3z: t3z,
+                    loop_factor: loopFactor,
+                    time: time,
+                    merge: merge,
+                    colors: {
+                        skb1: skbColors.skb1,
+                        skb2: skbColors.skb2,
+                        skb3: skbColors.skb3
+                    }
                 }),
                 success: function(response) {
                     if (response.error) {
@@ -238,7 +385,82 @@
                     }
                     
                     plotData = response.plot;
-                    Plotly.newPlot('plot', plotData.data, plotData.layout);
+                    
+                    // Apply custom colors if they're not already set by the server
+                    if (!merge) {
+                        // Only apply custom colors in individual mode
+                        if (plotData.data && plotData.data.length >= 3) {
+                            // Ensure each sub-SKB has its distinct color
+                            if (!plotData.data[0].line || !plotData.data[0].line.color) {
+                                if (!plotData.data[0].line) plotData.data[0].line = {};
+                                plotData.data[0].line.color = skbColors.skb1;
+                                plotData.data[0].marker = { color: skbColors.skb1 };
+                            }
+                            
+                            if (!plotData.data[1].line || !plotData.data[1].line.color) {
+                                if (!plotData.data[1].line) plotData.data[1].line = {};
+                                plotData.data[1].line.color = skbColors.skb2;
+                                plotData.data[1].marker = { color: skbColors.skb2 };
+                            }
+                            
+                            if (!plotData.data[2].line || !plotData.data[2].line.color) {
+                                if (!plotData.data[2].line) plotData.data[2].line = {};
+                                plotData.data[2].line.color = skbColors.skb3;
+                                plotData.data[2].marker = { color: skbColors.skb3 };
+                            }
+                        }
+                    }
+                    
+                    // Enhance the layout for better visualization of twists and loops
+                    if (!plotData.layout) plotData.layout = {};
+                    
+                    // Ensure the layout has proper settings for 3D visualization
+                    plotData.layout.scene = {
+                        xaxis: { title: 'X', showgrid: true, zeroline: true },
+                        yaxis: { title: 'Y', showgrid: true, zeroline: true },
+                        zaxis: { title: 'Z', showgrid: true, zeroline: true },
+                        aspectmode: 'cube',
+                        camera: {
+                            eye: { x: 1.5, y: 1.5, z: 1.5 }
+                        }
+                    };
+                    
+                    // Add annotations to show twist values
+                    plotData.layout.annotations = [
+                        {
+                            x: 0.05,
+                            y: 0.95,
+                            xref: 'paper',
+                            yref: 'paper',
+                            text: `Loop Factor: ${loopFactor}, Time: ${time.substring(0, 4)}`,
+                            showarrow: false,
+                            font: {
+                                family: 'Arial',
+                                size: 12,
+                                color: '#000000'
+                            },
+                            bgcolor: '#f0f0f0',
+                            bordercolor: '#c0c0c0',
+                            borderwidth: 1,
+                            borderpad: 4,
+                            align: 'left'
+                        }
+                    ];
+                    
+                    // Set line width for better visibility
+                    plotData.data.forEach(trace => {
+                        if (!trace.line) trace.line = {};
+                        trace.line.width = 5; // Thicker lines for better visibility
+                    });
+                    
+                    Plotly.newPlot('plot', plotData.data, plotData.layout, {
+                        responsive: true,
+                        displayModeBar: true,
+                        modeBarButtonsToAdd: [
+                            'resetCameraLastSave3d',
+                            'hoverClosest3d'
+                        ]
+                    });
                 },
                 error: function(error) {
                     console.error('Error fetching visualization:', error);

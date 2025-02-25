@@ -3,28 +3,43 @@ import plotly.graph_objects as go
 import numpy as np
 import json
 import traceback
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, 
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Function to generate data for a twisted strip (sub-SKB)
-def generate_twisted_strip(k, position):
-    u = np.linspace(0, 2 * np.pi, 50)
+# Function to generate data for a twisted strip (sub-SKB) with multi-dimensional twists, time, and loops
+def generate_twisted_strip(twists, position, t, loop_factor):
+    u = np.linspace(0, 2 * np.pi * loop_factor, 50)
     v = np.linspace(-0.5, 0.5, 10)
     u, v = np.meshgrid(u, v)
-    x = (1 + 0.5 * v * np.cos(k * u / 2)) * np.cos(u) + position[0]
-    y = (1 + 0.5 * v * np.cos(k * u / 2)) * np.sin(u) + position[1]
-    z = 0.5 * v * np.sin(k * u / 2) + position[2]
+    kx, ky, kz = twists  # Twist components
+    
+    # Apply multi-dimensional twists and time evolution
+    x = (1 + 0.5 * v * np.cos(kx * (u + t) / 2)) * np.cos(u) + position[0]
+    y = (1 + 0.5 * v * np.cos(ky * (u + t) / 2)) * np.sin(u) + position[1]
+    z = 0.5 * v * np.sin(kz * (u + t) / 2) + position[2]
+    
     return x, y, z
 
-# Function to generate data for a Klein bottle (stable SKB)
-def generate_klein_bottle():
-    u = np.linspace(0, 2 * np.pi, 50)
+# Function to generate data for a Klein bottle (stable SKB) with time and loops
+def generate_klein_bottle(twists, t, loop_factor):
+    u = np.linspace(0, 2 * np.pi * loop_factor, 50)
     v = np.linspace(0, 2 * np.pi, 50)
     u, v = np.meshgrid(u, v)
+    kx, ky, kz = twists  # Twist components
+    
     a, b = 2.0, 1.0  # Parameters for size
-    x = (a + b * np.cos(v)) * np.cos(u)
-    y = (a + b * np.cos(v)) * np.sin(u)
-    z = b * np.sin(v) * np.cos(u / 2)  # Simplified immersion
+    
+    # Apply multi-dimensional twists and time evolution
+    x = (a + b * np.cos(v)) * np.cos(u + kx * t / 5)
+    y = (a + b * np.cos(v)) * np.sin(u + ky * t / 5)
+    z = b * np.sin(v) * np.cos((u + kz * t / 5) / 2)  # Simplified immersion
+    
     return x, y, z
 
 @app.route('/')
@@ -38,40 +53,79 @@ def get_visualization():
         
         # Validate and convert input parameters
         try:
-            t1 = int(data.get('t1', 2))
-            t2 = int(data.get('t2', 2))
-            t3 = int(data.get('t3', -1))
+            # Get time and loop factor
+            t = float(data.get('time', 0))
+            loop_factor = float(data.get('loop_factor', 1))
             merge = int(data.get('merge', 0))
             
+            # Get twist parameters for each sub-SKB
+            twists = []
+            for i in range(1, 4):
+                tx = float(data.get(f't{i}x', 0))
+                ty = float(data.get(f't{i}y', 0))
+                tz = float(data.get(f't{i}z', 0))
+                twists.append([tx, ty, tz])
+            
             # Ensure values are within valid ranges
-            t1 = max(-5, min(5, t1))
-            t2 = max(-5, min(5, t2))
-            t3 = max(-5, min(5, t3))
+            t = max(0, min(2 * np.pi, t))
+            loop_factor = max(1, min(5, loop_factor))
             merge = 1 if merge else 0
+            
+            for i in range(3):
+                for j in range(3):
+                    twists[i][j] = max(-5, min(5, twists[i][j]))
+                    
         except (ValueError, TypeError) as e:
             return jsonify({"error": "Invalid parameter values"}), 400
+        
+        # Define colors for sub-SKBs
+        skb_colors = ['#FF5733', '#33A1FF', '#33FF57']  # Orange-red, Blue, Green
+        
+        # Check if custom colors were provided
+        if 'colors' in data and isinstance(data['colors'], dict):
+            if 'skb1' in data['colors']:
+                skb_colors[0] = data['colors']['skb1']
+            if 'skb2' in data['colors']:
+                skb_colors[1] = data['colors']['skb2']
+            if 'skb3' in data['colors']:
+                skb_colors[2] = data['colors']['skb3']
         
         fig = go.Figure()
         
         if merge == 0:
-            # Individual sub-SKBs (quarks)
-            x1, y1, z1 = generate_twisted_strip(t1, [-2, 0, 0])
-            x2, y2, z2 = generate_twisted_strip(t2, [0, 0, 0])
-            x3, y3, z3 = generate_twisted_strip(t3, [2, 0, 0])
-            
-            fig.add_trace(go.Surface(x=x1, y=y1, z=z1, colorscale=[[0, 'red'], [1, 'red']], 
-                                    opacity=0.7, showscale=False, name=f"Up Quark 1 (Twist: {t1})"))
-            fig.add_trace(go.Surface(x=x2, y=y2, z=z2, colorscale=[[0, 'green'], [1, 'green']], 
-                                    opacity=0.7, showscale=False, name=f"Up Quark 2 (Twist: {t2})"))
-            fig.add_trace(go.Surface(x=x3, y=y3, z=z3, colorscale=[[0, 'blue'], [1, 'blue']], 
-                                    opacity=0.7, showscale=False, name=f"Down Quark (Twist: {t3})"))
-            fig.update_layout(title="Three Sub-SKBs (Quarks)")
+            # Individual sub-SKBs
+            for i in range(3):
+                x, y, z = generate_twisted_strip(twists[i], [(i-1)*2, 0, 0], t, loop_factor)
+                fig.add_trace(go.Surface(
+                    x=x, y=y, z=z, 
+                    colorscale=[[0, skb_colors[i]], [1, skb_colors[i]]], 
+                    opacity=0.7, 
+                    showscale=False, 
+                    name=f"Sub-SKB {i+1}",
+                    contours={
+                        "x": {"show": True, "width": 2, "color": skb_colors[i]},
+                        "y": {"show": True, "width": 2, "color": skb_colors[i]},
+                        "z": {"show": True, "width": 2, "color": skb_colors[i]}
+                    }
+                ))
+            fig.update_layout(title="Three Sub-SKBs")
         else:
-            # Merged stable SKB (baryon)
-            x, y, z = generate_klein_bottle()
-            fig.add_trace(go.Surface(x=x, y=y, z=z, colorscale=[[0, 'gray'], [1, 'gray']], 
-                                    opacity=0.7, showscale=False, name="Stable SKB (Baryon)"))
-            fig.update_layout(title="Stable SKB (Baryon)")
+            # Merged stable SKB - use average of all twist values
+            avg_twists = [sum(t[i] for t in twists)/3 for i in range(3)]
+            x, y, z = generate_klein_bottle(avg_twists, t, loop_factor)
+            fig.add_trace(go.Surface(
+                x=x, y=y, z=z, 
+                colorscale=[[0, '#8A2BE2'], [1, '#4B0082']], 
+                opacity=0.7, 
+                showscale=False, 
+                name="Stable SKB",
+                contours={
+                    "x": {"show": True, "width": 2, "color": '#8A2BE2'},
+                    "y": {"show": True, "width": 2, "color": '#8A2BE2'},
+                    "z": {"show": True, "width": 2, "color": '#8A2BE2'}
+                }
+            ))
+            fig.update_layout(title="Stable SKB")
         
         fig.update_layout(
             scene=dict(
@@ -93,9 +147,9 @@ def get_visualization():
         return jsonify({"plot": json.loads(fig.to_json())})
     
     except Exception as e:
-        app.logger.error(f"Error generating visualization: {str(e)}")
-        app.logger.error(traceback.format_exc())
-        return jsonify({"error": "An error occurred while generating the visualization"}), 500
+        logger.error(f"Error generating visualization: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": "An error occurred while generating the visualization. Check server logs for details."}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
