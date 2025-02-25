@@ -81,7 +81,7 @@
         }
         
         .plot-container {
-            height: 700px;
+            height: 800px;
             width: 100%;
         }
         
@@ -973,19 +973,19 @@
         function createLayout(isMerged) {
             return {
                 scene: {
-                    xaxis: { range: [-3, 3], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
-                    yaxis: { range: [-3, 3], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
-                    zaxis: { range: [-2, 2], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
+                    xaxis: { range: [-3.5, 3.5], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
+                    yaxis: { range: [-3.5, 3.5], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
+                    zaxis: { range: [-2.5, 2.5], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
                     aspectmode: 'cube',
                     camera: {
-                        eye: { x: 1.5, y: 1.5, z: 1.2 }
+                        eye: { x: 1.7, y: 1.7, z: 1.4 }
                     },
                     bgcolor: 'rgba(0,0,0,0)'
                 },
                 paper_bgcolor: 'rgba(0,0,0,0)',
                 plot_bgcolor: 'rgba(0,0,0,0)',
                 margin: { l: 0, r: 0, b: 0, t: 0, pad: 0 },
-                height: isMerged ? 700 : 700,
+                height: 800,
                 legend: {
                     font: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') },
                     bgcolor: 'rgba(30,30,30,0.7)',

@@ -24,7 +24,7 @@ def generate_twisted_strip(twists, position, t, loop_factor):
     y = (1 + 0.5 * v * np.cos(ky * (u + t) / 2)) * np.sin(u) + position[1]
     z = 0.5 * v * np.sin(kz * (u + t) / 2) + position[2]
     
-    return x, y, z
+    return x, y, z, u, v  # Return u and v for consistency with Klein bottle function
 
 # Function to generate data for a Klein bottle (stable SKB) with time and loops
 def generate_klein_bottle(twists, t, loop_factor):
@@ -40,7 +40,7 @@ def generate_klein_bottle(twists, t, loop_factor):
     y = (a + b * np.cos(v)) * np.sin(u + ky * t / 5)
     z = b * np.sin(v) * np.cos((u + kz * t / 5) / 2)  # Simplified immersion
     
-    return x, y, z
+    return x, y, z, u, v  # Return u and v for surface coloring
 
 @app.route('/')
 def index():
@@ -102,47 +102,55 @@ def get_visualization():
             # Individual sub-SKBs with their own loop factors
             loop_factors = [loop1, loop2, loop3]
             for i in range(3):
-                x, y, z = generate_twisted_strip(twists[i], [(i-1)*2, 0, 0], t, loop_factors[i])
+                x, y, z, _, _ = generate_twisted_strip(twists[i], [(i-1)*2, 0, 0], t, loop_factors[i])
                 fig.add_trace(go.Surface(
                     x=x, y=y, z=z, 
                     colorscale=[[0, skb_colors[i]], [1, skb_colors[i]]], 
-                    opacity=0.7, 
+                    opacity=0.5,  # Reduced opacity from 0.7 to 0.5 for more translucency
                     showscale=False, 
                     name=f"Sub-SKB {i+1}",
                     contours={
-                        "x": {"show": True, "width": 2, "color": skb_colors[i]},
-                        "y": {"show": True, "width": 2, "color": skb_colors[i]},
-                        "z": {"show": True, "width": 2, "color": skb_colors[i]}
+                        "x": {"show": True, "width": 3, "color": skb_colors[i]},  # Increased width from 2 to 3
+                        "y": {"show": True, "width": 3, "color": skb_colors[i]},  # Increased width from 2 to 3
+                        "z": {"show": True, "width": 3, "color": skb_colors[i]}   # Increased width from 2 to 3
                     }
                 ))
             fig.update_layout(title="Three Sub-SKBs")
         else:
-            # Merged stable SKB - use average of all twist values
+            # Merged stable SKB - use average of all twist values but maintain individual bottle identities
             avg_twists = [sum(t[i] for t in twists)/3 for i in range(3)]
-            x, y, z = generate_klein_bottle(avg_twists, t, loop_factor)
+            x, y, z, u, v = generate_klein_bottle(avg_twists, t, loop_factor)  # Get u and v for surface coloring
+            
+            # Create a merged bottle with a pattern that helps differentiate the individual bottles
             fig.add_trace(go.Surface(
                 x=x, y=y, z=z, 
-                colorscale=[[0, '#8A2BE2'], [1, '#4B0082']], 
-                opacity=0.7, 
+                surfacecolor=np.sin(5*u) * np.cos(5*v),  # Add a pattern to help differentiate parts
+                colorscale=[
+                    [0, '#8A2BE2'],  # Dark purple
+                    [0.33, '#FF6E91'],  # Pink (from SKB1)
+                    [0.66, '#33C4FF'],  # Blue (from SKB2)
+                    [1, '#65FF8F']  # Green (from SKB3)
+                ],
+                opacity=0.5,  # Reduced opacity from 0.7 to 0.5
                 showscale=False, 
                 name="Stable SKB",
                 contours={
-                    "x": {"show": True, "width": 2, "color": '#8A2BE2'},
-                    "y": {"show": True, "width": 2, "color": '#8A2BE2'},
-                    "z": {"show": True, "width": 2, "color": '#8A2BE2'}
+                    "x": {"show": True, "width": 3, "color": '#8A2BE2'},  # Increased width from 2 to 3
+                    "y": {"show": True, "width": 3, "color": '#8A2BE2'},  # Increased width from 2 to 3
+                    "z": {"show": True, "width": 3, "color": '#8A2BE2'}   # Increased width from 2 to 3
                 }
             ))
             fig.update_layout(title="Stable SKB")
         
         fig.update_layout(
             scene=dict(
-                xaxis=dict(range=[-3, 3], title="X"),
-                yaxis=dict(range=[-3, 3], title="Y"),
-                zaxis=dict(range=[-2, 2], title="Z"),
+                xaxis=dict(range=[-3.5, 3.5], title="X"),  # Expanded range from [-3, 3] to [-3.5, 3.5]
+                yaxis=dict(range=[-3.5, 3.5], title="Y"),  # Expanded range from [-3, 3] to [-3.5, 3.5]
+                zaxis=dict(range=[-2.5, 2.5], title="Z"),  # Expanded range from [-2, 2] to [-2.5, 2.5]
                 aspectmode='cube'
             ),
             margin=dict(l=0, r=0, b=0, t=30),
-            height=600,
+            height=700,  # Increased height from 600 to 700
             legend=dict(
                 yanchor="top",
                 y=0.99,
