@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolutionary Programming - SKB Wireframe Explorer</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            /* Modern color palette - matching the existing app */
+            --dark-bg: #121212;
+            --surface: #1e1e1e;
+            --surface-light: #2d2d2d;
+            --primary: #BB86FC;
+            --primary-variant: #3700B3;
+            --secondary: #03DAC6;
+            --accent: #CF6679;
+            --text-primary: rgba(255, 255, 255, 0.87);
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --border-color: rgba(255, 255, 255, 0.12);
+            
+            /* SKB Colors */
+            --skb1-color: #FF6E91;  /* Vivid pink */
+            --skb2-color: #33C4FF;  /* Bright blue */
+            --skb3-color: #65FF8F;  /* Bright green */
+            --skb-merged: #BB86FC;  /* Purple */
+            
+            /* Evolution specific colors */
+            --evo-compatible: #65FF8F;  /* Green for compatible */
+            --evo-incompatible: #FF6E91;  /* Pink for incompatible */
+            --evo-neutral: #33C4FF;  /* Blue for neutral */
+            --evo-highlight: #FFCF33;  /* Yellow for highlighting */
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        header h1 {
+            color: var(--text-primary);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-top: 0;
+            color: var(--text-secondary);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .visualization-panel {
+            flex: 2;
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .plot-container {
+            flex: 1;
+            height: 500px;
+            width: 100%;
+        }
+        
+        .controls-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 300px;
+        }
+        
+        .control-card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .population-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .population-card {
+            background-color: var(--surface-light);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .population-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Compatibility appearance properties */
+        .compatibility-legend {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .compatible {
+            border-left: 3px solid var(--evo-compatible);
+        }
+        
+        .compatible .legend-color {
+            background-color: var(--evo-compatible);
+        }
+        
+        .incompatible {
+            border-left: 3px solid var(--evo-incompatible);
+        }
+        
+        .incompatible .legend-color {
+            background-color: var(--evo-incompatible);
+        }
+        
+        .neutral {
+            border-left: 3px solid var(--evo-neutral);
+        }
+        
+        .neutral .legend-color {
+            background-color: var(--evo-neutral);
+        }
+        
+        .highlighted {
+            outline: 2px solid var(--evo-highlight);
+        }
+        
+        .highlighted .legend-color {
+            background-color: var(--evo-highlight);
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding-right: 35px; /* Make room for the value display */
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: var(--surface-light);
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            margin-top: 8px;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .value-display {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 30px;
+            text-align: right;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-variant);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        
+        .topological-properties {
+            margin-top: 15px;
+        }
+        
+        .property-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .property-name {
+            color: var(--text-secondary);
+        }
+        
+        .property-value {
+            font-family: monospace;
+            color: var(--primary);
+        }
+        
+        .math-formula {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: var(--surface-light);
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        .generation-info {
+            background-color: var(--surface-light);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        
+        .tooltip .tooltip-icon {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--surface-light);
+            color: var(--text-primary);
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Navigation links at the top */
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .plot-container {
+                height: 400px;
+            }
+        }
+        
+        /* Footer styles */
+        footer {
+            padding: 40px 0;
+            margin-top: 50px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--primary);
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Evolutionary Programming for SKB Hadrons</h1>
+            <p class="subtitle">Evolving Sub-SKBs for Topological Compatibility</p>
+            
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/visualization">SKB Visualizer</a>
+                <a href="/evolution" class="active">Evolutionary Programming</a>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- Visualization Panel -->
+            <div class="visualization-panel">
+                <div class="generation-info">
+                    <div class="info-item">
+                        <span class="info-label">Generation</span>
+                        <span class="info-value" id="generation-count">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Population Size</span>
+                        <span class="info-value" id="population-size">20</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Best Fitness</span>
+                        <span class="info-value" id="best-fitness">0.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Compatible Pairs</span>
+                        <span class="info-value" id="compatible-count">0</span>
+                    </div>
+                </div>
+                
+                <div id="evolution-plot" class="plot-container"></div>
+                
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Evolution Controls</h3>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="step-btn" title="Run one generation">
+                            <i class="fas fa-step-forward"></i> Step
+                        </button>
+                        <button id="run-btn" title="Run continuously">
+                            <i class="fas fa-play" id="run-icon"></i> <span id="run-text">Run</span>
+                        </button>
+                        <button id="reset-btn" title="Reset evolution">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <!-- Algorithm Parameters -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Algorithm Parameters</h3>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="population-size-slider">Population Size <span id="population-size-value" class="value-display">20</span></label>
+                        <input type="range" id="population-size-slider" min="10" max="50" value="20" step="1">
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Number of Sub-SKB configurations in each generation.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="mutation-rate-slider">Mutation Rate <span id="mutation-rate-value" class="value-display">0.1</span></label>
+                        <input type="range" id="mutation-rate-slider" min="0" max="0.5" value="0.1" step="0.01">
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Probability of mutation for each parameter in a Sub-SKB.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="selection-pressure-slider">Selection Pressure <span id="selection-pressure-value" class="value-display">3</span></label>
+                        <input type="range" id="selection-pressure-slider" min="1" max="5" value="3" step="1">
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Tournament size for selection. Higher values increase selection pressure towards fitter individuals.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fitness Function Weights -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Fitness Function Weights</h3>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Adjust the importance of different topological properties in the fitness function.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="math-formula">
+                        F(S₁, S₂) = α·Compatibility(w₁) + β·|χₑᵤₗₑᵣ - χₜₐᵣₒₑₜ|⁻¹ + γ·Definiteness(Q)
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="w1-weight-slider">Stiefel-Whitney Weight (α) <span id="w1-weight-value" class="value-display">1.0</span></label>
+                        <input type="range" id="w1-weight-slider" min="0" max="2" value="1.0" step="0.1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="euler-weight-slider">Euler Characteristic Weight (β) <span id="euler-weight-value" class="value-display">1.0</span></label>
+                        <input type="range" id="euler-weight-slider" min="0" max="2" value="1.0" step="0.1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="q-weight-slider">Intersection Form Weight (γ) <span id="q-weight-value" class="value-display">1.0</span></label>
+                        <input type="range" id="q-weight-slider" min="0" max="2" value="1.0" step="0.1">
+                    </div>
+                </div>
+                
+                <!-- Target Values -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Target Topological Properties</h3>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Define target values for topological properties of a stable hadron.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="target-euler-slider">Target Euler Characteristic <span id="target-euler-value" class="value-display">0</span></label>
+                        <input type="range" id="target-euler-slider" min="-4" max="4" value="0" step="1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="target-orientability">Target Orientability</label>
+                        <select id="target-orientability" class="form-select">
+                            <option value="orientable">Orientable (w₁ = 0)</option>
+                            <option value="non-orientable">Non-orientable (w₁ ≠ 0)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="target-q-form">Target Intersection Form</label>
+                        <select id="target-q-form" class="form-select">
+                            <option value="positive-definite">Positive Definite</option>
+                            <option value="negative-definite">Negative Definite</option>
+                            <option value="indefinite">Indefinite</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Selected Sub-SKB Details -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Selected Sub-SKB Details</h3>
+                    </div>
+                    
+                    <div id="sub-skb-details">
+                        <p>Select a Sub-SKB from the population to see details</p>
+                    </div>
+                    
+                    <div class="topological-properties" id="selected-properties" style="display: none;">
+                        <h4>Topological Properties</h4>
+                        
+                        <div class="property-row">
+                            <span class="property-name">First Stiefel-Whitney Class (w₁)</span>
+                            <span class="property-value" id="selected-w1">N/A</span>
+                        </div>
+                        
+                        <div class="property-row">
+                            <span class="property-name">Euler Characteristic (χ)</span>
+                            <span class="property-value" id="selected-euler">N/A</span>
+                        </div>
+                        
+                        <div class="property-row">
+                            <span class="property-name">Fundamental Group (π₁)</span>
+                            <span class="property-value" id="selected-pi1">N/A</span>
+                        </div>
+                        
+                        <div class="property-row">
+                            <span class="property-name">Intersection Form (Q)</span>
+                            <span class="property-value" id="selected-q">N/A</span>
+                        </div>
+                        
+                        <div class="property-row">
+                            <span class="property-name">Kirby-Siebenmann (ks)</span>
+                            <span class="property-value" id="selected-ks">N/A</span>
+                        </div>
+                        
+                        <div class="property-row">
+                            <span class="property-name">Fitness</span>
+                            <span class="property-value" id="selected-fitness">N/A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Population Display -->
+        <div class="control-card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h3 class="card-title">Sub-SKB Population</h3>
+                <div class="tooltip">
+                    <i class="fas fa-info-circle tooltip-icon"></i>
+                    <span class="tooltip-text">Current population of Sub-SKB configurations. Click on individuals to select them.</span>
+                </div>
+            </div>
+            
+            <!-- Compatibility appearance legend -->
+            <div class="compatibility-legend">
+                <div class="legend-item compatible">
+                    <div class="legend-color"></div>
+                    <span>Compatible: Topologically viable for hadron formation</span>
+                </div>
+                <div class="legend-item incompatible">
+                    <div class="legend-color"></div>
+                    <span>Incompatible: Cannot form stable hadrons</span>
+                </div>
+                <div class="legend-item neutral">
+                    <div class="legend-color"></div>
+                    <span>Neutral: Partially compatible configuration</span>
+                </div>
+                <div class="legend-item highlighted">
+                    <div class="legend-color"></div>
+                    <span>Selected: Currently being examined</span>
+                </div>
+            </div>
+            
+            <div class="population-grid" id="population-grid">
+                <!-- Population members will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Basic UI functionality
+        function updateSliderValue(id) {
+            const slider = document.getElementById(id);
+            const display = document.getElementById(id + '-value');
+            
+            if (slider && display) {
+                display.textContent = slider.value;
+                console.log(`Updated ${id} to value: ${slider.value}`);
+            } else {
+                console.error(`Could not update slider value: ${id} - Elements not found`);
+            }
+        }
+        
+        // Initialize sliders
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initializing sliders for evolutionary programming interface");
+            
+            // Initialize all slider values
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                updateSliderValue(slider.id);
+                
+                // Add event listeners to each slider to update values when moved
+                slider.addEventListener('input', function() {
+                    updateSliderValue(this.id);
+                });
+            });
+            
+            console.log("Evolutionary Programming interface loaded successfully");
+            
+            // Display the compatibility legend explanation
+            console.log("Compatibility appearance standards loaded: compatible (green), incompatible (red), neutral (blue), highlighted (yellow)");
+        });
+    </script>
+    <script src="/static/js/evolution.js"></script>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">Wireframe Explorer</div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization">SKB Visualizer</a>
+                    <a href="/evolution">Evolutionary Programming</a>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 Wireframe Explorer. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

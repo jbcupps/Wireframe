@@ -8,6 +8,19 @@ The application displays:
 - Three sub-SKBs (representing quarks) with adjustable twist numbers
 - A merged stable SKB (representing a baryon)
 - Interactive controls to adjust visualization parameters
+- Evolutionary programming algorithm to discover compatible Sub-SKB configurations
+
+## Features
+
+### Interactive Visualization
+Explore and manipulate 3D visualizations of Spacetime Klein Bottles with adjustable parameters like twists, time evolution, and loop factors.
+
+### Evolutionary Programming
+The evolutionary algorithm allows you to:
+- Generate populations of Sub-SKB configurations
+- Evaluate topological compatibility between different Sub-SKBs
+- Optimize for target topological properties such as Euler characteristic and orientability
+- Visualize the evolution of compatible configurations over generations
 
 ## Research Papers
 
@@ -128,10 +141,15 @@ docker rm skb-visualization
 ## Recent Updates
 
 ### Landing Page
-A new landing page has been added to provide an introduction to the Wireframe Explorer application. The landing page includes:
-- Overview of the application's purpose
-- Key features section
-- Research background information
-- Links to the interactive visualization
+- Added a modern landing page at the root URL `/`
+- Includes overview of the application's purpose, key features, and research background
+- The interactive visualization is available at `/visualization`
 
-To access the landing page, visit the root URL `/`. The interactive visualization is now available at `/visualization`.
+### Evolutionary Programming
+- Added a new section for topological evolution of Sub-SKBs at `/evolution`
+- Implements an evolutionary algorithm to discover compatible Sub-SKB configurations
+- Features include:
+  - Interactive 3D visualization of evolving Sub-SKBs
+  - Configurable evolutionary parameters (population size, mutation rate, etc.)
+  - Real-time display of topological properties (Stiefel-Whitney class, Euler characteristic, etc.)
+  - Population grid showing fitness and compatibility metrics

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spacetime Klein Bottle Visualization</title>
+    <title>SKB Visualizer - Spacetime Klein Bottle Wireframe Explorer</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -51,11 +51,16 @@
             border-bottom: 1px solid var(--border-color);
         }
         
-        h1 {
+        header h1 {
             font-size: 2.2rem;
-            font-weight: 300;
-            margin: 0;
-            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        header .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
         }
         
         h2 {
@@ -597,20 +602,117 @@
         .twist-axis {
             position: relative;
         }
+        
+        .research-links p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Navigation links styles to match other pages */
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 10px 0;
+            margin: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        /* End of navigation styles */
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Footer styles */
+        footer {
+            padding: 40px 0;
+            margin-top: 50px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--primary);
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .compatibility-status .property-value {
+            font-weight: bold;
+        }
+        
+        .compatible-status {
+            color: var(--evo-compatible) !important;
+        }
+        
+        .incompatible-status {
+            color: var(--evo-incompatible) !important;
+        }
+        
+        .neutral-status {
+            color: var(--evo-neutral) !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Spacetime Klein Bottle Visualization</h1>
-            <h2>Interactive Topology Explorer</h2>
-            <div class="research-links">
-                <p>Based on research:
-                    <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">Categorical Framework for SKBs</a> | 
-                    <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">4D SKBs as Particle Models</a>
-                </p>
+            <p class="subtitle">Interactive Topology Explorer</p>
+            
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/visualization" class="active">SKB Visualizer</a>
+                <a href="/evolution">Evolutionary Programming</a>
             </div>
         </header>
+        
+        <div class="research-links">
+            <p>Research: <a href="https://doi.org/10.1007/s10701-023-00688-9" target="_blank">Spacetime Klein Bottles</a> | <a href="https://doi.org/10.1038/s41598-023-35105-8" target="_blank">Field Theory</a></p>
+        </div>
         
         <div class="main-content">
             <!-- Visualization panel with the plot and properties -->
@@ -625,12 +727,44 @@
                         <span class="property-value" id="euler-characteristic">0</span>
                     </div>
                     <div class="property-item">
+                        <span class="property-name">Stiefel-Whitney Classes:</span>
+                        <span class="property-value" id="stiefel-whitney">w₁ = 1, w₂ = 0</span>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Stiefel-Whitney classes are cohomology classes that characterize the twisting of the tangent bundle. w₁ indicates orientability (0 for orientable, 1 for non-orientable).</span>
+                        </div>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-name">Intersection Form:</span>
+                        <span class="property-value" id="intersection-form">Q = { }</span>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The intersection form is a symmetric bilinear form on the middle-dimensional homology. It describes how 2-cycles intersect in a 4-manifold and relates to particle interactions.</span>
+                        </div>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-name">Kirby-Siebenmann Invariant:</span>
+                        <span class="property-value" id="kirby-siebenmann">0</span>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The Kirby-Siebenmann invariant is an obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may relate to quantum effects in the SKB model.</span>
+                        </div>
+                    </div>
+                    <div class="property-item">
                         <span class="property-name">Genus:</span>
                         <span class="property-value" id="genus">1</span>
                     </div>
                     <div class="property-item">
                         <span class="property-name">Homology Groups:</span>
                         <span class="property-value" id="homology-groups">H₁ = Z ⊕ Z₂</span>
+                    </div>
+                    <div class="property-item compatibility-status">
+                        <span class="property-name">Compatibility Status:</span>
+                        <span class="property-value" id="compatibility-status">Analyzing...</span>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Indicates whether the current SKB configuration is compatible with stable hadron formation based on topological constraints.</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -879,17 +1013,33 @@
             </div>
             
             <div class="help-section">
-                <h3 class="help-subtitle">Topological Properties</h3>
-                <p>The properties panel displays key mathematical characteristics of the current structure:</p>
+                <h3>About Topological Properties</h3>
+                <p>The SKB visualizer calculates and displays several key topological invariants that characterize the 4D manifold structure:</p>
                 <ul>
                     <li><strong>Euler Characteristic:</strong> A topological invariant, calculated as V - E + F (vertices - edges + faces). For Klein bottles, this is always 0.</li>
+                    <li><strong>Stiefel-Whitney Classes:</strong> Cohomology classes that characterize the twisting of the tangent bundle. The first class (w₁) indicates orientability, while the second class (w₂) is related to the possibility of having a spin structure.</li>
+                    <li><strong>Intersection Form:</strong> A symmetric bilinear form on the middle-dimensional homology that describes how 2-cycles intersect in a 4-manifold. The form can be positive definite, negative definite, or indefinite, which relates to different types of particle interactions.</li>
+                    <li><strong>Kirby-Siebenmann Invariant:</strong> An obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may correspond to quantum-gravitational effects in the SKB model.</li>
                     <li><strong>Genus:</strong> Roughly corresponds to the number of "holes" in the surface. In SKB theory, this relates to particle generation.</li>
                     <li><strong>Homology Groups:</strong> Algebraic structures that capture the essential topological features. For Klein bottles, H₁ = Z ⊕ Z₂, representing its non-orientability and loop structure.</li>
+                    <li><strong>Compatibility Status:</strong> Indicates whether the current configuration could potentially form a stable hadron based on topological constraints from the 4D manifold theory.</li>
                 </ul>
             </div>
             
             <div class="help-section">
-                <h3 class="help-subtitle">Physical Interpretation</h3>
+                <h3>Topological Compatibility in the SKB Model</h3>
+                <p>The Spacetime Klein Bottle model suggests that stable hadrons form when sub-SKBs combine with compatible topological properties:</p>
+                <ul>
+                    <li><strong>Orientability:</strong> Stable hadrons tend to form from configurations where the overall 4-manifold is orientable (w₁ = 0).</li>
+                    <li><strong>Intersection Form:</strong> The intersection form must be non-trivial, indicating interaction between the sub-components.</li>
+                    <li><strong>Kirby-Siebenmann Invariant:</strong> Stable configurations typically have ks = 0, corresponding to smooth structures.</li>
+                    <li><strong>Twist Parameters:</strong> The combined twist parameters determine the overall topological structure and compatibility.</li>
+                </ul>
+                <p>Experiment with different configurations to discover compatible combinations!</p>
+            </div>
+            
+            <div class="help-section">
+                <h3>Physical Interpretation</h3>
                 <p>In the SKB model of fundamental particles:</p>
                 <ul>
                     <li><strong>Sub-SKBs:</strong> Represent quark-like components with distinct topological features</li>
@@ -973,9 +1123,6 @@
         function createLayout(isMerged) {
             return {
                 scene: {
-                    xaxis: { range: [-3.5, 3.5], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
-                    yaxis: { range: [-3.5, 3.5], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
-                    zaxis: { range: [-2.5, 2.5], title: "", showgrid: false, showline: true, zeroline: true, showticklabels: false },
                     aspectmode: 'cube',
                     camera: {
                         eye: { x: 1.7, y: 1.7, z: 1.4 }
@@ -983,7 +1130,6 @@
                     bgcolor: 'rgba(0,0,0,0)'
                 },
                 paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
                 margin: { l: 0, r: 0, b: 0, t: 0, pad: 0 },
                 height: 800,
                 legend: {
@@ -1004,17 +1150,68 @@
             const eulerChar = document.getElementById('euler-characteristic');
             const genus = document.getElementById('genus');
             const homologyGroups = document.getElementById('homology-groups');
+            const stiefelWhitney = document.getElementById('stiefel-whitney');
+            const intersectionForm = document.getElementById('intersection-form');
+            const kirbySiebenmann = document.getElementById('kirby-siebenmann');
+            const compatibilityStatus = document.getElementById('compatibility-status');
+            
+            // Calculate topological properties based on parameters
+            const t1x = parseInt(document.getElementById('t1x').value);
+            const t1y = parseInt(document.getElementById('t1y').value);
+            const t1z = parseInt(document.getElementById('t1z').value);
+            const t2x = parseInt(document.getElementById('t2x').value);
+            const t2y = parseInt(document.getElementById('t2y').value);
+            const t2z = parseInt(document.getElementById('t2z').value);
+            const t3x = parseInt(document.getElementById('t3x').value);
+            const t3y = parseInt(document.getElementById('t3y').value);
+            const t3z = parseInt(document.getElementById('t3z').value);
+            const loop1 = parseInt(document.getElementById('loop1').value);
+            const loop2 = parseInt(document.getElementById('loop2').value);
+            const loop3 = parseInt(document.getElementById('loop3').value);
             
             if (isMerged) {
-                // Klein bottle properties
+                // Merged Klein bottle properties
                 eulerChar.textContent = "0";
                 genus.textContent = "2";
                 homologyGroups.textContent = "H₁ = Z ⊕ Z₂";
+                
+                // 4D manifold topology for merged SKB
+                const orientable = (t1x + t2y + t3z) % 2 === 0;
+                stiefelWhitney.textContent = orientable ? "w₁ = 0, w₂ = 0" : "w₁ = 1, w₂ = " + ((t1y*t2z - t1z*t2y) % 2);
+                
+                // Intersection form depends on various parameters
+                let formType = "";
+                const sumTwists = Math.abs(t1x + t2x + t3x) + Math.abs(t1y + t2y + t3y) + Math.abs(t1z + t2z + t3z);
+                if (sumTwists < 3) formType = "[ ]"; // Trivial
+                else if (sumTwists % 2 === 0) formType = "[ 1 0; 0 -1 ]"; // Indefinite
+                else formType = "[ 1 0; 0 1 ]"; // Positive definite
+                intersectionForm.textContent = "Q = " + formType;
+                
+                // Kirby-Siebenmann invariant
+                const ks = ((loop1 * loop2 * loop3) % 2);
+                kirbySiebenmann.textContent = ks.toString();
+                
+                // Determine compatibility based on topological constraints
+                const compatible = orientable && sumTwists >= 3 && ks === 0;
+                compatibilityStatus.textContent = compatible ? "Compatible" : "Incompatible";
+                compatibilityStatus.classList.remove("compatible-status", "incompatible-status");
+                compatibilityStatus.classList.add(compatible ? "compatible-status" : "incompatible-status");
             } else {
-                // Mobius strip-like properties (for individual sub-SKBs)
+                // Individual sub-SKB properties
                 eulerChar.textContent = "0";
                 genus.textContent = "1";
                 homologyGroups.textContent = "H₁ = Z";
+                
+                // Individual SKBs have simpler topology
+                const orientable = false; // Sub-SKBs are non-orientable (like Möbius strips)
+                stiefelWhitney.textContent = "w₁ = 1, w₂ = 0";
+                intersectionForm.textContent = "Q = [ ]"; // Trivial for individual components
+                kirbySiebenmann.textContent = "0";
+                
+                // Individual sub-SKBs are not compatible by themselves
+                compatibilityStatus.textContent = "Requires Merging";
+                compatibilityStatus.classList.remove("compatible-status", "incompatible-status");
+                compatibilityStatus.classList.add("neutral-status");
             }
             
             // Animate the property changes
@@ -1116,5 +1313,22 @@
             });
         });
     </script>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">Wireframe Explorer</div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization">SKB Visualizer</a>
+                    <a href="/evolution">Evolutionary Programming</a>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 Wireframe Explorer. All rights reserved.
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

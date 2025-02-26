@@ -50,6 +50,106 @@ def index():
 def visualization():
     return render_template('index.html')
 
+@app.route('/evolution')
+def evolution():
+    return render_template('evolution.html')
+
+# API endpoint for evolutionary algorithm
+@app.route('/api/evolution/compute', methods=['POST'])
+def compute_evolution():
+    try:
+        data = request.get_json()
+        
+        # Get parameters
+        skb1_params = data.get('skb1', {})
+        skb2_params = data.get('skb2', {})
+        
+        # Validate parameters
+        if not skb1_params or not skb2_params:
+            return jsonify({"error": "Missing Sub-SKB parameters"}), 400
+        
+        # Compute topological properties
+        result = compute_topological_compatibility(skb1_params, skb2_params)
+        
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error in compute_evolution: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
+# Function to compute topological compatibility between two Sub-SKBs
+def compute_topological_compatibility(skb1, skb2):
+    # This is a simplified calculation that would be expanded with real mathematics
+    
+    # Extract parameters
+    tx1, ty1, tz1 = skb1.get('tx', 0), skb1.get('ty', 0), skb1.get('tz', 0)
+    tx2, ty2, tz2 = skb2.get('tx', 0), skb2.get('ty', 0), skb2.get('tz', 0)
+    
+    # Simple compatibility metric based on parameter similarity
+    # In a real implementation, this would involve complex topological calculations
+    distance = ((tx1 - tx2)**2 + (ty1 - ty2)**2 + (tz1 - tz2)**2) ** 0.5
+    compatibility = max(0, 1 - distance / 8.66)  # Normalize to [0,1]
+    
+    # Calculate simplified topological invariants
+    w1_1 = skb1.get('orientability', 0)
+    w1_2 = skb2.get('orientability', 0)
+    
+    genus_1 = skb1.get('genus', 0)
+    genus_2 = skb2.get('genus', 0)
+    
+    # Euler characteristic calculation
+    euler_1 = 2 - 2 * genus_1 if w1_1 == 0 else 2 - genus_1
+    euler_2 = 2 - 2 * genus_2 if w1_2 == 0 else 2 - genus_2
+    
+    # Combined euler characteristic
+    euler_combined = euler_1 + euler_2
+    
+    # Simplified intersection form calculation
+    # In reality, this would be a complex matrix calculation
+    q_form_1 = "Positive Definite" if tx1 * ty1 > 0 else "Indefinite"
+    q_form_2 = "Positive Definite" if tx2 * ty2 > 0 else "Indefinite"
+    
+    # Compatibility of intersection forms
+    q_compatible = 1.0 if q_form_1 == q_form_2 else 0.5
+    
+    # Final compatibility score with weighted components
+    w1_weight = 0.3
+    euler_weight = 0.3
+    q_weight = 0.4
+    
+    w1_compatibility = 1.0 if w1_1 == w1_2 else 0.5
+    euler_compatibility = 1.0 / (1.0 + abs(euler_combined))
+    
+    final_score = (
+        w1_weight * w1_compatibility + 
+        euler_weight * euler_compatibility + 
+        q_weight * q_compatible
+    )
+    
+    # Return compatibility results
+    return {
+        "compatibility": final_score,
+        "details": {
+            "parameter_similarity": compatibility,
+            "w1_compatibility": w1_compatibility,
+            "euler_compatibility": euler_compatibility,
+            "q_compatibility": q_compatible,
+            "topology_skb1": {
+                "w1": w1_1,
+                "euler": euler_1,
+                "intersection_form": q_form_1
+            },
+            "topology_skb2": {
+                "w1": w1_2,
+                "euler": euler_2,
+                "intersection_form": q_form_2
+            },
+            "combined": {
+                "euler": euler_combined
+            }
+        }
+    }
+
 @app.route('/get_visualization', methods=['POST'])
 def get_visualization():
     try:

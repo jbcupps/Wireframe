@@ -90,8 +90,9 @@
             transition: color 0.3s ease;
         }
         
-        .nav-links a:hover {
+        .nav-links a:hover, .nav-links a.active {
             color: var(--primary);
+            border-bottom: 2px solid var(--primary);
         }
         
         .cta-button {
@@ -423,15 +424,16 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <a href="#" class="logo">
+                <a href="/" class="logo">
                     <i class="fas fa-cube"></i>
-                    Wireframe Explorer
+                    <span>Wireframe Explorer</span>
                 </a>
                 <nav class="nav-links">
-                    <a href="#features">Features</a>
-                    <a href="#research">Research</a>
-                    <a href="/visualization" class="cta-button">Launch Explorer</a>
+                    <a href="/" class="active">Home</a>
+                    <a href="/visualization">SKB Visualizer</a>
+                    <a href="/evolution">Evolutionary Programming</a>
                 </nav>
+                <a href="/visualization" class="cta-button">Launch Explorer</a>
             </div>
         </div>
     </header>
@@ -449,7 +451,7 @@
     </section>
     
     <!-- Features Section -->
-    <section class="features" id="features">
+    <section id="features" class="features">
         <div class="container">
             <h2 class="section-title">Key Features</h2>
             <div class="features-grid">
@@ -458,42 +460,39 @@
                         <i class="fas fa-cube"></i>
                     </div>
                     <h3 class="feature-title">Interactive 3D Visualization</h3>
-                    <p class="feature-description">Manipulate and explore complex topological structures in an intuitive 3D environment with real-time rendering.</p>
+                    <p class="feature-description">
+                        Explore Spacetime Klein Bottles in a fully interactive 3D environment. Rotate, zoom, and manipulate the visualization to gain intuitive understanding of these complex mathematical objects.
+                    </p>
                 </div>
+                
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-sliders-h"></i>
                     </div>
                     <h3 class="feature-title">Customizable Parameters</h3>
-                    <p class="feature-description">Adjust twist factors, loop parameters, and time evolution to observe how these variables affect the wireframe structure.</p>
+                    <p class="feature-description">
+                        Adjust twist parameters, time evolution, and loop factors to see how they affect the topology and geometry of Spacetime Klein Bottles. Experiment with different configurations in real-time.
+                    </p>
                 </div>
+                
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-code-branch"></i>
+                        <i class="fas fa-dna"></i>
                     </div>
-                    <h3 class="feature-title">Merge Visualization</h3>
-                    <p class="feature-description">Toggle between individual sub-SKBs and merged stable SKB views to understand how components interact in composite structures.</p>
+                    <h3 class="feature-title">Evolutionary Programming</h3>
+                    <p class="feature-description">
+                        Discover topologically compatible Sub-SKBs using our evolutionary algorithm. Explore how different configurations can combine to form stable hadrons by optimizing for topological invariants.
+                    </p>
                 </div>
+                
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">Topological Properties</h3>
-                    <p class="feature-description">View real-time updates of key topological invariants including Euler characteristic, genus, and homology groups.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-play"></i>
-                    </div>
-                    <h3 class="feature-title">Time Evolution Animation</h3>
-                    <p class="feature-description">Animate the time parameter to visualize how these structures evolve through closed timelike curves in spacetime.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-graduation-cap"></i>
+                        <i class="fas fa-info-circle"></i>
                     </div>
                     <h3 class="feature-title">Educational Tooltips</h3>
-                    <p class="feature-description">Learn about the physical and mathematical significance of each parameter with detailed explanatory tooltips.</p>
+                    <p class="feature-description">
+                        Learn about the mathematical concepts behind Spacetime Klein Bottles with helpful tooltips and explanations throughout the interface. Perfect for students and researchers alike.
+                    </p>
                 </div>
             </div>
         </div>
@@ -542,7 +541,7 @@
                 </div>
             </div>
             <div class="copyright">
-                &copy; 2023 Wireframe Explorer. All rights reserved.
+                &copy; 2024 Wireframe Explorer. All rights reserved.
             </div>
         </div>
     </footer>
