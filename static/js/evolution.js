@@ -159,99 +159,96 @@ class SubSKB {
         console.log("Generating visualization data with parameters:", parameters);
         
         // Extract parameters
-        const { tx, ty, tz, tt, curvature, genus, orientability } = parameters;
+        const { tx, ty, tz, tt, curvature, genus } = parameters;
         
-        // Create a grid of u and v values
-        const nu = 50; // Number of points in u direction
-        const nv = 50; // Number of points in v direction
-        const u = Array.from({ length: nu }, (_, i) => i * 2 * Math.PI / (nu - 1));
-        const v = Array.from({ length: nv }, (_, i) => i * 2 * Math.PI / (nv - 1));
+        // Generate a klein bottle or torus based on genus
+        if (genus < 1) {
+            return this.generateKleinBottle(tx, ty, tz, tt, curvature);
+        } else {
+            return this.generateTorus(tx, ty, tz, tt, curvature);
+        }
+    }
+    
+    generateKleinBottle(tx, ty, tz, tt, curvature) {
+        console.log("Generating Klein bottle visualization");
+        const u = Array.from({ length: 30 }, (_, i) => (i / 29) * 2 * Math.PI);
+        const v = Array.from({ length: 30 }, (_, i) => (i / 29) * 2 * Math.PI);
         
-        // Time parameter for animation
-        const t = 0; // Static visualization for now
-        
-        // Arrays to hold the 3D coordinates
         const x = [];
         const y = [];
         const z = [];
         
-        // Generate the 3D surface
-        for (let i = 0; i < nu; i++) {
-            const row_x = [];
-            const row_y = [];
-            const row_z = [];
-            
-            for (let j = 0; j < nv; j++) {
-                // Basic torus-like structure
-                const r1 = 2 + curvature; // Major radius
-                const r2 = 1; // Minor radius
+        for (let i = 0; i < u.length; i++) {
+            for (let j = 0; j < v.length; j++) {
+                // Klein bottle parametric equations with twist modifications
+                let r = 4 * (1 - Math.cos(u[i])/2) * curvature;
                 
-                // Apply twists and genus deformation
-                const theta = u[i] + tx * t / 5;
-                const phi = v[j] + ty * t / 5;
+                // Apply twist parameters
+                let xCoord = r * Math.cos(v[j]) * (1 + Math.sin(tx * u[i]) * 0.2);
+                let yCoord = r * Math.sin(v[j]) * (1 + Math.cos(ty * u[i]) * 0.2);
                 
-                // Apply time twist effect - creates a temporal distortion effect in the visualization
-                const timeFactor = Math.sin(tt * theta * 2);
-                
-                // Genus deformation - create "holes" by modifying the radius
-                let r2_mod = r2;
-                if (genus > 0) {
-                    for (let g = 0; g < genus; g++) {
-                        const goffset = 2 * Math.PI * g / genus;
-                        r2_mod -= 0.2 * Math.exp(-5 * (theta - goffset) * (theta - goffset));
+                if (u[i] >= Math.PI) {
+                    // The "twist" part of the Klein bottle
+                    xCoord = r * Math.cos(v[j] + Math.PI) * (1 + Math.sin(tz * u[i]) * 0.2);
+                    // Time twist effect
+                    if (tt !== 0) {
+                        yCoord *= (1 + 0.2 * Math.sin(tt * v[j]));
                     }
                 }
                 
-                // Generate coordinates with twists
-                let x_val, y_val, z_val;
+                let zCoord = (u[i] < Math.PI ? 
+                    -2 * (1 - Math.cos(u[i])) * Math.sin(u[i]) : 
+                    -2 * (1 - Math.cos(u[i])) * Math.sin(u[i]) + 3);
                 
-                if (orientability === 0) {
-                    // Orientable manifold (torus-like)
-                    x_val = (r1 + r2_mod * Math.cos(phi)) * Math.cos(theta);
-                    y_val = (r1 + r2_mod * Math.cos(phi)) * Math.sin(theta);
-                    z_val = r2_mod * Math.sin(phi);
-                } else {
-                    // Non-orientable manifold (Klein bottle-like immersion)
-                    if (theta < Math.PI) {
-                        x_val = (r1 + r2_mod * Math.cos(phi)) * Math.cos(theta);
-                        y_val = (r1 + r2_mod * Math.cos(phi)) * Math.sin(theta);
-                        z_val = r2_mod * Math.sin(phi);
-                    } else {
-                        x_val = (r1 + r2_mod * Math.cos(phi)) * Math.cos(theta);
-                        y_val = (r1 + r2_mod * Math.cos(phi)) * Math.sin(theta);
-                        z_val = r2_mod * Math.sin(-phi); // Flip for twist
-                    }
-                }
+                // Scale down for better visualization
+                xCoord *= 0.5;
+                yCoord *= 0.5;
+                zCoord *= 0.5;
                 
-                // Apply tz to create a more complex twist in z-direction
-                z_val += 0.2 * Math.sin(tz * theta);
-                
-                // Apply temporal distortion from time twist (tt)
-                // Creates a visually interesting effect like spacetime warping
-                const temporalWarp = 0.4 * timeFactor;
-                x_val += temporalWarp * Math.sin(phi);
-                y_val += temporalWarp * Math.cos(phi);
-                
-                row_x.push(x_val);
-                row_y.push(y_val);
-                row_z.push(z_val);
+                x.push(xCoord);
+                y.push(yCoord);
+                z.push(zCoord);
             }
-            
-            x.push(row_x);
-            y.push(row_y);
-            z.push(row_z);
         }
         
-        const result = { x, y, z };
-        console.log("Generated visualization data with dimensions:", {
-            xRows: result.x.length,
-            xCols: result.x[0].length,
-            yRows: result.y.length,
-            yCols: result.y[0].length,
-            zRows: result.z.length,
-            zCols: result.z[0].length
-        });
-        return result;
+        return { x, y, z };
+    }
+    
+    generateTorus(tx, ty, tz, tt, curvature) {
+        console.log("Generating torus visualization");
+        const u = Array.from({ length: 30 }, (_, i) => (i / 29) * 2 * Math.PI);
+        const v = Array.from({ length: 30 }, (_, i) => (i / 29) * 2 * Math.PI);
+        
+        const x = [];
+        const y = [];
+        const z = [];
+        
+        const R = 3 * curvature; // Major radius
+        const r = 1 * curvature; // Minor radius
+        
+        for (let i = 0; i < u.length; i++) {
+            for (let j = 0; j < v.length; j++) {
+                // Apply twist parameters to create a more complex torus
+                let twistedU = u[i] + tt * Math.sin(v[j]);
+                let twistedV = v[j] + tx * Math.sin(u[i]);
+                
+                // Standard torus parametric equations with the twisted parameters
+                let xCoord = (R + r * Math.cos(twistedV)) * Math.cos(twistedU);
+                let yCoord = (R + r * Math.cos(twistedV)) * Math.sin(twistedU);
+                let zCoord = r * Math.sin(twistedV) * (1 + tz * 0.1 * Math.sin(ty * twistedU));
+                
+                // Scale down for better visualization
+                xCoord *= 0.5;
+                yCoord *= 0.5;
+                zCoord *= 0.5;
+                
+                x.push(xCoord);
+                y.push(yCoord);
+                z.push(zCoord);
+            }
+        }
+        
+        return { x, y, z };
     }
 }
 
@@ -281,6 +278,15 @@ class EvolutionaryAlgorithm {
         this.bestFitness = 0;
         
         this.initializePopulation();
+    }
+    
+    // Add reset method - this was missing but was being called
+    reset() {
+        console.log("Resetting evolutionary algorithm");
+        this.population = [];
+        this.generation = 0;
+        this.compatiblePairs = 0;
+        this.bestFitness = 0;
     }
     
     // Create initial random population
@@ -357,7 +363,7 @@ class EvolutionaryAlgorithm {
         // Updated to prioritize indefinite intersection forms for hadron-like SKBs
         if (p1.intersectionForm === 'Indefinite' && p2.intersectionForm === 'Indefinite') {
             qCompatibility = 1.0; // Best compatibility when both are indefinite
-        } else if (p1.intersectionForm === 'Indefinite' || p2.intersectionForm === 'Indefinite') {
+            } else if (p1.intersectionForm === 'Indefinite' || p2.intersectionForm === 'Indefinite') {
             qCompatibility = 0.5; // Medium compatibility when one is indefinite
         } else {
             qCompatibility = 0.3; // Lower compatibility otherwise
@@ -766,7 +772,36 @@ class EvolutionUI {
         this.frozenIndices = new Set();
         
         this.initEventListeners();
-        this.initVisualization();
+        
+        // Delayed initialization to ensure DOM is ready
+        setTimeout(() => {
+            console.log("DOM should be fully loaded, testing plot functionality");
+            // First try a simple test plot to check if Plotly works at all
+            const plotWorks = this.testPlot();
+            
+            if (plotWorks) {
+                console.log("Test plot successful, initializing real visualization");
+                // Wait a bit more before trying the real 3D plot
+                setTimeout(() => {
+                    this.initVisualization();
+                    // If we have data, update visualization
+                    if (this.algorithm.population.length > 0) {
+                        this.updateVisualization();
+                    }
+                }, 500);
+            } else {
+                console.error("Test plot failed! Not attempting 3D visualization");
+                // Try to find the plot container and display an error message
+                const plotContainer = document.getElementById('evolution-plot');
+                if (plotContainer) {
+                    plotContainer.innerHTML = '<div style="color: white; padding: 20px; text-align: center;">' +
+                        '<h3>Visualization Error</h3>' +
+                        '<p>Failed to initialize the plot. Please check the console for errors.</p>' +
+                        '</div>';
+                }
+            }
+        }, 1000);
+        
         this.updateUI();
         
         // Initial population generation
@@ -778,6 +813,10 @@ class EvolutionUI {
         document.getElementById('step-btn').addEventListener('click', () => this.step());
         document.getElementById('run-btn').addEventListener('click', () => this.toggleRun());
         document.getElementById('reset-btn').addEventListener('click', () => this.reset());
+        document.getElementById('generate-btn').addEventListener('click', () => this.generatePopulation());
+        
+        // Added button for stable hadrons
+        document.getElementById('find-hadrons-btn').addEventListener('click', () => this.findStableHadrons());
         
         // Parameter sliders
         document.getElementById('population-size-slider').addEventListener('input', () => this.updateAlgorithmOptions());
@@ -897,6 +936,7 @@ class EvolutionUI {
     }
     
     reset() {
+        console.log("Resetting evolution UI");
         // Stop running if active
         if (this.running) {
             clearInterval(this.runInterval);
@@ -906,12 +946,21 @@ class EvolutionUI {
         }
         
         // Reset algorithm
+        this.algorithm.reset();
+        
+        // Explicitly initialize a new population
         this.algorithm.initializePopulation();
         
-        // Reset selected individual
+        // Reset selected individual and other UI state
         this.selectedIndividual = null;
+        this.selectedIndices.clear();
+        this.stableHadrons = [];
+        this.frozenIndices = new Set();
+        
+        console.log("Population size after reset:", this.algorithm.population.length);
         
         // Update UI
+        this.updatePopulationGrid();  // Explicitly update the population grid
         this.updateUI();
         
         // Update visualization
@@ -936,8 +985,23 @@ class EvolutionUI {
     }
     
     updatePopulationGrid(highlightIndices = []) {
+        console.log("updatePopulationGrid called with highlightIndices:", highlightIndices);
         const grid = document.getElementById('population-grid');
+        if (!grid) {
+            console.error("Population grid element not found!");
+            return;
+        }
+        console.log("Population grid found, clearing contents");
         grid.innerHTML = '';
+        
+        // Check if population exists
+        if (!this.algorithm || !this.algorithm.population || this.algorithm.population.length === 0) {
+            console.error("No population available to display!");
+            grid.innerHTML = '<p>No population available. Click "Generate Population" to create one.</p>';
+            return;
+        }
+        
+        console.log(`Displaying ${this.algorithm.population.length} individuals in the population grid`);
         
         // Sort population by fitness
         const sortedPop = [...this.algorithm.population].sort((a, b) => b.fitness - a.fitness);
@@ -996,9 +1060,9 @@ class EvolutionUI {
             
             // Add click handler (only if not frozen)
             if (!isFrozen) {
-                card.addEventListener('click', () => {
-                    this.selectIndividual(individual);
-                });
+            card.addEventListener('click', () => {
+                this.selectIndividual(individual);
+            });
             } else {
                 card.style.cursor = 'default';
                 card.title = 'This Sub-SKB is part of a stable hadron and cannot be modified.';
@@ -1006,6 +1070,8 @@ class EvolutionUI {
             
             grid.appendChild(card);
         });
+        
+        console.log("Population grid updated successfully");
     }
     
     selectIndividual(individual) {
@@ -1077,163 +1143,145 @@ class EvolutionUI {
     }
     
     initVisualization() {
-        // Initialize the 3D plot using Plotly
-        console.log("Initializing visualization...");
+        console.log("Initializing 3D visualization");
         
         try {
-            // Create a simple test cube for debugging
-            const x = [0, 1, 1, 0, 0, 1, 1, 0];
-            const y = [0, 0, 1, 1, 0, 0, 1, 1];
-            const z = [0, 0, 0, 0, 1, 1, 1, 1];
-            
-            // Create connections
-            const i = [0, 0, 0, 1, 1, 2, 3, 4, 4, 4, 5, 6];
-            const j = [1, 3, 4, 2, 5, 3, 7, 5, 6, 7, 6, 7];
-            const k = [3, 4, 7, 6, 7, 7, 5, 6, 5, 6, 4, 3];
-            
-            // A debug trace - simple wireframe cube
-            const debugTrace = {
-                type: 'scatter3d',
-                x: x,
-                y: y,
-                z: z,
-                mode: 'markers+lines',
-                marker: {
-                    size: 5,
-                    color: 'rgba(255, 0, 0, 1)',
-                },
-                line: {
-                    color: 'rgba(255, 0, 0, 1)',
-                    width: 2
-                },
-                name: 'Debug Cube'
-            };
-            
-            // The actual surface trace (start with empty)
-            const surfaceTrace = {
-                type: 'surface',
-                x: [[0, 0], [0, 0]],
-                y: [[0, 0], [0, 0]],
-                z: [[0, 0], [0, 0]],
-                colorscale: 'Viridis',
-                showscale: false,
-                opacity: 0.7,
-                contours: {
-                    x: { show: true, width: 1, color: 'rgba(255,255,255,0.3)' },
-                    y: { show: true, width: 1, color: 'rgba(255,255,255,0.3)' },
-                    z: { show: true, width: 1, color: 'rgba(255,255,255,0.3)' }
-                }
-            };
-            
-            const data = [debugTrace, surfaceTrace];
-            
-            const layout = {
-                title: 'Sub-SKB Visualization',
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                scene: {
-                    xaxis: { title: 'X', showgrid: true, zeroline: false, showline: true, showticklabels: true, gridcolor: 'rgba(255,255,255,0.1)' },
-                    yaxis: { title: 'Y', showgrid: true, zeroline: false, showline: true, showticklabels: true, gridcolor: 'rgba(255,255,255,0.1)' },
-                    zaxis: { title: 'Z', showgrid: true, zeroline: false, showline: true, showticklabels: true, gridcolor: 'rgba(255,255,255,0.1)' },
-                    camera: {
-                        eye: { x: 1.5, y: 1.5, z: 1.5 }
-                    },
-                    aspectratio: { x: 1, y: 1, z: 1 }
-                },
-                margin: { l: 0, r: 0, b: 0, t: 30 },
-                width: 600,  // Set fixed dimensions
-                height: 500,
-                autosize: false
-            };
-            
-            console.log("Creating plot with data:", data);
+            // Get the plot container
             const plotContainer = document.getElementById('evolution-plot');
-            console.log("Plot container:", plotContainer);
-            if (plotContainer) {
-                console.log("Plot container dimensions:", plotContainer.offsetWidth, "x", plotContainer.offsetHeight);
-                console.log("Plot container visibility:", window.getComputedStyle(plotContainer).display);
-                console.log("Plot container computed style:", window.getComputedStyle(plotContainer));
-            } else {
+            if (!plotContainer) {
                 console.error("Plot container not found!");
+                return;
             }
             
-            // Check if Plotly is available
-            console.log("Plotly available:", typeof Plotly !== 'undefined');
+            console.log("Plot container dimensions:", plotContainer.offsetWidth, "x", plotContainer.offsetHeight);
             
-            Plotly.newPlot('evolution-plot', data, layout, { 
-                responsive: true,
-                displayModeBar: true,
-                scrollZoom: true 
-            });
-            console.log("Visualization initialized successfully");
+            // Create an empty plot with proper layout
+            const layout = {
+                title: 'Sub-SKB Visualization',
+                scene: {
+                    xaxis: { title: 'X', range: [-3, 3] },
+                    yaxis: { title: 'Y', range: [-3, 3] },
+                    zaxis: { title: 'Z', range: [-3, 3] },
+                    aspectmode: 'cube'
+                },
+                paper_bgcolor: '#1e1e1e',
+                plot_bgcolor: '#1e1e1e',
+                font: { color: '#ffffff' },
+                margin: { l: 0, r: 0, b: 0, t: 50, pad: 4 },
+                autosize: true,
+                showlegend: true
+            };
+            
+            // Create an empty plot - will be filled by updateVisualization
+            Plotly.newPlot('evolution-plot', [], layout);
+            
+            console.log("Empty visualization plot initialized");
         } catch (error) {
-            console.error("Error initializing visualization:", error);
+            console.error("Error initializing 3D visualization:", error);
         }
     }
     
     updateVisualization() {
         console.log("Updating visualization");
-        let visualData;
         
-        // Debug plot containers
-        console.log("Plot container exists:", !!document.getElementById('evolution-plot'));
-        const plotContainer = document.getElementById('evolution-plot');
-        if (plotContainer) {
-            console.log("Plot container dimensions:", plotContainer.offsetWidth, "x", plotContainer.offsetHeight);
-            console.log("Plot container visibility:", window.getComputedStyle(plotContainer).display);
-        }
-        
-        if (this.selectedIndividual) {
-            // Show selected individual
-            console.log("Generating visualization data for selected individual", this.selectedIndividual);
-            visualData = this.generateVisualizationData(this.selectedIndividual.parameters);
-        } else if (this.algorithm.population.length > 0) {
-            // Show best individual
-            console.log("Generating visualization data for best individual");
-            const bestInd = [...this.algorithm.population].sort((a, b) => b.fitness - a.fitness)[0];
-            visualData = this.generateVisualizationData(bestInd.parameters);
-        } else {
-            console.log("No data to visualize");
-            return; // No data to visualize
-        }
-        
-        console.log("Visualization data generated:", {
-            xSize: visualData.x.length, 
-            ySize: visualData.y.length, 
-            zSize: visualData.z.length
-        });
-        
+        // Get the visualization data for the top 3 highest compatibility sub-SKBs
         try {
-            // Only update the second trace (the surface), leave the debug cube alone
-            const update = {
-                'x[1]': [visualData.x],
-                'y[1]': [visualData.y],
-                'z[1]': [visualData.z]
+            let skbsToShow = [];
+            
+            if (this.selectedIndividual) {
+                // If an individual is selected, show it
+                console.log("Generating visualization data for selected individual", this.selectedIndividual.id);
+                skbsToShow.push(this.selectedIndividual);
+            } else {
+                // Find the top 3 highest compatibility sub-SKBs
+                // First, find all compatibility scores between pairs of individuals
+                const compatibilityScores = [];
+                const population = this.algorithm.population;
+                
+                for (let i = 0; i < population.length; i++) {
+                    for (let j = i + 1; j < population.length; j++) {
+                        const compatScore = this.algorithm.calculateCompatibility(population[i], population[j]);
+                        compatibilityScores.push({
+                            skb1: population[i],
+                            skb2: population[j],
+                            score: compatScore.compatibilityScore
+                        });
+                    }
+                }
+                
+                // Sort by compatibility score in descending order
+                compatibilityScores.sort((a, b) => b.score - a.score);
+                
+                // Get the top 3 individuals involved in the highest compatibility pairs
+                const topIndividuals = new Set();
+                for (const pair of compatibilityScores) {
+                    topIndividuals.add(pair.skb1);
+                    topIndividuals.add(pair.skb2);
+                    if (topIndividuals.size >= 3) break;
+                }
+                
+                skbsToShow = Array.from(topIndividuals).slice(0, 3);
+                console.log(`Generating visualization data for top ${skbsToShow.length} compatible individuals`);
+            }
+            
+            if (skbsToShow.length === 0) {
+                console.log("No data to visualize");
+                return;
+            }
+            
+            // Clear existing plot
+            Plotly.purge('evolution-plot');
+            
+            // Prepare colors for the sub-SKBs
+            const colors = ['#FF6E91', '#33C4FF', '#65FF8F']; // Pink, Blue, Green
+            
+            // Prepare data for the plot
+            const plotData = [];
+            
+            // Generate visualization data for each sub-SKB
+            for (let i = 0; i < skbsToShow.length; i++) {
+                const skb = skbsToShow[i];
+                const visualData = skb.generateVisualizationData(skb.parameters);
+                
+                // Add wireframe plot for this sub-SKB
+                plotData.push({
+                    type: 'scatter3d',
+                    x: visualData.x,
+                    y: visualData.y,
+                    z: visualData.z,
+                    mode: 'lines',
+                    line: {
+                        color: colors[i],
+                        width: 2
+                    },
+                    opacity: 0.7,
+                    name: `Sub-SKB ${i+1} (ID: ${skb.id})`,
+                    showlegend: true
+                });
+            }
+            
+            // Create plot layout
+            const layout = {
+                title: 'Top Compatible Sub-SKBs Visualization',
+                scene: {
+                    xaxis: { title: 'X' },
+                    yaxis: { title: 'Y' },
+                    zaxis: { title: 'Z' },
+                    aspectmode: 'cube'
+                },
+                paper_bgcolor: '#1e1e1e',
+                plot_bgcolor: '#1e1e1e',
+                font: { color: '#ffffff' },
+                margin: { l: 0, r: 0, b: 0, t: 50, pad: 4 },
+                autosize: true
             };
             
-            Plotly.update('evolution-plot', update, {}, [1]);
-            console.log("Plot updated successfully");
-        } catch (error) {
-            console.error("Error updating plot:", error);
+            // Create the plot
+            Plotly.newPlot('evolution-plot', plotData, layout);
             
-            // Try to recreate the plot if updating fails
-            try {
-                console.log("Attempting to recreate plot...");
-                this.initVisualization();
-                setTimeout(() => {
-                    // Only update the second trace (the surface), leave the debug cube alone
-                    const update = {
-                        'x[1]': [visualData.x],
-                        'y[1]': [visualData.y],
-                        'z[1]': [visualData.z]
-                    };
-                    
-                    Plotly.update('evolution-plot', update, {}, [1]);
-                    console.log("Plot recreated successfully");
-                }, 100);
-            } catch (e) {
-                console.error("Failed to recreate plot:", e);
-            }
+            console.log("Plot updated successfully with top compatible sub-SKBs");
+        } catch (error) {
+            console.error("Error updating visualization:", error);
         }
     }
     
@@ -1476,13 +1524,128 @@ class EvolutionUI {
         
         return stableHadrons;
     }
+
+    // Add a test function to check if Plotly works with the most basic plot
+    testPlot() {
+        console.log("=== PLOT DIAGNOSTIC TEST ===");
+        console.log("Testing basic Plotly functionality");
+        
+        // Get the plot container
+        const plotContainer = document.getElementById('evolution-plot');
+        if (!plotContainer) {
+            console.error("Plot container not found!");
+            return false;
+        }
+        
+        console.log("Plot container dimensions:", plotContainer.offsetWidth, "x", plotContainer.offsetHeight);
+        console.log("Plot container visibility:", window.getComputedStyle(plotContainer).display);
+        console.log("Plot container position:", plotContainer.getBoundingClientRect());
+        
+        // Check if Plotly is available
+        if (typeof Plotly === 'undefined') {
+            console.error("Plotly library is not available!");
+            return false;
+        }
+        
+        try {
+            // Create the simplest possible 2D plot to test if Plotly works at all
+            const x = [1, 2, 3, 4, 5];
+            const y = [1, 2, 3, 4, 5];
+            
+            const data = [{
+                x: x,
+                y: y,
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: {
+                    color: 'rgb(255, 0, 0)',
+                    size: 10
+                },
+                line: {
+                    color: 'rgb(255, 0, 0)',
+                    width: 2
+                }
+            }];
+            
+            const layout = {
+                title: 'Test Plot',
+                paper_bgcolor: '#1e1e1e',
+                plot_bgcolor: '#1e1e1e',
+                font: {
+                    color: '#ffffff'
+                },
+                width: plotContainer.offsetWidth,
+                height: plotContainer.offsetHeight,
+                margin: {
+                    l: 50,
+                    r: 50,
+                    b: 50,
+                    t: 80,
+                    pad: 4
+                }
+            };
+            
+            // Create a new plot from scratch
+            Plotly.newPlot('evolution-plot', data, layout);
+            
+            console.log("Basic 2D test plot created successfully");
+            return true;
+        } catch (error) {
+            console.error("Error creating test plot:", error);
+            return false;
+        }
+    }
+
+    // Generate a new population
+    generatePopulation() {
+        console.log("Generating new population");
+        
+        // First, reset the algorithm
+        this.algorithm.reset();
+        
+        // Update algorithm options in case they've changed
+        this.updateAlgorithmOptions();
+        
+        // Initialize and evaluate the population
+        this.algorithm.initializePopulation();
+        this.algorithm.evaluatePopulation();
+        
+        // Clear any selection
+        this.selectedIndividual = null;
+        this.selectedIndices.clear();
+        
+        // Reset frozen indices and stable hadrons
+        this.frozenIndices = new Set();
+        this.stableHadrons = [];
+        
+        // Update the UI and visualization
+        this.updatePopulationGrid();
+        this.updateVisualization();
+        this.updateUI();
+        
+        console.log(`Generated population of ${this.algorithm.population.length} individuals`);
+    }
 }
 
 // Initialize the UI when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    const ui = new EvolutionUI();
-    console.log("Evolutionary Programming interface loaded");
-    
-    // Store reference to UI globally for debugging
-    window.evolutionUI = ui;
+    console.log("DOM loaded, initializing Evolution UI");
+    try {
+        const ui = new EvolutionUI();
+        console.log("Evolutionary Programming interface loaded");
+        
+        // Ensure we have a population by generating one
+        setTimeout(() => {
+            console.log("Ensuring initial population is generated");
+            if (!ui.algorithm.population.length) {
+                console.log("No population found, generating one");
+                ui.generatePopulation();
+            }
+        }, 1500);
+        
+        // Store reference to UI globally for debugging
+        window.evolutionUI = ui;
+    } catch (error) {
+        console.error("Error initializing Evolution UI:", error);
+    }
 }); 
