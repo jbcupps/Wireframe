@@ -94,6 +94,10 @@ def visualization():
 def evolution():
     return render_template('evolution.html')
 
+@app.route('/oscillator')
+def oscillator():
+    return render_template('oscillator.html')
+
 # API endpoint for evolutionary algorithm
 @app.route('/compute_evolution', methods=['POST'])
 def compute_evolution():

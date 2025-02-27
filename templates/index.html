@@ -1052,7 +1052,7 @@
             
             <div class="help-section">
                 <h3>About Topological Properties</h3>
-                <p>The SKB visualizer calculates and displays several key topological invariants that characterize the 4D manifold structure:</p>
+                <p>The SKB visualizer calculates and displays several key topological invariants that characterize the 4D manifold structure, which we represent through wireframe visualizations:</p>
                 <ul>
                     <li><strong>Euler Characteristic:</strong> A topological invariant, calculated as V - E + F (vertices - edges + faces). For Klein bottles, this is always 0.</li>
                     <li><strong>Stiefel-Whitney Classes:</strong> Cohomology classes that characterize the twisting of the tangent bundle. The first class (w₁) indicates orientability, while the second class (w₂) is related to the possibility of having a spin structure.</li>
@@ -1240,7 +1240,7 @@
                 genus.textContent = "2";
                 homologyGroups.textContent = "H₁ = Z ⊕ Z₂";
                 
-                // 4D manifold topology for merged SKB
+                // 4D manifold topology for merged SKB rendered as wireframe
                 const orientable = (t1x + t2y + t3z) % 2 === 0;
                 stiefelWhitney.textContent = orientable ? "w₁ = 0, w₂ = 0" : "w₁ = 1, w₂ = " + ((t1y*t2z - t1z*t2y) % 2);
                 
