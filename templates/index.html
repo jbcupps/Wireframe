@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKB Wireframe Explorer</title>
+    <title>4D Manifold Explorer - Visualization</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
@@ -11,16 +11,17 @@
     <style>
         :root {
             /* Modern color palette */
-            --dark-bg: #121212;
+            --background: #121212;
             --surface: #1e1e1e;
             --surface-light: #2d2d2d;
-            --primary: #BB86FC;
-            --primary-variant: #3700B3;
-            --secondary: #03DAC6;
-            --accent: #CF6679;
-            --text-primary: rgba(255, 255, 255, 0.87);
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --border-color: rgba(255, 255, 255, 0.12);
+            --primary: #6200ee;
+            --primary-variant: #3700b3;
+            --secondary: #03dac6;
+            --secondary-variant: #018786;
+            --error: #cf6679;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
             
             /* SKB Colors - now with better contrast for dark mode */
             --skb1-color: #FF6E91;  /* Vivid pink */
@@ -33,7 +34,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--dark-bg);
+            background-color: var(--background);
             color: var(--text-primary);
             line-height: 1.6;
             transition: all 0.3s ease;
@@ -43,6 +44,75 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+        }
+        
+        /* Nav Header Styles */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 0 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 60px;
+        }
+        
+        .site-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .site-nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .site-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+            padding: 5px 0;
+        }
+        
+        .site-nav a:hover, .site-nav a.active {
+            color: var(--primary);
+        }
+        
+        .cta-button {
+            background-color: var(--primary);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            background-color: var(--primary-variant);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        
+        /* Main content padding for fixed header */
+        .main-content {
+            margin-top: 80px;
         }
         
         header {
@@ -616,7 +686,7 @@
         }
         
         /* Navigation links styles to match other pages */
-        .nav-links {
+        .site-nav {
             display: flex;
             justify-content: center;
             gap: 30px;
@@ -625,7 +695,7 @@
             border-bottom: 1px solid var(--border-color);
         }
         
-        .nav-links a {
+        .site-nav a {
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 1rem;
@@ -633,7 +703,7 @@
             padding: 5px 0;
         }
         
-        .nav-links a:hover, .nav-links a.active {
+        .site-nav a:hover, .site-nav a.active {
             color: var(--primary);
             border-bottom: 2px solid var(--primary);
         }
@@ -703,305 +773,319 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Spacetime Klein Bottle Visualization</h1>
-            <p class="subtitle">Interactive Topology Explorer</p>
-            
-            <!-- Navigation Links -->
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/visualization" class="active">SKB Visualizer</a>
-                <a href="/evolution">Evolutionary Programming</a>
+    <!-- Site Navigation Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="site-logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                <nav class="site-nav">
+                    <a href="/">Home</a>
+                    <a href="/visualization" class="active">4D Manifold</a>
+                    <a href="/evolution">Evolution</a>
+                    <a href="/oscillator">Oscillator</a>
+                </nav>
             </div>
-        </header>
-        
-        <div class="research-links">
-            <p>Research: <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">Categorical Framework</a> | <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">SKB Particle Models</a></p>
         </div>
-        
-        <div class="main-content">
-            <!-- Visualization panel with the plot and properties -->
-            <div class="visualization-panel">
-                <div id="plot" class="plot-container"></div>
-                
-                <!-- Topological properties panel -->
-                <div class="properties-panel">
-                    <div class="properties-title">Topological Properties</div>
-                    <div class="property-item">
-                        <span class="property-name">Euler Characteristic:</span>
-                        <span class="property-value" id="euler-characteristic">0</span>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">Stiefel-Whitney Classes:</span>
-                        <span class="property-value" id="stiefel-whitney">w₁ = 1, w₂ = 0</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Stiefel-Whitney classes are cohomology classes that characterize the twisting of the tangent bundle. w₁ indicates orientability (0 for orientable, 1 for non-orientable).</span>
-                        </div>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">Intersection Form:</span>
-                        <span class="property-value" id="intersection-form">Q = { }</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">The intersection form is a symmetric bilinear form on the middle-dimensional homology. It describes how 2-cycles intersect in a 4-manifold and relates to particle interactions.</span>
-                        </div>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">Kirby-Siebenmann Invariant:</span>
-                        <span class="property-value" id="kirby-siebenmann">0</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">The Kirby-Siebenmann invariant is an obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may relate to quantum effects in the SKB model.</span>
-                        </div>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">CTC Stability:</span>
-                        <span class="property-value" id="ctc-stability">Stable</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Indicates whether the configuration allows for stable closed timelike curves (CTCs). Stability depends on the complementary nature of time twist parameters across sub-SKBs.</span>
-                        </div>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">Compatibility:</span>
-                        <span class="property-value" id="compatibility-status">Compatible</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Indicates whether the current SKB configuration is compatible with stable hadron formation based on topological constraints and CTC stability.</span>
-                        </div>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">Genus:</span>
-                        <span class="property-value" id="genus">1</span>
-                    </div>
-                    <div class="property-item">
-                        <span class="property-name">Homology Groups:</span>
-                        <span class="property-value" id="homology-groups">H₁ = Z ⊕ Z₂</span>
-                    </div>
-                </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+            <!-- Main Page Header -->
+            <header>
+                <h1>Spacetime Klein Bottle 4D Manifold Explorer</h1>
+                <div class="subtitle">Interactive visualization and exploration of 4D manifold topological structures</div>
+            </header>
+    
+            <div class="research-links">
+                <p>Research: <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">Categorical Framework</a> | <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">SKB Particle Models</a></p>
             </div>
-            
-            <!-- Controls panel -->
-            <div class="controls-panel">
-                <!-- Global controls card -->
-                <div class="control-card">
-                    <div class="card-header">
-                        <h3 class="card-title">Global Controls</h3>
-                    </div>
+    
+            <div class="main-content">
+                <!-- Visualization panel with the plot and properties -->
+                <div class="visualization-panel">
+                    <div id="plot" class="plot-container"></div>
                     
-                    <div class="toggle-container">
-                        <span class="toggle-label">Individual SKBs</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="merge-toggle" onchange="updateVisualization()">
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="toggle-label">Merged SKB</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Toggle between individual sub-SKBs (representing quark-like components) and merged stable SKB (representing a composite particle). In categorical theory, this represents a colimit of the sub-objects.</span>
+                    <!-- Topological properties panel -->
+                    <div class="properties-panel">
+                        <div class="properties-title">Topological Properties</div>
+                        <div class="property-item">
+                            <span class="property-name">Euler Characteristic:</span>
+                            <span class="property-value" id="euler-characteristic">0</span>
                         </div>
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label for="time">Time Evolution <span id="time-value" class="value-display">0</span></label>
-                        <input type="range" id="time" min="0" max="6.28" value="0" step="0.1" oninput="updateSliderValue('time'); updateVisualization();">
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Controls the time parameter, simulating evolution through closed timelike curves (CTCs). In 4D SKB theory, this represents how particles evolve through spacetime while maintaining their topological identity.</span>
+                        <div class="property-item">
+                            <span class="property-name">Stiefel-Whitney Classes:</span>
+                            <span class="property-value" id="stiefel-whitney">w₁ = 1, w₂ = 0</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Stiefel-Whitney classes are cohomology classes that characterize the twisting of the tangent bundle. w₁ indicates orientability (0 for orientable, 1 for non-orientable).</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label for="loop-factor">Global Loop Factor <span id="loop-factor-value" class="value-display">1</span></label>
-                        <input type="range" id="loop-factor" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop-factor'); updateVisualization();">
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Controls the number of loops in the merged structure. Higher values create more complex structures. In SKB theory, loop factors correspond to energy levels and may relate to particle mass through topological complexity.</span>
+                        <div class="property-item">
+                            <span class="property-name">Intersection Form:</span>
+                            <span class="property-value" id="intersection-form">Q = { }</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">The intersection form is a symmetric bilinear form on the middle-dimensional homology. It describes how 2-cycles intersect in a 4-manifold and relates to particle interactions.</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <span class="property-name">Kirby-Siebenmann Invariant:</span>
+                            <span class="property-value" id="kirby-siebenmann">0</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">The Kirby-Siebenmann invariant is an obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may relate to quantum effects in the SKB model.</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <span class="property-name">CTC Stability:</span>
+                            <span class="property-value" id="ctc-stability">Stable</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Indicates whether the configuration allows for stable closed timelike curves (CTCs). Stability depends on the complementary nature of time twist parameters across sub-SKBs.</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <span class="property-name">Compatibility:</span>
+                            <span class="property-value" id="compatibility-status">Compatible</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Indicates whether the current SKB configuration is compatible with stable hadron formation based on topological constraints and CTC stability.</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <span class="property-name">Genus:</span>
+                            <span class="property-value" id="genus">1</span>
+                        </div>
+                        <div class="property-item">
+                            <span class="property-name">Homology Groups:</span>
+                            <span class="property-value" id="homology-groups">H₁ = Z ⊕ Z₂</span>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Sub-SKB 1 Controls -->
-                <div class="control-card">
-                    <div class="sub-skb-title skb1">
-                        <span class="color-indicator color-skb1"></span>Sub-SKB 1
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">First quark-like component in the categorical SKB framework. In particle physics analogy, this might represent an "up" quark with specific topological features that contribute to its properties.</span>
+                <!-- Controls panel -->
+                <div class="controls-panel">
+                    <!-- Global controls card -->
+                    <div class="control-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Global Controls</h3>
+                        </div>
+                        
+                        <div class="toggle-container">
+                            <span class="toggle-label">Individual SKBs</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="merge-toggle" onchange="updateVisualization()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Merged SKB</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Toggle between individual sub-SKBs (representing quark-like components) and merged stable SKB (representing a composite particle). In categorical theory, this represents a colimit of the sub-objects.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="time">Time Evolution <span id="time-value" class="value-display">0</span></label>
+                            <input type="range" id="time" min="0" max="6.28" value="0" step="0.1" oninput="updateSliderValue('time'); updateVisualization();">
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Controls the time parameter, simulating evolution through closed timelike curves (CTCs). In 4D SKB theory, this represents how particles evolve through spacetime while maintaining their topological identity.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="loop-factor">Global Loop Factor <span id="loop-factor-value" class="value-display">1</span></label>
+                            <input type="range" id="loop-factor" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop-factor'); updateVisualization();">
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Controls the number of loops in the merged structure. Higher values create more complex structures. In SKB theory, loop factors correspond to energy levels and may relate to particle mass through topological complexity.</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="slider-container">
-                        <label for="loop1">Loop Factor <span id="loop1-value" class="value-display">1</span></label>
-                        <input type="range" id="loop1" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop1'); updateVisualization();">
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Controls the number of loops in this sub-SKB. In the categorical framework, this is related to the first homology group generators and may correspond to a particle's internal energy configurations.</span>
+                    <!-- Sub-SKB 1 Controls -->
+                    <div class="control-card">
+                        <div class="sub-skb-title skb1">
+                            <span class="color-indicator color-skb1"></span>Sub-SKB 1
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">First quark-like component in the categorical SKB framework. In particle physics analogy, this might represent an "up" quark with specific topological features that contribute to its properties.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="loop1">Loop Factor <span id="loop1-value" class="value-display">1</span></label>
+                            <input type="range" id="loop1" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop1'); updateVisualization();">
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Controls the number of loops in this sub-SKB. In the categorical framework, this is related to the first homology group generators and may correspond to a particle's internal energy configurations.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-skb-section">
+                            <div class="twist-controls">
+                                <div class="twist-axis">
+                                    <label for="t1x">X-Twist <span id="t1x-value" class="value-display">0</span></label>
+                                    <input type="range" id="t1x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1x'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">X-axis twist parameter for sub-SKB 1. In the 4D model, this relates to spatial twisting in the first dimension and may correspond to specific quantum numbers.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t1y">Y-Twist <span id="t1y-value" class="value-display">0</span></label>
+                                    <input type="range" id="t1y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1y'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Y-axis twist parameter for sub-SKB 1. This represents torsion in the second spatial dimension and may relate to particle spin properties.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t1z">Z-Twist <span id="t1z-value" class="value-display">0</span></label>
+                                    <input type="range" id="t1z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1z'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Z-axis twist parameter for sub-SKB 1. Controls vertical torsion and may relate to charge properties in the SKB particle model.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t1t">Time-Twist <span id="t1t-value" class="value-display">0</span></label>
+                                    <input type="range" id="t1t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t1t'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 1, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sub-SKB 2 Controls -->
+                    <div class="control-card">
+                        <div class="sub-skb-title skb2">
+                            <span class="color-indicator color-skb2"></span>Sub-SKB 2
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Second quark-like component in the SKB framework. In particle physics analogy, this might represent another "up" quark with complementary topological features to the first.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="loop2">Loop Factor <span id="loop2-value" class="value-display">1</span></label>
+                            <input type="range" id="loop2" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop2'); updateVisualization();">
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Controls the number of loops in the second sub-SKB. In the categorical model, different loop configurations may represent different energy states or quantum excitations.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-skb-section">
+                            <div class="twist-controls">
+                                <div class="twist-axis">
+                                    <label for="t2x">X-Twist <span id="t2x-value" class="value-display">0</span></label>
+                                    <input type="range" id="t2x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2x'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">X-axis twist for the second sub-SKB. Combinations of twists between different sub-SKBs may represent particle interactions in the categorical model.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t2y">Y-Twist <span id="t2y-value" class="value-display">0</span></label>
+                                    <input type="range" id="t2y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2y'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Y-axis twist for sub-SKB 2. The relative Y-twist values between sub-SKBs may correspond to binding energies in the composite structure.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t2z">Z-Twist <span id="t2z-value" class="value-display">0</span></label>
+                                    <input type="range" id="t2z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2z'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Z-axis twist for sub-SKB 2. In the 4D spacetime model, this represents how this component interacts with the vertical dimension and may relate to strong force carrier interactions.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t2t">Time-Twist <span id="t2t-value" class="value-display">0</span></label>
+                                    <input type="range" id="t2t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t2t'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 2, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sub-SKB 3 Controls -->
+                    <div class="control-card">
+                        <div class="sub-skb-title skb3">
+                            <span class="color-indicator color-skb3"></span>Sub-SKB 3
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Third quark-like component in the SKB framework. In particle physics analogy, this might represent a "down" quark with distinct topological features that contribute to the composite particle's properties.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="loop3">Loop Factor <span id="loop3-value" class="value-display">1</span></label>
+                            <input type="range" id="loop3" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop3'); updateVisualization();">
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Controls the number of loops in the third sub-SKB. In topological terms, this may represent how many times this component wraps around itself, affecting its contribution to the overall particle mass.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-skb-section">
+                            <div class="twist-controls">
+                                <div class="twist-axis">
+                                    <label for="t3x">X-Twist <span id="t3x-value" class="value-display">0</span></label>
+                                    <input type="range" id="t3x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3x'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">X-axis twist for sub-SKB 3. In the categorical framework, this corresponds to a specific morphism that alters the topology in ways that may relate to flavor quantum numbers.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t3y">Y-Twist <span id="t3y-value" class="value-display">0</span></label>
+                                    <input type="range" id="t3y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3y'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Y-axis twist for sub-SKB 3. Different twist configurations across all sub-SKBs may correspond to different particle states or resonances in the SKB model.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t3z">Z-Twist <span id="t3z-value" class="value-display">0</span></label>
+                                    <input type="range" id="t3z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3z'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Z-axis twist for sub-SKB 3. In the spacetime model with closed timelike curves, this parameter may influence how this component interacts with the time dimension.</span>
+                                    </div>
+                                </div>
+                                <div class="twist-axis">
+                                    <label for="t3t">Time-Twist <span id="t3t-value" class="value-display">0</span></label>
+                                    <input type="range" id="t3t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t3t'); updateVisualization();">
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 3, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="sub-skb-section">
-                        <div class="twist-controls">
-                            <div class="twist-axis">
-                                <label for="t1x">X-Twist <span id="t1x-value" class="value-display">0</span></label>
-                                <input type="range" id="t1x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1x'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">X-axis twist parameter for sub-SKB 1. In the 4D model, this relates to spatial twisting in the first dimension and may correspond to specific quantum numbers.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t1y">Y-Twist <span id="t1y-value" class="value-display">0</span></label>
-                                <input type="range" id="t1y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1y'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Y-axis twist parameter for sub-SKB 1. This represents torsion in the second spatial dimension and may relate to particle spin properties.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t1z">Z-Twist <span id="t1z-value" class="value-display">0</span></label>
-                                <input type="range" id="t1z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1z'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Z-axis twist parameter for sub-SKB 1. Controls vertical torsion and may relate to charge properties in the SKB particle model.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t1t">Time-Twist <span id="t1t-value" class="value-display">0</span></label>
-                                <input type="range" id="t1t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t1t'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 1, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Action Buttons -->
+                    <div class="button-group">
+                        <button id="reset-btn" onclick="resetControls()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                        <button id="animate-btn" onclick="toggleAnimation()">
+                            <i class="fas fa-play" id="animate-icon"></i> <span id="animate-text">Animate</span>
+                        </button>
                     </div>
-                </div>
-                
-                <!-- Sub-SKB 2 Controls -->
-                <div class="control-card">
-                    <div class="sub-skb-title skb2">
-                        <span class="color-indicator color-skb2"></span>Sub-SKB 2
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Second quark-like component in the SKB framework. In particle physics analogy, this might represent another "up" quark with complementary topological features to the first.</span>
-                        </div>
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label for="loop2">Loop Factor <span id="loop2-value" class="value-display">1</span></label>
-                        <input type="range" id="loop2" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop2'); updateVisualization();">
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Controls the number of loops in the second sub-SKB. In the categorical model, different loop configurations may represent different energy states or quantum excitations.</span>
-                        </div>
-                    </div>
-                    
-                    <div class="sub-skb-section">
-                        <div class="twist-controls">
-                            <div class="twist-axis">
-                                <label for="t2x">X-Twist <span id="t2x-value" class="value-display">0</span></label>
-                                <input type="range" id="t2x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2x'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">X-axis twist for the second sub-SKB. Combinations of twists between different sub-SKBs may represent particle interactions in the categorical model.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t2y">Y-Twist <span id="t2y-value" class="value-display">0</span></label>
-                                <input type="range" id="t2y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2y'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Y-axis twist for sub-SKB 2. The relative Y-twist values between sub-SKBs may correspond to binding energies in the composite structure.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t2z">Z-Twist <span id="t2z-value" class="value-display">0</span></label>
-                                <input type="range" id="t2z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2z'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Z-axis twist for sub-SKB 2. In the 4D spacetime model, this represents how this component interacts with the vertical dimension and may relate to strong force carrier interactions.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t2t">Time-Twist <span id="t2t-value" class="value-display">0</span></label>
-                                <input type="range" id="t2t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t2t'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 2, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Sub-SKB 3 Controls -->
-                <div class="control-card">
-                    <div class="sub-skb-title skb3">
-                        <span class="color-indicator color-skb3"></span>Sub-SKB 3
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Third quark-like component in the SKB framework. In particle physics analogy, this might represent a "down" quark with distinct topological features that contribute to the composite particle's properties.</span>
-                        </div>
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label for="loop3">Loop Factor <span id="loop3-value" class="value-display">1</span></label>
-                        <input type="range" id="loop3" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop3'); updateVisualization();">
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Controls the number of loops in the third sub-SKB. In topological terms, this may represent how many times this component wraps around itself, affecting its contribution to the overall particle mass.</span>
-                        </div>
-                    </div>
-                    
-                    <div class="sub-skb-section">
-                        <div class="twist-controls">
-                            <div class="twist-axis">
-                                <label for="t3x">X-Twist <span id="t3x-value" class="value-display">0</span></label>
-                                <input type="range" id="t3x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3x'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">X-axis twist for sub-SKB 3. In the categorical framework, this corresponds to a specific morphism that alters the topology in ways that may relate to flavor quantum numbers.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t3y">Y-Twist <span id="t3y-value" class="value-display">0</span></label>
-                                <input type="range" id="t3y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3y'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Y-axis twist for sub-SKB 3. Different twist configurations across all sub-SKBs may correspond to different particle states or resonances in the SKB model.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t3z">Z-Twist <span id="t3z-value" class="value-display">0</span></label>
-                                <input type="range" id="t3z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3z'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Z-axis twist for sub-SKB 3. In the spacetime model with closed timelike curves, this parameter may influence how this component interacts with the time dimension.</span>
-                                </div>
-                            </div>
-                            <div class="twist-axis">
-                                <label for="t3t">Time-Twist <span id="t3t-value" class="value-display">0</span></label>
-                                <input type="range" id="t3t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t3t'); updateVisualization();">
-                                <div class="tooltip">
-                                    <i class="fas fa-info-circle tooltip-icon"></i>
-                                    <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 3, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="button-group">
-                    <button id="reset-btn" onclick="resetControls()">
-                        <i class="fas fa-undo"></i> Reset
-                    </button>
-                    <button id="animate-btn" onclick="toggleAnimation()">
-                        <i class="fas fa-play" id="animate-icon"></i> <span id="animate-text">Animate</span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1404,15 +1488,16 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo">Wireframe Explorer</div>
+                <div class="footer-logo">4D Manifold Explorer</div>
                 <div class="footer-links">
                     <a href="/">Home</a>
-                    <a href="/visualization">SKB Visualizer</a>
-                    <a href="/evolution">Evolutionary Programming</a>
+                    <a href="/visualization">4D Manifold</a>
+                    <a href="/evolution">Evolution</a>
+                    <a href="/oscillator">Oscillator</a>
                 </div>
             </div>
             <div class="copyright">
-                &copy; 2024 Wireframe Explorer. All rights reserved.
+                &copy; 2024 4D Manifold Explorer. All rights reserved.
             </div>
         </div>
     </footer>

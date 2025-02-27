@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Damped Harmonic Oscillator - Wireframe Explorer</title>
+    <title>Damped Harmonic Oscillator - 4D Manifold Explorer</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
@@ -46,6 +46,77 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+        }
+        
+        /* Site Header Styles */
+        .site-header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background-color: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            padding: 15px 0;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding: 5px 0;
+            position: relative;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after, .nav-links a.active::after {
+            width: 100%;
+        }
+        
+        /* Main content padding for fixed header */
+        .main-content {
+            margin-top: 80px;
         }
         
         header {
@@ -221,59 +292,75 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <a href="/" class="back-button">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </a>
-            <h1>Damped Harmonic Oscillator with Gaussian Envelope</h1>
-            <div class="subtitle">Complex Function Visualization</div>
-            <div class="formula">
-                \(f(t) = e^{-\gamma(t-t_0)^2}(\cos(\omega t) + i\sin(\omega t))\)
-            </div>
-        </header>
-
-        <div class="controls-panel">
-            <div class="parameter-controls">
-                <div class="parameter">
-                    <label for="gamma">γ (Damping factor):</label>
-                    <input type="range" id="gamma" min="0.01" max="0.5" step="0.01" value="0.1">
-                    <span id="gamma-value">0.1</span>
-                </div>
-                <div class="parameter">
-                    <label for="t0">t₀ (Time offset):</label>
-                    <input type="range" id="t0" min="1" max="10" step="0.1" value="5">
-                    <span id="t0-value">5</span>
-                </div>
-                <div class="parameter">
-                    <label for="omega">ω (Angular frequency):</label>
-                    <input type="range" id="omega" min="0.5" max="5" step="0.1" value="2">
-                    <span id="omega-value">2</span>
-                </div>
-            </div>
-            <div class="animation-controls">
-                <button id="play-pause">
-                    <i class="fas fa-play"></i> Play
-                </button>
-                <input type="range" id="time-slider" min="0" max="10" step="0.1" value="0">
-                <span id="current-time">t = 0.00</span>
+    <!-- Site Navigation Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization">4D Manifold</a>
+                    <a href="/evolution">Evolution</a>
+                    <a href="/oscillator" class="active">Oscillator</a>
+                </nav>
             </div>
         </div>
+    </header>
 
-        <div class="visualization-container">
-            <div id="plot3d" class="plot"></div>
-            <div id="spiral-plot" class="plot"></div>
-            <div id="real-plot" class="plot"></div>
-            <div id="imag-plot" class="plot"></div>
-        </div>
-
-        <div class="annotations">
-            <div class="period-annotation">
-                \(\omega \cdot \text{const} = 3.45T\), where \(T = \frac{2\pi}{\omega}\)
+    <div class="main-content">
+        <div class="container">
+            <header>
+                <h1>Damped Harmonic Oscillator with Gaussian Envelope</h1>
+                <div class="subtitle">
+                    Visualizing the complex function \( f(t) = e^{-\gamma(t-t_0)^2}(\cos(\omega t) + i\sin(\omega t)) \)
+                </div>
+            </header>
+            
+            <div class="controls-panel">
+                <div class="parameter-controls">
+                    <div class="parameter">
+                        <label for="gamma">γ (Damping factor):</label>
+                        <input type="range" id="gamma" min="0.01" max="0.5" step="0.01" value="0.1">
+                        <span id="gamma-value">0.1</span>
+                    </div>
+                    <div class="parameter">
+                        <label for="t0">t₀ (Time offset):</label>
+                        <input type="range" id="t0" min="1" max="10" step="0.1" value="5">
+                        <span id="t0-value">5</span>
+                    </div>
+                    <div class="parameter">
+                        <label for="omega">ω (Angular frequency):</label>
+                        <input type="range" id="omega" min="0.5" max="5" step="0.1" value="2">
+                        <span id="omega-value">2</span>
+                    </div>
+                </div>
+                <div class="animation-controls">
+                    <button id="play-pause">
+                        <i class="fas fa-play"></i> Play
+                    </button>
+                    <input type="range" id="time-slider" min="0" max="10" step="0.1" value="0">
+                    <span id="current-time">t = 0.00</span>
+                </div>
             </div>
-            <div class="formulas">
-                <div>Re\(f\) = \(e^{-\gamma(t-t_0)^2}\cos(\omega t)\)</div>
-                <div>Im\(f\) = \(e^{-\gamma(t-t_0)^2}\sin(\omega t)\)</div>
+
+            <div class="visualization-container">
+                <div id="plot3d" class="plot"></div>
+                <div id="spiral-plot" class="plot"></div>
+                <div id="real-plot" class="plot"></div>
+                <div id="imag-plot" class="plot"></div>
+            </div>
+
+            <div class="annotations">
+                <div class="period-annotation">
+                    \(\omega \cdot \text{const} = 3.45T\), where \(T = \frac{2\pi}{\omega}\)
+                </div>
+                <div class="formulas">
+                    <div>Re\(f\) = \(e^{-\gamma(t-t_0)^2}\cos(\omega t)\)</div>
+                    <div>Im\(f\) = \(e^{-\gamma(t-t_0)^2}\sin(\omega t)\)</div>
+                </div>
             </div>
         </div>
     </div>
@@ -803,5 +890,24 @@
             }
         });
     </script>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">4D Manifold Explorer</div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization">4D Manifold</a>
+                    <a href="/evolution">Evolution</a>
+                    <a href="/oscillator">Oscillator</a>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 4D Manifold Explorer. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    </div> <!-- Close main-content div -->
 </body>
 </html> 
