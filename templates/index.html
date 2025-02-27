@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKB Visualizer - Spacetime Klein Bottle Wireframe Explorer</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>SKB Wireframe Explorer</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -88,6 +89,11 @@
         .plot-container {
             height: 800px;
             width: 100%;
+            min-height: 400px;
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
         
         .controls-panel {
@@ -711,7 +717,7 @@
         </header>
         
         <div class="research-links">
-            <p>Research: <a href="https://doi.org/10.1007/s10701-023-00688-9" target="_blank">Spacetime Klein Bottles</a> | <a href="https://doi.org/10.1038/s41598-023-35105-8" target="_blank">Field Theory</a></p>
+            <p>Research: <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">Categorical Framework</a> | <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">SKB Particle Models</a></p>
         </div>
         
         <div class="main-content">
@@ -751,20 +757,28 @@
                         </div>
                     </div>
                     <div class="property-item">
+                        <span class="property-name">CTC Stability:</span>
+                        <span class="property-value" id="ctc-stability">Stable</span>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Indicates whether the configuration allows for stable closed timelike curves (CTCs). Stability depends on the complementary nature of time twist parameters across sub-SKBs.</span>
+                        </div>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-name">Compatibility:</span>
+                        <span class="property-value" id="compatibility-status">Compatible</span>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Indicates whether the current SKB configuration is compatible with stable hadron formation based on topological constraints and CTC stability.</span>
+                        </div>
+                    </div>
+                    <div class="property-item">
                         <span class="property-name">Genus:</span>
                         <span class="property-value" id="genus">1</span>
                     </div>
                     <div class="property-item">
                         <span class="property-name">Homology Groups:</span>
                         <span class="property-value" id="homology-groups">H₁ = Z ⊕ Z₂</span>
-                    </div>
-                    <div class="property-item compatibility-status">
-                        <span class="property-name">Compatibility Status:</span>
-                        <span class="property-value" id="compatibility-status">Analyzing...</span>
-                        <div class="tooltip">
-                            <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Indicates whether the current SKB configuration is compatible with stable hadron formation based on topological constraints.</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -854,6 +868,14 @@
                                     <span class="tooltip-text">Z-axis twist parameter for sub-SKB 1. Controls vertical torsion and may relate to charge properties in the SKB particle model.</span>
                                 </div>
                             </div>
+                            <div class="twist-axis">
+                                <label for="t1t">Time-Twist <span id="t1t-value" class="value-display">0</span></label>
+                                <input type="range" id="t1t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t1t'); updateVisualization();">
+                                <div class="tooltip">
+                                    <i class="fas fa-info-circle tooltip-icon"></i>
+                                    <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 1, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -903,6 +925,14 @@
                                     <span class="tooltip-text">Z-axis twist for sub-SKB 2. In the 4D spacetime model, this represents how this component interacts with the vertical dimension and may relate to strong force carrier interactions.</span>
                                 </div>
                             </div>
+                            <div class="twist-axis">
+                                <label for="t2t">Time-Twist <span id="t2t-value" class="value-display">0</span></label>
+                                <input type="range" id="t2t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t2t'); updateVisualization();">
+                                <div class="tooltip">
+                                    <i class="fas fa-info-circle tooltip-icon"></i>
+                                    <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 2, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -950,6 +980,14 @@
                                 <div class="tooltip">
                                     <i class="fas fa-info-circle tooltip-icon"></i>
                                     <span class="tooltip-text">Z-axis twist for sub-SKB 3. In the spacetime model with closed timelike curves, this parameter may influence how this component interacts with the time dimension.</span>
+                                </div>
+                            </div>
+                            <div class="twist-axis">
+                                <label for="t3t">Time-Twist <span id="t3t-value" class="value-display">0</span></label>
+                                <input type="range" id="t3t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t3t'); updateVisualization();">
+                                <div class="tooltip">
+                                    <i class="fas fa-info-circle tooltip-icon"></i>
+                                    <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 3, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
                                 </div>
                             </div>
                         </div>
@@ -1019,10 +1057,11 @@
                     <li><strong>Euler Characteristic:</strong> A topological invariant, calculated as V - E + F (vertices - edges + faces). For Klein bottles, this is always 0.</li>
                     <li><strong>Stiefel-Whitney Classes:</strong> Cohomology classes that characterize the twisting of the tangent bundle. The first class (w₁) indicates orientability, while the second class (w₂) is related to the possibility of having a spin structure.</li>
                     <li><strong>Intersection Form:</strong> A symmetric bilinear form on the middle-dimensional homology that describes how 2-cycles intersect in a 4-manifold. The form can be positive definite, negative definite, or indefinite, which relates to different types of particle interactions.</li>
-                    <li><strong>Kirby-Siebenmann Invariant:</strong> An obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may correspond to quantum-gravitational effects in the SKB model.</li>
+                    <li><strong>Kirby-Siebenmann Invariant:</strong> An obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may relate to quantum-gravitational effects in the SKB model.</li>
                     <li><strong>Genus:</strong> Roughly corresponds to the number of "holes" in the surface. In SKB theory, this relates to particle generation.</li>
                     <li><strong>Homology Groups:</strong> Algebraic structures that capture the essential topological features. For Klein bottles, H₁ = Z ⊕ Z₂, representing its non-orientability and loop structure.</li>
-                    <li><strong>Compatibility Status:</strong> Indicates whether the current configuration could potentially form a stable hadron based on topological constraints from the 4D manifold theory.</li>
+                    <li><strong>CTC Stability:</strong> Indicates whether the configuration allows for stable closed timelike curves (CTCs). Stability depends on the complementary nature of time twist parameters across sub-SKBs.</li>
+                    <li><strong>Compatibility:</strong> Indicates whether the current SKB configuration is compatible with stable hadron formation based on topological constraints and CTC stability.</li>
                 </ul>
             </div>
             
@@ -1072,10 +1111,13 @@
             updateTopologicalProperties();
         }
         
-        // Function to update visualization
+        // Function to update the visualization based on current parameters
         function updateVisualization() {
+            console.log("Updating visualization...");
+            
+            // Get parameters from controls
             const params = {
-                time: parseFloat(document.getElementById('time').value),
+                t: parseFloat(document.getElementById('time').value),
                 loop_factor: parseInt(document.getElementById('loop-factor').value),
                 loop1: parseInt(document.getElementById('loop1').value),
                 loop2: parseInt(document.getElementById('loop2').value),
@@ -1083,12 +1125,15 @@
                 t1x: parseInt(document.getElementById('t1x').value),
                 t1y: parseInt(document.getElementById('t1y').value),
                 t1z: parseInt(document.getElementById('t1z').value),
+                t1t: parseFloat(document.getElementById('t1t').value),
                 t2x: parseInt(document.getElementById('t2x').value),
                 t2y: parseInt(document.getElementById('t2y').value),
                 t2z: parseInt(document.getElementById('t2z').value),
+                t2t: parseFloat(document.getElementById('t2t').value),
                 t3x: parseInt(document.getElementById('t3x').value),
                 t3y: parseInt(document.getElementById('t3y').value),
                 t3z: parseInt(document.getElementById('t3z').value),
+                t3t: parseFloat(document.getElementById('t3t').value),
                 merge: document.getElementById('merge-toggle').checked ? 1 : 0,
                 colors: {
                     skb1: getComputedStyle(document.documentElement).getPropertyValue('--skb1-color').trim(),
@@ -1097,6 +1142,9 @@
                 }
             };
             
+            console.log("Fetching visualization with params:", params);
+            console.log("Plot container:", document.getElementById('plot'));
+            
             fetch('/get_visualization', {
                 method: 'POST',
                 headers: {
@@ -1104,14 +1152,28 @@
                 },
                 body: JSON.stringify(params)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log("Received response from server:", response.status);
+                return response.json();
+            })
             .then(data => {
                 if (data.error) {
-                    console.error("Error:", data.error);
+                    console.error("Server returned error:", data.error);
                     return;
                 }
                 
-                Plotly.react('plot', data.plot.data, createLayout(params.merge));
+                console.log("Visualization data received:", data);
+                
+                try {
+                    const layout = createLayout(params.merge);
+                    console.log("Rendering plot with layout:", layout);
+                    
+                    Plotly.react('plot', data.plot.data, layout);
+                    console.log("Plot updated successfully");
+                } catch (error) {
+                    console.error("Error rendering plot:", error);
+                }
+                
                 updateTopologicalProperties();
             })
             .catch(error => {
@@ -1159,12 +1221,15 @@
             const t1x = parseInt(document.getElementById('t1x').value);
             const t1y = parseInt(document.getElementById('t1y').value);
             const t1z = parseInt(document.getElementById('t1z').value);
+            const t1t = parseFloat(document.getElementById('t1t').value);
             const t2x = parseInt(document.getElementById('t2x').value);
             const t2y = parseInt(document.getElementById('t2y').value);
             const t2z = parseInt(document.getElementById('t2z').value);
+            const t2t = parseFloat(document.getElementById('t2t').value);
             const t3x = parseInt(document.getElementById('t3x').value);
             const t3y = parseInt(document.getElementById('t3y').value);
             const t3z = parseInt(document.getElementById('t3z').value);
+            const t3t = parseFloat(document.getElementById('t3t').value);
             const loop1 = parseInt(document.getElementById('loop1').value);
             const loop2 = parseInt(document.getElementById('loop2').value);
             const loop3 = parseInt(document.getElementById('loop3').value);
@@ -1191,9 +1256,19 @@
                 const ks = ((loop1 * loop2 * loop3) % 2);
                 kirbySiebenmann.textContent = ks.toString();
                 
-                // Determine compatibility based on topological constraints
-                const compatible = orientable && sumTwists >= 3 && ks === 0;
+                // Check for CTC stability - time twists should be complementary (sum near zero)
+                const timeSum = Math.abs(t1t + t2t + t3t);
+                const stableCTC = timeSum < 0.2; // Sum of time twists should be near zero for stable CTCs
+                
+                // Determine compatibility based on topological constraints including CTC stability
+                const compatible = orientable && sumTwists >= 3 && ks === 0 && stableCTC;
                 compatibilityStatus.textContent = compatible ? "Compatible" : "Incompatible";
+                
+                // Add specific message about CTC stability if that's the issue
+                if (!compatible && !stableCTC && orientable && sumTwists >= 3 && ks === 0) {
+                    compatibilityStatus.textContent = "Incompatible - Unstable CTCs";
+                }
+                
                 compatibilityStatus.classList.remove("compatible-status", "incompatible-status");
                 compatibilityStatus.classList.add(compatible ? "compatible-status" : "incompatible-status");
             } else {
@@ -1238,12 +1313,15 @@
             document.getElementById('t1x').value = 0;
             document.getElementById('t1y').value = 0;
             document.getElementById('t1z').value = 0;
+            document.getElementById('t1t').value = 0;
             document.getElementById('t2x').value = 0;
             document.getElementById('t2y').value = 0;
             document.getElementById('t2z').value = 0;
+            document.getElementById('t2t').value = 0;
             document.getElementById('t3x').value = 0;
             document.getElementById('t3y').value = 0;
             document.getElementById('t3z').value = 0;
+            document.getElementById('t3t').value = 0;
             document.getElementById('merge-toggle').checked = false;
             
             // Update all value displays
@@ -1298,6 +1376,14 @@
         
         // Initialize the visualization when the page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if Plotly is loaded
+            if (typeof Plotly === 'undefined') {
+                console.error("Plotly library is not loaded! This will prevent visualizations from working.");
+                alert("Visualization library (Plotly) failed to load. Please try refreshing the page.");
+            } else {
+                console.log("Plotly visualization library loaded successfully: v" + Plotly.version);
+            }
+            
             updateVisualization();
             
             // Set up keyboard shortcuts

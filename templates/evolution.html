@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evolutionary Programming - SKB Wireframe Explorer</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -100,6 +100,13 @@
             flex: 1;
             height: 500px;
             width: 100%;
+            min-height: 400px;
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: visible !important;
+            display: block !important; /* Force display */
+            z-index: 10; /* Ensure it's above other elements */
         }
         
         .controls-panel {
@@ -202,6 +209,25 @@
             background-color: var(--evo-highlight);
         }
         
+        .stable-hadron {
+            border-left: 3px solid var(--skb-merged);
+            position: relative;
+            background-color: rgba(187, 134, 252, 0.15) !important;
+        }
+        
+        .stable-hadron .legend-color {
+            background-color: var(--skb-merged);
+        }
+        
+        .stable-hadron-card {
+            background-color: var(--surface-light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--skb-merged);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
         .slider-container {
             margin-bottom: 15px;
             position: relative;
@@ -300,6 +326,11 @@
         .property-value {
             font-family: monospace;
             color: var(--primary);
+        }
+        
+        .highlight-text {
+            color: var(--evo-highlight);
+            font-weight: bold;
         }
         
         .math-formula {
@@ -469,6 +500,22 @@
                 <a href="/visualization">SKB Visualizer</a>
                 <a href="/evolution" class="active">Evolutionary Programming</a>
             </div>
+            
+            <!-- Stable Hadrons Section -->
+            <div class="control-card" id="stable-hadrons-section" style="display: none; margin-bottom: 20px;">
+                <div class="card-header">
+                    <h3 class="card-title">Stable Hadrons Found</h3>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle tooltip-icon"></i>
+                        <span class="tooltip-text">Sets of three Sub-SKBs that can form stable hadrons. These have been removed from the evolutionary process.</span>
+                    </div>
+                </div>
+                
+                <div id="stable-hadrons-container">
+                    <!-- Stable hadrons will be listed here -->
+                    <p id="no-stable-hadrons-message">No stable hadrons found yet. Continue evolving to find compatible triplets.</p>
+                </div>
+            </div>
         </header>
         
         <div class="main-content">
@@ -561,7 +608,7 @@
                     </div>
                     
                     <div class="math-formula">
-                        F(S₁, S₂) = α·Compatibility(w₁) + β·|χₑᵤₗₑᵣ - χₜₐᵣₒₑₜ|⁻¹ + γ·Definiteness(Q)
+                        F(S₁, S₂) = α·Compatibility(w₁) + β·|χₑᵤₗₑᵣ - χₜₐᵣₒₑₜ|⁻¹ + γ·Definiteness(Q) + δ·TwistAlignment + ε·CTCStability
                     </div>
                     
                     <div class="slider-container">
@@ -577,6 +624,24 @@
                     <div class="slider-container">
                         <label for="q-weight-slider">Intersection Form Weight (γ) <span id="q-weight-value" class="value-display">1.0</span></label>
                         <input type="range" id="q-weight-slider" min="0" max="2" value="1.0" step="0.1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="twist-weight">Twist Alignment Weight (δ) <span id="twist-weight-value" class="value-display">1.0</span></label>
+                        <input type="range" id="twist-weight" min="0" max="2" step="0.1" value="1.0">
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Weight for twist alignment in the fitness function. Higher values prioritize Sub-SKBs with complementary twists.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="ctc-weight">CTC Stability Weight (ε) <span id="ctc-weight-value" class="value-display">1.0</span></label>
+                        <input type="range" id="ctc-weight" min="0" max="2" step="0.1" value="1.0">
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Weight for the CTC stability component in the fitness function. Higher values favor configurations where time twist parameters across Sub-SKBs are balanced, producing stable closed timelike curves that support quantum information processing.</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -608,8 +673,12 @@
                         <select id="target-q-form" class="form-select">
                             <option value="positive-definite">Positive Definite</option>
                             <option value="negative-definite">Negative Definite</option>
-                            <option value="indefinite">Indefinite</option>
+                            <option value="indefinite" selected>Indefinite (Hadron-Like)</option>
                         </select>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Indefinite intersection forms are ideal for hadron-like SKBs, better supporting confinement energy patterns.</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -688,6 +757,10 @@
                     <div class="legend-color"></div>
                     <span>Selected: Currently being examined</span>
                 </div>
+                <div class="legend-item stable-hadron">
+                    <div class="legend-color"></div>
+                    <span>Stable Hadron: Part of a compatible triplet</span>
+                </div>
             </div>
             
             <div class="population-grid" id="population-grid">
@@ -700,19 +773,53 @@
         // Basic UI functionality
         function updateSliderValue(id) {
             const slider = document.getElementById(id);
-            const display = document.getElementById(id + '-value');
+            if (!slider) {
+                console.error(`Could not update slider value: ${id} - Slider not found`);
+                return;
+            }
             
-            if (slider && display) {
+            // Try finding the display element with the ID format: id + '-value'
+            const display = document.getElementById(id + '-value');
+            if (display) {
                 display.textContent = slider.value;
                 console.log(`Updated ${id} to value: ${slider.value}`);
-            } else {
-                console.error(`Could not update slider value: ${id} - Elements not found`);
+                return;
             }
+            
+            // If that fails, look for a sibling span with class 'slider-value' or 'value-display'
+            const nextSibling = slider.nextElementSibling;
+            if (nextSibling && (nextSibling.classList.contains('slider-value') || 
+                                nextSibling.classList.contains('value-display'))) {
+                nextSibling.textContent = slider.value;
+                console.log(`Updated ${id} to value: ${slider.value} (sibling format)`);
+                return;
+            }
+            
+            // If neither works, look within the same container for a span with either class
+            const container = slider.closest('.slider-container');
+            if (container) {
+                const valueSpan = container.querySelector('.slider-value, .value-display');
+                if (valueSpan) {
+                    valueSpan.textContent = slider.value;
+                    console.log(`Updated ${id} to value: ${slider.value} (container format)`);
+                    return;
+                }
+            }
+            
+            console.error(`Could not update slider value: ${id} - Value display not found in any format`);
         }
         
         // Initialize sliders
         document.addEventListener('DOMContentLoaded', function() {
             console.log("Initializing sliders for evolutionary programming interface");
+            
+            // Check if Plotly is loaded
+            if (typeof Plotly === 'undefined') {
+                console.error("Plotly library is not loaded! This will prevent visualizations from working.");
+                alert("Visualization library (Plotly) failed to load. Please try refreshing the page.");
+            } else {
+                console.log("Plotly visualization library loaded successfully: v" + Plotly.version);
+            }
             
             // Initialize all slider values
             document.querySelectorAll('input[type="range"]').forEach(slider => {
