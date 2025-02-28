@@ -83,7 +83,7 @@ def generate_torus(twists, t, loop_factor):
     return x, y, z, u, v  # Return u and v for surface coloring
 
 @app.route('/')
-def index():
+def landing():
     return render_template('landing.html')
 
 @app.route('/visualization')
@@ -97,6 +97,14 @@ def evolution():
 @app.route('/oscillator')
 def oscillator():
     return render_template('oscillator.html')
+
+@app.route('/maxwell')
+def maxwell():
+    return render_template('maxwell.html')
+
+@app.route('/maxwells')
+def maxwells():
+    return render_template('maxwells.html')
 
 # API endpoint for evolutionary algorithm
 @app.route('/compute_evolution', methods=['POST'])

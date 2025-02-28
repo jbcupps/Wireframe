@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evolution Algorithm - 4D Manifold Explorer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>SKB Evolution</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
@@ -479,6 +480,101 @@
             border-bottom: 2px solid var(--primary);
         }
         
+        /* Dropdown Menu Styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .dropdown-toggle i {
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--bg-primary);
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .nav-dropdown:hover .dropdown-toggle i {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 15px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .dropdown-menu a::after {
+            display: none;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: var(--bg-secondary);
+        }
+        
+        /* Mobile styles for dropdown */
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dropdown-menu {
+                position: static;
+                opacity: 0;
+                visibility: hidden;
+                height: 0;
+                transform: none;
+                box-shadow: none;
+                padding: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .dropdown-menu.show {
+                opacity: 1;
+                visibility: visible;
+                height: auto;
+                padding: 10px 0;
+                margin-top: 10px;
+                margin-left: 15px;
+                border-left: 2px solid var(--primary);
+            }
+            
+            .dropdown-toggle {
+                justify-content: space-between;
+            }
+            
+            .nav-dropdown {
+                width: 100%;
+            }
+        }
+        
         .tab-content {
             display: none;
         }
@@ -561,9 +657,38 @@
             
             <div class="nav-links">
                 <a href="/">Home</a>
-                <a href="/visualization">4D Manifold</a>
-                <a href="/evolution" class="active">Evolution</a>
-                <a href="/oscillator">Oscillator</a>
+                
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Manifold Physics</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/visualization">4D Manifold</a>
+                        <a href="/evolution" class="active">Evolution</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Quantum Physics</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/oscillator">Oscillator</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Electromagnetism</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/maxwell">Maxwell-Boltzmann</a>
+                        <a href="/maxwells">Maxwell's Equations</a>
+                    </div>
+                </div>
             </div>
             
             <!-- Stable Hadrons Section -->
@@ -1027,5 +1152,50 @@
             </div>
         </div>
     </footer>
+    
+    <!-- Navigation Dropdown JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add active class to parent dropdown if child link is active
+            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
+            activeLinks.forEach(link => {
+                const parentDropdown = link.closest('.nav-dropdown');
+                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+                dropdownToggle.classList.add('active');
+            });
+            
+            // Handle click on dropdown toggle (for mobile)
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    // Only apply this on mobile
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const dropdown = this.closest('.nav-dropdown');
+                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                        
+                        // Close all other menus
+                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                            if (menu !== dropdownMenu) {
+                                menu.classList.remove('show');
+                            }
+                        });
+                        
+                        // Toggle this menu
+                        dropdownMenu.classList.toggle('show');
+                    }
+                });
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.nav-dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html> 

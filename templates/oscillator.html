@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Damped Harmonic Oscillator - 4D Manifold Explorer</title>
+    <title>Quantum Harmonic Oscillator</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             /* Modern color palette - same as main app */
@@ -112,6 +113,101 @@
         
         .nav-links a:hover::after, .nav-links a.active::after {
             width: 100%;
+        }
+        
+        /* Dropdown Menu Styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .dropdown-toggle i {
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--bg-primary);
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .nav-dropdown:hover .dropdown-toggle i {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 15px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .dropdown-menu a::after {
+            display: none;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: var(--bg-secondary);
+        }
+        
+        /* Mobile styles for dropdown */
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dropdown-menu {
+                position: static;
+                opacity: 0;
+                visibility: hidden;
+                height: 0;
+                transform: none;
+                box-shadow: none;
+                padding: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .dropdown-menu.show {
+                opacity: 1;
+                visibility: visible;
+                height: auto;
+                padding: 10px 0;
+                margin-top: 10px;
+                margin-left: 15px;
+                border-left: 2px solid var(--primary);
+            }
+            
+            .dropdown-toggle {
+                justify-content: space-between;
+            }
+            
+            .nav-dropdown {
+                width: 100%;
+            }
         }
         
         /* Main content padding for fixed header */
@@ -302,9 +398,38 @@
                 </a>
                 <nav class="nav-links">
                     <a href="/">Home</a>
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/oscillator" class="active">Oscillator</a>
+                    
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Manifold Physics</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/visualization">4D Manifold</a>
+                            <a href="/evolution">Evolution</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Quantum Physics</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/oscillator" class="active">Oscillator</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Electromagnetism</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/maxwell">Maxwell-Boltzmann</a>
+                            <a href="/maxwells">Maxwell's Equations</a>
+                        </div>
+                    </div>
                 </nav>
             </div>
         </div>
@@ -429,573 +554,51 @@
     </footer>
     </div> <!-- Close main-content div -->
     
+    <!-- Main JS -->
+    <script src="/static/js/oscillator.js"></script>
+    
+    <!-- Navigation Dropdown JS -->
     <script>
-        // Global variables
-        let animationId;
-        let isPlaying = false;
-        let currentTime = 0;
-        let scene, camera, renderer, controls, oscillatorPath;
-        let pointCloud = [];
-        let maxPoints = 1000;
-        let timeStep = 0.01;
-        
-        // Initial parameter values
-        let gamma = 0.1;
-        let t0 = 5;
-        let omega = 2;
-        
-        // DOM references
-        const gammaSlider = document.getElementById('gamma');
-        const t0Slider = document.getElementById('t0');
-        const omegaSlider = document.getElementById('omega');
-        const timeSlider = document.getElementById('time-slider');
-        const playPauseButton = document.getElementById('play-pause');
-        const currentTimeDisplay = document.getElementById('current-time');
-        
-        // Value displays
-        const gammaValue = document.getElementById('gamma-value');
-        const t0Value = document.getElementById('t0-value');
-        const omegaValue = document.getElementById('omega-value');
-        
-        // Calculate the function f(t) = e^(-γ(t-t0)^2) * (cos(ωt) + i*sin(ωt))
-        function calculateF(t) {
-            const envelope = Math.exp(-gamma * Math.pow(t - t0, 2));
-            const real = envelope * Math.cos(omega * t);
-            const imag = envelope * Math.sin(omega * t);
-            return { real, imag, envelope, t };
-        }
-        
-        // Calculate the wave function for a range of time values
-        function calculateWaveFunction(tMin, tMax, steps) {
-            const data = [];
-            const stepSize = (tMax - tMin) / steps;
-            
-            for (let i = 0; i <= steps; i++) {
-                const t = tMin + i * stepSize;
-                data.push(calculateF(t));
-            }
-            
-            return data;
-        }
-        
-        // Initialize Three.js 3D plot
-        function init3DPlot() {
-            // Create scene, camera, and renderer
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1e1e1e);
-            
-            // Camera setup
-            camera = new THREE.PerspectiveCamera(75, document.getElementById('plot3d').clientWidth / document.getElementById('plot3d').clientHeight, 0.1, 1000);
-            camera.position.set(5, 5, 5);
-            
-            // Renderer setup
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(document.getElementById('plot3d').clientWidth, document.getElementById('plot3d').clientHeight);
-            document.getElementById('plot3d').appendChild(renderer.domElement);
-            
-            // Controls setup
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.25;
-            
-            // Axis helpers
-            const axesHelper = new THREE.AxesHelper(10);
-            scene.add(axesHelper);
-            
-            // Add coordinate system labels
-            addCoordinateLabels();
-            
-            // Create path for oscillator
-            createOscillatorPath();
-            
-            // Animation loop
-            animate();
-            
-            // Handle window resize
-            window.addEventListener('resize', on3DWindowResize);
-        }
-        
-        // Add coordinate system labels to 3D plot
-        function addCoordinateLabels() {
-            const axisLabels = [
-                { text: "Re", position: new THREE.Vector3(10, 0, 0), color: 0xFF6E91 },
-                { text: "Im", position: new THREE.Vector3(0, 0, 10), color: 0x33C4FF },
-                { text: "t", position: new THREE.Vector3(0, 10, 0), color: 0xFFFFFF }
-            ];
-            
-            // Create canvas and context to render text
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
-            const context = canvas.getContext('2d');
-            
-            axisLabels.forEach(label => {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                context.fillStyle = '#' + label.color.toString(16).padStart(6, '0');
-                context.font = 'Bold 80px Arial';
-                context.textAlign = 'center';
-                context.textBaseline = 'middle';
-                context.fillText(label.text, 64, 64);
-                
-                const texture = new THREE.CanvasTexture(canvas);
-                const material = new THREE.SpriteMaterial({ map: texture });
-                const sprite = new THREE.Sprite(material);
-                sprite.position.copy(label.position);
-                sprite.scale.set(1, 1, 1);
-                scene.add(sprite);
-            });
-        }
-        
-        // Create the oscillator path in 3D space
-        function createOscillatorPath() {
-            // Remove previous path if it exists
-            if (oscillatorPath) scene.remove(oscillatorPath);
-            
-            // Calculate wave function data
-            const data = calculateWaveFunction(0, 10, 1000);
-            
-            // Create geometry for the path
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(data.length * 3);
-            
-            // Set positions from data
-            for (let i = 0; i < data.length; i++) {
-                const point = data[i];
-                positions[i * 3] = point.real * 5;     // Re axis (x)
-                positions[i * 3 + 1] = point.t;        // t axis (y)
-                positions[i * 3 + 2] = point.imag * 5; // Im axis (z)
-            }
-            
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            
-            // Create line material with gradient
-            const material = new THREE.LineBasicMaterial({
-                color: 0xBB86FC,
-                linewidth: 2
-            });
-            
-            // Create and add line to scene
-            oscillatorPath = new THREE.Line(geometry, material);
-            scene.add(oscillatorPath);
-            
-            // Current position indicator
-            updateCurrentPositionIndicator();
-        }
-        
-        // Create and update current position indicator
-        function updateCurrentPositionIndicator() {
-            // Remove existing indicator if present
-            scene.children.forEach(child => {
-                if (child.userData && child.userData.isPositionIndicator) {
-                    scene.remove(child);
-                }
-            });
-            
-            // Calculate current position
-            const f = calculateF(currentTime);
-            
-            // Create sphere geometry
-            const geometry = new THREE.SphereGeometry(0.15, 32, 32);
-            const material = new THREE.MeshBasicMaterial({ color: 0xCF6679 });
-            const sphere = new THREE.Mesh(geometry, material);
-            
-            // Set position
-            sphere.position.set(f.real * 5, currentTime, f.imag * 5);
-            sphere.userData = { isPositionIndicator: true };
-            
-            // Add to scene
-            scene.add(sphere);
-        }
-        
-        // Animation loop for 3D plot
-        function animate() {
-            animationId = requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        
-        // Handle window resize for 3D plot
-        function on3DWindowResize() {
-            const container = document.getElementById('plot3d');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        }
-        
-        // Initialize Plotly spiral plot
-        function initSpiralPlot() {
-            const data = calculateWaveFunction(0, 10, 1000);
-            
-            // Extract real and imaginary data
-            const realData = data.map(point => point.real);
-            const imagData = data.map(point => point.imag);
-            
-            // Create spiral plot
-            const trace = {
-                x: realData,
-                y: imagData,
-                mode: 'lines',
-                name: 'Complex Trajectory',
-                line: {
-                    color: 'rgb(187, 134, 252)',
-                    width: 2
-                }
-            };
-            
-            // Current position marker
-            const currentPoint = calculateF(currentTime);
-            const markerTrace = {
-                x: [currentPoint.real],
-                y: [currentPoint.imag],
-                mode: 'markers',
-                marker: {
-                    color: 'rgb(207, 102, 121)',
-                    size: 10
-                },
-                showlegend: false
-            };
-            
-            const layout = {
-                title: 'Complex Plane (Re-Im)',
-                xaxis: {
-                    title: 'Re',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                yaxis: {
-                    title: 'Im',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                font: {
-                    color: 'rgba(255, 255, 255, 0.87)'
-                },
-                margin: { l: 50, r: 30, t: 50, b: 50 }
-            };
-            
-            Plotly.newPlot('spiral-plot', [trace, markerTrace], layout);
-        }
-        
-        // Initialize real component plot
-        function initRealPlot() {
-            const data = calculateWaveFunction(0, 10, 1000);
-            
-            // Extract time and real data
-            const timeData = data.map(point => point.t);
-            const realData = data.map(point => point.real);
-            const envelopeData = data.map(point => point.envelope);
-            const negEnvelopeData = data.map(point => -point.envelope);
-            
-            // Create real component plot
-            const traceFn = {
-                x: timeData,
-                y: realData,
-                mode: 'lines',
-                name: 'Re(f)',
-                line: {
-                    color: 'rgb(255, 110, 145)',
-                    width: 2
-                }
-            };
-            
-            // Add positive envelope
-            const traceEnvPos = {
-                x: timeData,
-                y: envelopeData,
-                mode: 'lines',
-                name: 'Envelope',
-                line: {
-                    color: 'rgb(101, 255, 143)',
-                    width: 1,
-                    dash: 'dash'
-                }
-            };
-            
-            // Add negative envelope
-            const traceEnvNeg = {
-                x: timeData,
-                y: negEnvelopeData,
-                mode: 'lines',
-                name: 'Envelope',
-                line: {
-                    color: 'rgb(101, 255, 143)',
-                    width: 1,
-                    dash: 'dash'
-                },
-                showlegend: false
-            };
-            
-            // Current time marker
-            const currentPoint = calculateF(currentTime);
-            const markerTrace = {
-                x: [currentTime],
-                y: [currentPoint.real],
-                mode: 'markers',
-                marker: {
-                    color: 'rgb(207, 102, 121)',
-                    size: 10
-                },
-                showlegend: false
-            };
-            
-            const layout = {
-                title: 'Real Component vs Time',
-                xaxis: {
-                    title: 't',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                yaxis: {
-                    title: 'Re(f)',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                font: {
-                    color: 'rgba(255, 255, 255, 0.87)'
-                },
-                margin: { l: 50, r: 30, t: 50, b: 50 }
-            };
-            
-            Plotly.newPlot('real-plot', [traceFn, traceEnvPos, traceEnvNeg, markerTrace], layout);
-        }
-        
-        // Initialize imaginary component plot
-        function initImagPlot() {
-            const data = calculateWaveFunction(0, 10, 1000);
-            
-            // Extract time and imaginary data
-            const timeData = data.map(point => point.t);
-            const imagData = data.map(point => point.imag);
-            const envelopeData = data.map(point => point.envelope);
-            const negEnvelopeData = data.map(point => -point.envelope);
-            
-            // Create imaginary component plot
-            const traceFn = {
-                x: timeData,
-                y: imagData,
-                mode: 'lines',
-                name: 'Im(f)',
-                line: {
-                    color: 'rgb(51, 196, 255)',
-                    width: 2
-                }
-            };
-            
-            // Add positive envelope
-            const traceEnvPos = {
-                x: timeData,
-                y: envelopeData,
-                mode: 'lines',
-                name: 'Envelope',
-                line: {
-                    color: 'rgb(101, 255, 143)',
-                    width: 1,
-                    dash: 'dash'
-                }
-            };
-            
-            // Add negative envelope
-            const traceEnvNeg = {
-                x: timeData,
-                y: negEnvelopeData,
-                mode: 'lines',
-                name: 'Envelope',
-                line: {
-                    color: 'rgb(101, 255, 143)',
-                    width: 1,
-                    dash: 'dash'
-                },
-                showlegend: false
-            };
-            
-            // Current time marker
-            const currentPoint = calculateF(currentTime);
-            const markerTrace = {
-                x: [currentTime],
-                y: [currentPoint.imag],
-                mode: 'markers',
-                marker: {
-                    color: 'rgb(207, 102, 121)',
-                    size: 10
-                },
-                showlegend: false
-            };
-            
-            const layout = {
-                title: 'Imaginary Component vs Time',
-                xaxis: {
-                    title: 't',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                yaxis: {
-                    title: 'Im(f)',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                font: {
-                    color: 'rgba(255, 255, 255, 0.87)'
-                },
-                margin: { l: 50, r: 30, t: 50, b: 50 }
-            };
-            
-            Plotly.newPlot('imag-plot', [traceFn, traceEnvPos, traceEnvNeg, markerTrace], layout);
-        }
-        
-        // Update all plots with current parameters
-        function updatePlots() {
-            // Update 3D path
-            createOscillatorPath();
-            
-            // Update spiral plot
-            const data = calculateWaveFunction(0, 10, 1000);
-            const realData = data.map(point => point.real);
-            const imagData = data.map(point => point.imag);
-            const currentPoint = calculateF(currentTime);
-            
-            Plotly.update('spiral-plot', {
-                x: [realData, [currentPoint.real]],
-                y: [imagData, [currentPoint.imag]]
-            });
-            
-            // Update real plot
-            const timeData = data.map(point => point.t);
-            const realCompData = data.map(point => point.real);
-            const envelopeData = data.map(point => point.envelope);
-            const negEnvelopeData = data.map(point => -point.envelope);
-            
-            Plotly.update('real-plot', {
-                x: [timeData, timeData, timeData, [currentTime]],
-                y: [realCompData, envelopeData, negEnvelopeData, [currentPoint.real]]
-            });
-            
-            // Update imaginary plot
-            const imagCompData = data.map(point => point.imag);
-            
-            Plotly.update('imag-plot', {
-                x: [timeData, timeData, timeData, [currentTime]],
-                y: [imagCompData, envelopeData, negEnvelopeData, [currentPoint.imag]]
-            });
-        }
-        
-        // Update time in the animation
-        function updateTime(time) {
-            currentTime = time;
-            timeSlider.value = time;
-            currentTimeDisplay.textContent = `t = ${time.toFixed(2)}`;
-            
-            // Update position indicator in 3D plot
-            updateCurrentPositionIndicator();
-            
-            // Update 2D plots
-            const currentPoint = calculateF(currentTime);
-            
-            Plotly.update('spiral-plot', {
-                x: [[currentPoint.real]],
-                y: [[currentPoint.imag]]
-            }, {}, [1]);
-            
-            Plotly.update('real-plot', {
-                x: [[currentTime]],
-                y: [[currentPoint.real]]
-            }, {}, [3]);
-            
-            Plotly.update('imag-plot', {
-                x: [[currentTime]],
-                y: [[currentPoint.imag]]
-            }, {}, [3]);
-        }
-        
-        // Play/pause animation
-        function togglePlayPause() {
-            isPlaying = !isPlaying;
-            
-            if (isPlaying) {
-                playPauseButton.innerHTML = '<i class="fas fa-pause"></i> Pause';
-                startAnimation();
-            } else {
-                playPauseButton.innerHTML = '<i class="fas fa-play"></i> Play';
-                stopAnimation();
-            }
-        }
-        
-        // Start animation loop
-        function startAnimation() {
-            let lastTime = performance.now();
-            let animSpeed = 0.5; // Animation speed multiplier
-            
-            function animationLoop(currentTimestamp) {
-                const deltaTime = (currentTimestamp - lastTime) / 1000;
-                lastTime = currentTimestamp;
-                
-                currentTime += deltaTime * animSpeed;
-                
-                // Loop back to start if we reach the end
-                if (currentTime > 10) {
-                    currentTime = 0;
-                }
-                
-                updateTime(currentTime);
-                
-                if (isPlaying) {
-                    animationId = requestAnimationFrame(animationLoop);
-                }
-            }
-            
-            animationId = requestAnimationFrame(animationLoop);
-        }
-        
-        // Stop animation loop
-        function stopAnimation() {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-        }
-        
-        // Initialize all visualizations
-        function initVisualizations() {
-            init3DPlot();
-            initSpiralPlot();
-            initRealPlot();
-            initImagPlot();
-        }
-        
-        // Event listeners for controls
-        gammaSlider.addEventListener('input', function() {
-            gamma = parseFloat(this.value);
-            gammaValue.textContent = gamma.toFixed(2);
-            updatePlots();
-        });
-        
-        t0Slider.addEventListener('input', function() {
-            t0 = parseFloat(this.value);
-            t0Value.textContent = t0.toFixed(1);
-            updatePlots();
-        });
-        
-        omegaSlider.addEventListener('input', function() {
-            omega = parseFloat(this.value);
-            omegaValue.textContent = omega.toFixed(1);
-            updatePlots();
-        });
-        
-        timeSlider.addEventListener('input', function() {
-            currentTime = parseFloat(this.value);
-            updateTime(currentTime);
-        });
-        
-        playPauseButton.addEventListener('click', togglePlayPause);
-        
-        // Initialize everything on page load
         document.addEventListener('DOMContentLoaded', function() {
-            initVisualizations();
+            // Add active class to parent dropdown if child link is active
+            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
+            activeLinks.forEach(link => {
+                const parentDropdown = link.closest('.nav-dropdown');
+                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+                dropdownToggle.classList.add('active');
+            });
+            
+            // Handle click on dropdown toggle (for mobile)
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    // Only apply this on mobile
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const dropdown = this.closest('.nav-dropdown');
+                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                        
+                        // Close all other menus
+                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                            if (menu !== dropdownMenu) {
+                                menu.classList.remove('show');
+                            }
+                        });
+                        
+                        // Toggle this menu
+                        dropdownMenu.classList.toggle('show');
+                    }
+                });
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.nav-dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
         });
     </script>
 </body>
