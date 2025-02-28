@@ -15,25 +15,50 @@ class SubSKB {
         
         // Generate random parameters if none provided
         if (!params) {
+            // Each individual now represents three sub-SKBs defined by twist numbers T_i
+            this.twists = [
+                Math.round(this.randomInRange(-3, 3)), // T1
+                Math.round(this.randomInRange(-3, 3)), // T2
+                Math.round(this.randomInRange(-3, 3))  // T3
+            ];
+            
+            // Keep original parameters for backward compatibility and visualization
             this.parameters = {
-                // Twist parameters in 3D
-                tx: this.randomInRange(-5, 5),
-                ty: this.randomInRange(-5, 5),
-                tz: this.randomInRange(-5, 5),
-                // Time twist parameter
+                tx: this.twists[0],
+                ty: this.twists[1],
+                tz: this.twists[2],
                 tt: this.randomInRange(-1, 1),
-                // Spacetime curvature
                 curvature: this.randomInRange(0, 2),
-                // Topological genus parameter (determines number of holes)
                 genus: Math.floor(this.randomInRange(0, 3)),
-                // Orientability parameter (0 = orientable, 1 = non-orientable)
                 orientability: Math.random() > 0.5 ? 1 : 0,
-                // Manifold dimension parameter (typically 4 for SKBs)
                 dimension: 4
             };
         } else {
-            this.parameters = params;
+            if (params.twists) {
+                this.twists = [...params.twists];
+                // Sync with parameters for backward compatibility
+                this.parameters = {
+                    ...params,
+                    tx: this.twists[0],
+                    ty: this.twists[1],
+                    tz: this.twists[2]
+                };
+            } else {
+                // Handle legacy format
+                this.parameters = params;
+                this.twists = [
+                    Math.round(params.tx),
+                    Math.round(params.ty),
+                    Math.round(params.tz)
+                ];
+            }
         }
+        
+        // Calculate charges for each sub-SKB
+        this.charges = this.twists.map(t => t / 3);
+        
+        // Calculate total charge
+        this.totalCharge = this.charges.reduce((sum, q) => sum + q, 0);
         
         // Calculate and cache topological properties
         this.properties = this.calculateTopologicalProperties();
@@ -120,38 +145,61 @@ class SubSKB {
     
     // Apply mutation to parameters
     mutate(mutationRate) {
-        const newParams = {...this.parameters};
+        // Clone the current twist values
+        const newTwists = [...this.twists];
         
-        // Helper function to maybe mutate a numeric parameter
-        const maybeChange = (param, min, max, isInteger = false) => {
+        // Mutate each twist with a random integer delta from normal distribution
+        for (let i = 0; i < newTwists.length; i++) {
             if (Math.random() < mutationRate) {
-                let change = this.randomInRange(-1, 1);
-                if (isInteger) {
-                    change = Math.round(change);
-                }
-                let newValue = this.parameters[param] + change;
-                newValue = Math.max(min, Math.min(max, newValue));
-                return newValue;
+                // Generate a random mutation from normal distribution
+                // Box-Muller transform to get normally distributed numbers
+                let u1 = Math.random();
+                let u2 = Math.random();
+                let z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                
+                // Scale for standard deviation of 1
+                let delta = Math.round(z0);
+                
+                // Apply the mutation
+                newTwists[i] += delta;
+                
+                // Constrain to reasonable range (-5 to 5)
+                newTwists[i] = Math.max(-5, Math.min(5, newTwists[i]));
             }
-            return this.parameters[param];
-        };
-        
-        // Mutate continuous parameters
-        newParams.tx = maybeChange('tx', -5, 5);
-        newParams.ty = maybeChange('ty', -5, 5);
-        newParams.tz = maybeChange('tz', -5, 5);
-        newParams.tt = maybeChange('tt', -1, 1);
-        newParams.curvature = maybeChange('curvature', 0, 2);
-        
-        // Mutate discrete parameters
-        newParams.genus = maybeChange('genus', 0, 3, true);
-        
-        // Mutate binary parameters with small probability
-        if (Math.random() < mutationRate / 2) {
-            newParams.orientability = 1 - this.parameters.orientability; // Flip 0 to 1 or 1 to 0
         }
         
-        return new SubSKB(newParams);
+        // Create new parameters for backward compatibility
+        const newParams = {...this.parameters};
+        newParams.tx = newTwists[0];
+        newParams.ty = newTwists[1];
+        newParams.tz = newTwists[2];
+        
+        // Maybe mutate other parameters (with lower probability)
+        if (Math.random() < mutationRate / 2) {
+            newParams.tt = this.parameters.tt + this.randomInRange(-0.2, 0.2);
+            newParams.tt = Math.max(-1, Math.min(1, newParams.tt));
+        }
+        
+        if (Math.random() < mutationRate / 3) {
+            newParams.curvature = this.parameters.curvature + this.randomInRange(-0.2, 0.2);
+            newParams.curvature = Math.max(0, Math.min(2, newParams.curvature));
+        }
+        
+        if (Math.random() < mutationRate / 4) {
+            newParams.genus = Math.floor(this.randomInRange(0, 3));
+        }
+        
+        if (Math.random() < mutationRate / 5) {
+            newParams.orientability = 1 - this.parameters.orientability;
+        }
+        
+        // Create a new individual with the mutated parameters
+        const newIndividual = new SubSKB({
+            ...newParams,
+            twists: newTwists
+        });
+        
+        return newIndividual;
     }
     
     // Generate 3D visualization data
@@ -200,10 +248,11 @@ class SubSKB {
                     -2 * (1 - Math.cos(u[i])) * Math.sin(u[i]) : 
                     -2 * (1 - Math.cos(u[i])) * Math.sin(u[i]) + 3);
                 
-                // Scale down for better visualization
-                xCoord *= 0.5;
-                yCoord *= 0.5;
-                zCoord *= 0.5;
+                // Uniform scaling factor for better visualization
+                const scaleFactor = 0.35; // Slightly smaller for better view
+                xCoord *= scaleFactor;
+                yCoord *= scaleFactor;
+                zCoord *= scaleFactor;
                 
                 x.push(xCoord);
                 y.push(yCoord);
@@ -223,8 +272,9 @@ class SubSKB {
         const y = [];
         const z = [];
         
-        const R = 3 * curvature; // Major radius
-        const r = 1 * curvature; // Minor radius
+        // Adjust radius based on curvature while maintaining good proportions
+        const R = 2 * curvature; // Major radius
+        const r = 0.8 * curvature; // Minor radius
         
         for (let i = 0; i < u.length; i++) {
             for (let j = 0; j < v.length; j++) {
@@ -237,10 +287,11 @@ class SubSKB {
                 let yCoord = (R + r * Math.cos(twistedV)) * Math.sin(twistedU);
                 let zCoord = r * Math.sin(twistedV) * (1 + tz * 0.1 * Math.sin(ty * twistedU));
                 
-                // Scale down for better visualization
-                xCoord *= 0.5;
-                yCoord *= 0.5;
-                zCoord *= 0.5;
+                // Uniform scaling factor for better visualization
+                const scaleFactor = 0.4; // Slightly smaller for better view
+                xCoord *= scaleFactor;
+                yCoord *= scaleFactor;
+                zCoord *= scaleFactor;
                 
                 x.push(xCoord);
                 y.push(yCoord);
@@ -662,8 +713,8 @@ class EvolutionaryAlgorithm {
         const w1Weight = parseFloat(document.getElementById('w1-weight-slider').value);
         const eulerWeight = parseFloat(document.getElementById('euler-weight-slider').value);
         const qWeight = parseFloat(document.getElementById('q-weight-slider').value);
-        const twistWeight = parseFloat(document.getElementById('twist-weight').value);
-        const ctcWeight = parseFloat(document.getElementById('ctc-weight').value);
+        const twistWeight = parseFloat(document.getElementById('twist-weight-slider').value);
+        const ctcWeight = parseFloat(document.getElementById('ctc-weight-slider').value);
         
         // Get target values
         const targetOrientability = document.getElementById('target-orientability-select').value;
@@ -696,68 +747,75 @@ class EvolutionaryAlgorithm {
 
     // Evaluate fitness for an individual
     evaluateFitness(individual) {
-        const { parameters, properties } = individual;
-        const { 
-            w1Weight, 
-            eulerWeight, 
-            qWeight, 
-            twistWeight,
-            ctcWeight,
-            targetEulerCharacteristic,
-            targetOrientability,
-            targetIntersectionForm
-        } = this.options;
+        // Target values for proton configuration
+        const targetTwists = [2, 2, -1]; // Two up quarks (T=2) and one down quark (T=-1)
+        const targetCharge = 1;          // Proton charge
         
-        // Calculate fitness components
+        // Get actual values from the individual
+        const { twists } = individual;
+        const totalCharge = individual.totalCharge;
         
-        // Stiefel-Whitney compatibility
-        const w1Fitness = (targetOrientability === 'orientable' && properties.w1 === 0) || 
-                         (targetOrientability === 'non-orientable' && properties.w1 === 1) ? 1.0 : 0.0;
+        // Weights for fitness components (can be made adjustable in the UI later)
+        const w1 = 1.0; // Weight for twist matching
+        const w2 = 1.0; // Weight for total charge matching
         
-        // Euler characteristic matching
-        const eulerFitness = 1.0 / (1.0 + Math.abs(properties.eulerCharacteristic - targetEulerCharacteristic));
+        // Calculate twist difference component - sum of squared differences 
+        let twistDiff = 0;
+        for (let i = 0; i < twists.length; i++) {
+            twistDiff += Math.pow(twists[i] - targetTwists[i], 2);
+        }
         
-        // Intersection form compatibility
-        const qFitness = properties.intersectionForm === targetIntersectionForm ? 1.0 : 0.0;
+        // Calculate charge difference component - squared difference of total charges
+        const chargeDiff = Math.pow(totalCharge - targetCharge, 2);
         
-        // Twist alignment - prefer values that would cancel out when combined
-        const twistFitness = 1.0 / (1.0 + Math.abs(parameters.tx) + Math.abs(parameters.ty) + Math.abs(parameters.tz));
-        
-        // CTC stability - prefer moderate time twist values
-        const ctcFitness = 1.0 - Math.abs(parameters.tt);
-        
-        // Combined fitness with weights
-        const fitness = (
-            w1Weight * w1Fitness +
-            eulerWeight * eulerFitness +
-            qWeight * qFitness +
-            twistWeight * twistFitness +
-            ctcWeight * ctcFitness
-        );
+        // Calculate total fitness (negative because we're minimizing the differences)
+        // Lower values of twistDiff and chargeDiff = better match = higher fitness
+        const fitness = -(w1 * twistDiff + w2 * chargeDiff);
         
         return fitness;
     }
 
     // Perform crossover between two individuals
-    crossover(offspring1, offspring2) {
-        // Randomly select parameters to swap
-        const parameterNames = ['tx', 'ty', 'tz', 'tt', 'curvature', 'genus', 'orientability'];
+    crossover(parent1, parent2) {
+        // For twist numbers, we blend them with a random alpha value and round to nearest integer
+        const alpha = Math.random(); // Blend factor between 0 and 1
         
-        // Randomly choose which parameters to swap
-        const toSwap = parameterNames.filter(() => Math.random() < 0.5);
+        // Blend twist values
+        const offspring1Twists = parent1.twists.map((t, i) => 
+            Math.round(alpha * t + (1 - alpha) * parent2.twists[i])
+        );
         
-        // Swap the selected parameters
-        for (const param of toSwap) {
-            const temp = offspring1.parameters[param];
-            offspring1.parameters[param] = offspring2.parameters[param];
-            offspring2.parameters[param] = temp;
-        }
+        const offspring2Twists = parent1.twists.map((t, i) => 
+            Math.round((1 - alpha) * t + alpha * parent2.twists[i])
+        );
         
-        // Recalculate properties after crossover
-        offspring1.properties = offspring1.calculateTopologicalProperties();
-        offspring2.properties = offspring2.calculateTopologicalProperties();
+        // Blend other parameters
+        const blendParam = (p1, p2) => alpha * p1 + (1 - alpha) * p2;
         
-        return [offspring1, offspring2];
+        // Create new parameters objects with blended values
+        const offspring1Params = {
+            tt: blendParam(parent1.parameters.tt, parent2.parameters.tt),
+            curvature: blendParam(parent1.parameters.curvature, parent2.parameters.curvature),
+            genus: Math.round(blendParam(parent1.parameters.genus, parent2.parameters.genus)),
+            orientability: Math.random() > 0.5 ? parent1.parameters.orientability : parent2.parameters.orientability,
+            dimension: 4,
+            twists: offspring1Twists
+        };
+        
+        const offspring2Params = {
+            tt: blendParam(parent2.parameters.tt, parent1.parameters.tt),
+            curvature: blendParam(parent2.parameters.curvature, parent1.parameters.curvature),
+            genus: Math.round(blendParam(parent2.parameters.genus, parent1.parameters.genus)),
+            orientability: Math.random() > 0.5 ? parent2.parameters.orientability : parent1.parameters.orientability,
+            dimension: 4,
+            twists: offspring2Twists
+        };
+        
+        // Create and return the new individuals
+        return [
+            new SubSKB(offspring1Params),
+            new SubSKB(offspring2Params)
+        ];
     }
 }
 
@@ -968,20 +1026,26 @@ class EvolutionUI {
     }
     
     updateUI() {
-        // Update generation info
-        document.getElementById('generation-count').textContent = this.algorithm.generation;
-        document.getElementById('population-size').textContent = this.algorithm.options.populationSize;
-        document.getElementById('best-fitness').textContent = this.algorithm.bestFitness.toFixed(2);
-        document.getElementById('compatible-count').textContent = this.algorithm.compatiblePairs;
-        
-        // Update stable hadrons display
-        this.updateStableHadronsDisplay();
-        
-        // Update population grid
+        // Update visualizations
         this.updatePopulationGrid();
+        this.updateVisualization();
+        this.updateTopTripletsDisplay();
+        this.updateStableHadronsDisplay();
         
         // Update selected individual details if any
         this.updateSelectedDetails();
+        
+        // Update generation info
+        document.getElementById('generation-count').textContent = this.algorithm.generation;
+        document.getElementById('population-size').textContent = this.algorithm.population.length;
+        
+        // Update best fitness
+        const bestFitness = Math.max(...this.algorithm.population.map(i => i.fitness || -Infinity));
+        document.getElementById('best-fitness').textContent = bestFitness.toFixed(2);
+        
+        // Update compatibility count
+        const compatibleCount = this.algorithm.findCompatibleTriplets().length;
+        document.getElementById('compatible-count').textContent = compatibleCount;
     }
     
     updatePopulationGrid(highlightIndices = []) {
@@ -1094,51 +1158,69 @@ class EvolutionUI {
     }
     
     updateSelectedDetails() {
-        if (this.selectedIndividual) {
-            document.getElementById('sub-skb-details').innerHTML = `
-                <h4>Parameters:</h4>
+        const selectedDiv = document.getElementById('sub-skb-details');
+        const propertiesDiv = document.getElementById('selected-properties');
+        
+        if (!this.selectedIndividual) {
+            selectedDiv.innerHTML = '<p>Select a Sub-SKB from the population to see details</p>';
+            if (propertiesDiv) propertiesDiv.style.display = 'none';
+            return;
+        }
+        
+        // Get the selected individual's properties
+        const { parameters, properties, twists, charges, totalCharge, fitness } = this.selectedIndividual;
+        
+        // Update the details display with twist and charge information
+        let details = `<h4>Selected Sub-SKB Configuration</h4>`;
+        
+        // Add sub-SKBs twist and charge info
+        details += `<div class="topological-properties">`;
+        
+        // Helper function to get quark label
+        const getQuarkLabel = (twistValue) => {
+            if (twistValue === 2) return 'up';
+            if (twistValue === -1) return 'down';
+            return 'unknown';
+        };
+        
+        // Display each sub-SKB
+        for (let i = 0; i < twists.length; i++) {
+            const twist = twists[i];
+            const charge = charges[i];
+            const label = getQuarkLabel(twist);
+            
+            details += `
                 <div class="property-row">
-                    <span class="property-name">tx:</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.tx.toFixed(2)}</span>
-                </div>
-                <div class="property-row">
-                    <span class="property-name">ty:</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.ty.toFixed(2)}</span>
-                </div>
-                <div class="property-row">
-                    <span class="property-name">tz:</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.tz.toFixed(2)}</span>
-                </div>
-                <div class="property-row">
-                    <span class="property-name">Time Twist (tt):</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.tt.toFixed(2)}</span>
-                </div>
-                <div class="property-row">
-                    <span class="property-name">Curvature:</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.curvature.toFixed(2)}</span>
-                </div>
-                <div class="property-row">
-                    <span class="property-name">Genus:</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.genus}</span>
-                </div>
-                <div class="property-row">
-                    <span class="property-name">Orientability:</span>
-                    <span class="property-value">${this.selectedIndividual.parameters.orientability === 0 ? 'Orientable' : 'Non-orientable'}</span>
+                    <span class="property-name">Sub-SKB ${i + 1}</span>
+                    <span class="property-value">T = ${twist}, Q = ${charge.toFixed(3)}, Label: ${label}</span>
                 </div>
             `;
+        }
+        
+        // Add total charge
+        details += `
+            <div class="property-row">
+                <span class="property-name">Total Charge</span>
+                <span class="property-value">Q = ${totalCharge.toFixed(3)}</span>
+            </div>
+        `;
+        
+        details += `</div>`;
+        
+        // Update the HTML
+        selectedDiv.innerHTML = details;
+        
+        // Update detailed topological properties if the div exists
+        if (propertiesDiv) {
+            propertiesDiv.style.display = 'block';
             
-            // Show topological properties
-            document.getElementById('selected-properties').style.display = 'block';
-            document.getElementById('selected-w1').textContent = this.selectedIndividual.properties.w1 === 0 ? '0 (Orientable)' : '1 (Non-orientable)';
-            document.getElementById('selected-euler').textContent = this.selectedIndividual.properties.eulerCharacteristic;
-            document.getElementById('selected-pi1').textContent = this.selectedIndividual.properties.fundamentalGroup;
-            document.getElementById('selected-q').textContent = this.selectedIndividual.properties.intersectionForm;
-            document.getElementById('selected-ks').textContent = this.selectedIndividual.properties.ks === 0 ? '0 (Smoothable)' : '1 (Non-smoothable)';
-            document.getElementById('selected-fitness').textContent = this.selectedIndividual.fitness.toFixed(3);
-            
-        } else {
-            document.getElementById('sub-skb-details').innerHTML = '<p>Select a Sub-SKB from the population to see details</p>';
-            document.getElementById('selected-properties').style.display = 'none';
+            // Update legacy properties for backward compatibility
+            document.getElementById('selected-w1').textContent = properties.w1;
+            document.getElementById('selected-euler').textContent = properties.eulerCharacteristic;
+            document.getElementById('selected-pi1').textContent = properties.fundamentalGroup;
+            document.getElementById('selected-q').textContent = properties.intersectionForm;
+            document.getElementById('selected-ks').textContent = properties.ks;
+            document.getElementById('selected-fitness').textContent = fitness ? fitness.toFixed(3) : 'N/A';
         }
     }
     
@@ -1159,10 +1241,13 @@ class EvolutionUI {
             const layout = {
                 title: 'Sub-SKB Visualization',
                 scene: {
-                    xaxis: { title: 'X', range: [-3, 3] },
-                    yaxis: { title: 'Y', range: [-3, 3] },
-                    zaxis: { title: 'Z', range: [-3, 3] },
-                    aspectmode: 'cube'
+                    xaxis: { title: 'X', range: [-2, 2] }, // Tighter initial range for better viewing
+                    yaxis: { title: 'Y', range: [-2, 2] }, // Tighter initial range for better viewing 
+                    zaxis: { title: 'Z', range: [-2, 2] }, // Tighter initial range for better viewing
+                    aspectmode: 'cube',
+                    camera: {
+                        eye: { x: 1.25, y: 1.25, z: 1.25 } // Closer camera position to see wireframes better
+                    }
                 },
                 paper_bgcolor: '#1e1e1e',
                 plot_bgcolor: '#1e1e1e',
@@ -1238,10 +1323,31 @@ class EvolutionUI {
             // Prepare data for the plot
             const plotData = [];
             
+            // Variables to track min and max values to set appropriate axis ranges
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            let minZ = Infinity, maxZ = -Infinity;
+            
             // Generate visualization data for each sub-SKB
             for (let i = 0; i < skbsToShow.length; i++) {
                 const skb = skbsToShow[i];
                 const visualData = skb.generateVisualizationData(skb.parameters);
+                
+                // Track min and max values for auto-scaling
+                visualData.x.forEach(val => {
+                    minX = Math.min(minX, val);
+                    maxX = Math.max(maxX, val);
+                });
+                
+                visualData.y.forEach(val => {
+                    minY = Math.min(minY, val);
+                    maxY = Math.max(maxY, val);
+                });
+                
+                visualData.z.forEach(val => {
+                    minZ = Math.min(minZ, val);
+                    maxZ = Math.max(maxZ, val);
+                });
                 
                 // Add wireframe plot for this sub-SKB
                 plotData.push({
@@ -1260,14 +1366,51 @@ class EvolutionUI {
                 });
             }
             
-            // Create plot layout
+            // Add a small buffer to the axis ranges (20% padding)
+            const addBuffer = (min, max) => {
+                const range = max - min;
+                const buffer = range * 0.2;
+                return [min - buffer, max + buffer];
+            };
+            
+            // Calculate appropriate axis ranges with padding
+            const xRange = addBuffer(minX, maxX);
+            const yRange = addBuffer(minY, maxY);
+            const zRange = addBuffer(minZ, maxZ);
+            
+            // Ensure we have valid ranges (prevent NaN or infinite values)
+            const validateRange = (range) => {
+                if (!isFinite(range[0]) || !isFinite(range[1]) || range[0] === range[1]) {
+                    return [-2, 2]; // Default if invalid - tighter range for better visibility
+                }
+                // Ensure range isn't too large or too small
+                const rangeSize = Math.abs(range[1] - range[0]);
+                if (rangeSize < 0.5) {
+                    // Range is too small, expand it
+                    const mid = (range[0] + range[1]) / 2;
+                    return [mid - 1, mid + 1];
+                }
+                if (rangeSize > 10) {
+                    // Range is too large, constrain it
+                    const mid = (range[0] + range[1]) / 2;
+                    return [mid - 5, mid + 5];
+                }
+                return range;
+            };
+            
+            // Create plot layout with auto-calculated ranges
             const layout = {
-                title: 'Top Compatible Sub-SKBs Visualization',
+                title: this.selectedIndividual ? 
+                    `Sub-SKB Visualization (ID: ${this.selectedIndividual.id})` : 
+                    'Top Compatible Sub-SKBs Visualization',
                 scene: {
-                    xaxis: { title: 'X' },
-                    yaxis: { title: 'Y' },
-                    zaxis: { title: 'Z' },
-                    aspectmode: 'cube'
+                    xaxis: { title: 'X', range: validateRange(xRange) },
+                    yaxis: { title: 'Y', range: validateRange(yRange) },
+                    zaxis: { title: 'Z', range: validateRange(zRange) },
+                    aspectmode: 'cube',
+                    camera: {
+                        eye: { x: 1.5, y: 1.5, z: 1.5 } // Adjusted camera position for better view
+                    }
                 },
                 paper_bgcolor: '#1e1e1e',
                 plot_bgcolor: '#1e1e1e',
@@ -1279,7 +1422,7 @@ class EvolutionUI {
             // Create the plot
             Plotly.newPlot('evolution-plot', plotData, layout);
             
-            console.log("Plot updated successfully with top compatible sub-SKBs");
+            console.log("Plot updated successfully with data in frame");
         } catch (error) {
             console.error("Error updating visualization:", error);
         }
@@ -1449,13 +1592,121 @@ class EvolutionUI {
     
     visualizeStableHadron(hadron) {
         console.log("Visualizing stable hadron:", hadron);
-        // This would update the visualization to show the merged hadron
-        // For now, we'll just log it and highlight the component Sub-SKBs
         
-        // Highlight the component Sub-SKBs in the population grid
-        this.updatePopulationGrid(hadron.indices);
-        
-        // TODO: Implement visualization of merged hadron
+        try {
+            // Clear existing plot
+            Plotly.purge('evolution-plot');
+            
+            // Prepare colors for the sub-SKBs
+            const colors = ['#FF6E91', '#33C4FF', '#65FF8F']; // Pink, Blue, Green
+            
+            // Prepare data for the plot
+            const plotData = [];
+            
+            // Variables to track min and max values for auto-scaling
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            let minZ = Infinity, maxZ = -Infinity;
+            
+            // Generate visualization data for each sub-SKB in the hadron
+            for (let i = 0; i < hadron.individuals.length; i++) {
+                const skb = hadron.individuals[i];
+                const visualData = skb.generateVisualizationData(skb.parameters);
+                
+                // Track min and max values for auto-scaling
+                visualData.x.forEach(val => {
+                    minX = Math.min(minX, val);
+                    maxX = Math.max(maxX, val);
+                });
+                
+                visualData.y.forEach(val => {
+                    minY = Math.min(minY, val);
+                    maxY = Math.max(maxY, val);
+                });
+                
+                visualData.z.forEach(val => {
+                    minZ = Math.min(minZ, val);
+                    maxZ = Math.max(maxZ, val);
+                });
+                
+                // Add a trace for each sub-SKB
+                plotData.push({
+                    type: 'scatter3d',
+                    x: visualData.x,
+                    y: visualData.y,
+                    z: visualData.z,
+                    mode: 'lines',
+                    line: {
+                        color: colors[i],
+                        width: 2
+                    },
+                    opacity: 0.7,
+                    name: `Sub-SKB ${hadron.indices[i] + 1} (ID: ${skb.id})`,
+                    showlegend: true
+                });
+            }
+            
+            // Add a small buffer to the axis ranges for better viewing
+            const addBuffer = (min, max) => {
+                const range = max - min;
+                const buffer = range * 0.2;
+                return [min - buffer, max + buffer];
+            };
+            
+            // Calculate appropriate ranges with padding
+            const xRange = addBuffer(minX, maxX);
+            const yRange = addBuffer(minY, maxY);
+            const zRange = addBuffer(minZ, maxZ);
+            
+            // Ensure we have valid ranges
+            const validateRange = (range) => {
+                if (!isFinite(range[0]) || !isFinite(range[1]) || range[0] === range[1]) {
+                    return [-2, 2]; // Default if invalid - tighter range for better visibility
+                }
+                // Ensure range isn't too large or too small
+                const rangeSize = Math.abs(range[1] - range[0]);
+                if (rangeSize < 0.5) {
+                    // Range is too small, expand it
+                    const mid = (range[0] + range[1]) / 2;
+                    return [mid - 1, mid + 1];
+                }
+                if (rangeSize > 10) {
+                    // Range is too large, constrain it
+                    const mid = (range[0] + range[1]) / 2;
+                    return [mid - 5, mid + 5];
+                }
+                return range;
+            };
+            
+            // Create plot layout with auto-calculated ranges
+            const layout = {
+                title: `Stable Hadron Visualization (Compatibility: ${hadron.compatibilityScore.toFixed(3)})`,
+                scene: {
+                    xaxis: { title: 'X', range: validateRange(xRange) },
+                    yaxis: { title: 'Y', range: validateRange(yRange) },
+                    zaxis: { title: 'Z', range: validateRange(zRange) },
+                    aspectmode: 'cube',
+                    camera: {
+                        eye: { x: 1.5, y: 1.5, z: 1.5 } // Set camera position for better view
+                    }
+                },
+                paper_bgcolor: '#1e1e1e',
+                plot_bgcolor: '#1e1e1e',
+                font: { color: '#ffffff' },
+                margin: { l: 0, r: 0, b: 0, t: 50, pad: 4 },
+                autosize: true
+            };
+            
+            // Create the plot
+            Plotly.newPlot('evolution-plot', plotData, layout);
+            
+            // Highlight the component Sub-SKBs in the population grid
+            this.updatePopulationGrid(hadron.indices);
+            
+            console.log("Stable hadron visualization completed");
+        } catch (error) {
+            console.error("Error visualizing stable hadron:", error);
+        }
     }
 
     findStableHadrons() {
@@ -1624,6 +1875,77 @@ class EvolutionUI {
         this.updateUI();
         
         console.log(`Generated population of ${this.algorithm.population.length} individuals`);
+    }
+
+    // New method to update top triplets display
+    updateTopTripletsDisplay() {
+        const container = document.getElementById('top-triplets-container');
+        if (!container) return;
+        
+        // Clear the container
+        container.innerHTML = '';
+        
+        // Sort population by fitness in descending order
+        const sortedPopulation = [...this.algorithm.population]
+            .sort((a, b) => (b.fitness || -Infinity) - (a.fitness || -Infinity));
+        
+        // Always take exactly the top 3 matches
+        const topMatches = sortedPopulation.slice(0, 3);
+        
+        if (topMatches.length === 0) {
+            container.innerHTML = '<p>No triplets found yet. Continue evolving the population.</p>';
+            return;
+        }
+        
+        // Create elements for each top match
+        topMatches.forEach((individual, index) => {
+            const matchCard = document.createElement('div');
+            matchCard.className = 'stable-hadron-card';
+            
+            // Helper function to get quark label
+            const getQuarkLabel = (twistValue) => {
+                if (twistValue === 2) return 'up';
+                if (twistValue === -1) return 'down';
+                return 'unknown';
+            };
+            
+            // Build content
+            let content = `
+                <h4>Triplet #${index + 1} (Fitness: ${individual.fitness ? individual.fitness.toFixed(3) : 'N/A'})</h4>
+                <div class="topological-properties">
+            `;
+            
+            // Add sub-SKB information
+            for (let i = 0; i < individual.twists.length; i++) {
+                const twist = individual.twists[i];
+                const charge = individual.charges[i];
+                const label = getQuarkLabel(twist);
+                
+                content += `
+                    <div class="property-row">
+                        <span class="property-name">Sub-SKB ${i + 1}</span>
+                        <span class="property-value">T = ${twist}, Q = ${charge.toFixed(3)}, Label: ${label}</span>
+                    </div>
+                `;
+            }
+            
+            // Add total charge
+            content += `
+                <div class="property-row">
+                    <span class="property-name">Total Charge</span>
+                    <span class="property-value">Q = ${individual.totalCharge.toFixed(3)}</span>
+                </div>
+            `;
+            
+            matchCard.innerHTML = content + '</div>';
+            
+            // Add click event to select this individual in the main visualization
+            matchCard.addEventListener('click', () => {
+                this.selectIndividual(individual);
+            });
+            
+            container.appendChild(matchCard);
+        });
     }
 }
 

@@ -362,534 +362,53 @@
                     <div>Im\(f\) = \(e^{-\gamma(t-t_0)^2}\sin(\omega t)\)</div>
                 </div>
             </div>
+
+            <!-- Theory and Mathematics Section -->
+            <div class="control-card" style="margin-top: 30px;">
+                <div class="card-header">
+                    <h3 class="card-title">Theory & Mathematics</h3>
+                </div>
+                <div style="padding: 15px;">
+                    <h4>The Mathematics of Complex Harmonic Oscillators</h4>
+                    <p>
+                        The complex damped harmonic oscillator with a Gaussian envelope is described by the function:
+                        \[ f(t) = e^{-\gamma(t-t_0)^2}(\cos(\omega t) + i\sin(\omega t)) \]
+                        
+                        This mathematical object combines several fundamental concepts:
+                    </p>
+                    
+                    <ul style="padding-left: 20px; margin: 15px 0;">
+                        <li><strong>Complex Exponential:</strong> The term \(e^{i\omega t} = \cos(\omega t) + i\sin(\omega t)\) represents uniform circular motion in the complex plane.</li>
+                        <li><strong>Gaussian Envelope:</strong> The factor \(e^{-\gamma(t-t_0)^2}\) creates a bell-shaped amplitude modulation centered at \(t_0\).</li>
+                        <li><strong>Wave Packet:</strong> Together, these form a wave packet with frequency \(\omega\) and localization parameter \(\gamma\).</li>
+                    </ul>
+
+                    <h4>Applications in Physics</h4>
+                    <p>
+                        This mathematical structure appears in numerous areas of physics:
+                    </p>
+                    
+                    <ul style="padding-left: 20px; margin: 15px 0;">
+                        <li><strong>Quantum Mechanics:</strong> Gaussian wave packets represent localized quantum particles.</li>
+                        <li><strong>Signal Processing:</strong> Modulated signals with controlled frequency and amplitude decay.</li>
+                        <li><strong>4D Manifold Theory:</strong> Representations of time-varying fields on topological structures.</li>
+                        <li><strong>Particle Physics:</strong> Models of particle decay and resonance phenomena.</li>
+                    </ul>
+                    
+                    <h4>Historical Context</h4>
+                    <p>
+                        The study of harmonic oscillators dates back to the 17th century with Hooke's work on springs, but their complex representation emerged in the 19th century through the work of mathematicians like Euler, who introduced the complex exponential form \(e^{i\theta} = \cos(\theta) + i\sin(\theta)\).
+                    </p>
+                    <p>
+                        Gaussian wave packets became crucial in the early 20th century with the development of quantum mechanics. Schrödinger's wave equation (1926) and Heisenberg's uncertainty principle demonstrated how localized wave packets represent quantum particles with complementary uncertainties in position and momentum.
+                    </p>
+                    <p>
+                        Today, these mathematical structures serve as fundamental building blocks in fields ranging from quantum field theory to signal analysis and modern 4D manifold topology.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
-
-    <script>
-        // DOM elements
-        const gammaSlider = document.getElementById('gamma');
-        const t0Slider = document.getElementById('t0');
-        const omegaSlider = document.getElementById('omega');
-        const timeSlider = document.getElementById('time-slider');
-        const playPauseButton = document.getElementById('play-pause');
-        const currentTimeDisplay = document.getElementById('current-time');
-        const gammaValue = document.getElementById('gamma-value');
-        const t0Value = document.getElementById('t0-value');
-        const omegaValue = document.getElementById('omega-value');
-
-        // Parameters
-        let gamma = parseFloat(gammaSlider.value);
-        let t0 = parseFloat(t0Slider.value);
-        let omega = parseFloat(omegaSlider.value);
-        let currentTime = parseFloat(timeSlider.value);
-        let isPlaying = false;
-        let animationId = null;
-
-        // Constants for the animation
-        const timeStep = 0.05;
-        const maxTime = 10;
-        const pointCount = 200;
-        const specialValue = { time: 4.2, value: { re: -0.57, im: 0.19 } };
-
-        // Calculate the constant for the period annotation
-        const period = 2 * Math.PI / omega;
-        const periodConst = 3.45 * period / omega;
-
-        // Initialize the visualizations
-        let threeDPlot, spiralPlot, realPlot, imagPlot;
-        let currentPoint3D = null;
-        let specialPoint3D = null;
-        let currentPointSpiral = null;
-        let specialPointSpiral = null;
-
-        // Function to calculate f(t)
-        function calculateF(t) {
-            const gaussianEnvelope = Math.exp(-gamma * Math.pow(t - t0, 2));
-            const real = gaussianEnvelope * Math.cos(omega * t);
-            const imag = gaussianEnvelope * Math.sin(omega * t);
-            return { re: real, im: imag };
-        }
-
-        // Function to generate data for all plots
-        function generateData() {
-            const timeValues = Array.from({ length: pointCount }, (_, i) => i * maxTime / (pointCount - 1));
-            
-            const spiralData = timeValues.map(t => {
-                const f = calculateF(t);
-                return { t, re: f.re, im: f.im };
-            });
-            
-            return {
-                timeValues,
-                spiralData,
-                currentF: calculateF(currentTime),
-                specialF: calculateF(specialValue.time)
-            };
-        }
-
-        // Initialize Three.js 3D Plot
-        function init3DPlot() {
-            const container = document.getElementById('plot3d');
-            
-            // Create scene, camera, and renderer
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1e1e1e);
-            
-            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(2, 2, 2);
-            
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            container.appendChild(renderer.domElement);
-            
-            // Add orbit controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            
-            // Add axes
-            const axesHelper = new THREE.AxesHelper(1.5);
-            scene.add(axesHelper);
-            
-            // Add axis labels
-            const addLabel = (text, position, color) => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = 128;
-                canvas.height = 64;
-                ctx.fillStyle = '#1e1e1e';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = color || 'rgba(255, 255, 255, 0.87)';
-                ctx.font = '32px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, canvas.width/2, canvas.height/2);
-                
-                const texture = new THREE.Texture(canvas);
-                texture.needsUpdate = true;
-                
-                const material = new THREE.SpriteMaterial({ map: texture });
-                const sprite = new THREE.Sprite(material);
-                sprite.position.copy(position);
-                sprite.scale.set(0.5, 0.25, 1);
-                scene.add(sprite);
-            };
-            
-            addLabel('Re', new THREE.Vector3(1.7, 0, 0), '#FF6E91');
-            addLabel('Im', new THREE.Vector3(0, 1.7, 0), '#33C4FF');
-            addLabel('t', new THREE.Vector3(0, 0, 1.7), '#65FF8F');
-            
-            // Create the curve
-            const data = generateData();
-            const points = data.spiralData.map(point => new THREE.Vector3(point.re, point.im, point.t / maxTime * 1.5));
-            
-            const curve = new THREE.CatmullRomCurve3(points);
-            const geometry = new THREE.TubeGeometry(curve, 100, 0.02, 8, false);
-            const material = new THREE.MeshBasicMaterial({ 
-                color: 0xBB86FC, 
-                transparent: true,
-                opacity: 0.8
-            });
-            const tube = new THREE.Mesh(geometry, material);
-            scene.add(tube);
-            
-            // Add current point
-            const currentPointGeometry = new THREE.SphereGeometry(0.04, 16, 16);
-            const currentPointMaterial = new THREE.MeshBasicMaterial({ color: 0x33C4FF });
-            currentPoint3D = new THREE.Mesh(currentPointGeometry, currentPointMaterial);
-            scene.add(currentPoint3D);
-            
-            // Add special point
-            const specialPointGeometry = new THREE.SphereGeometry(0.04, 16, 16);
-            const specialPointMaterial = new THREE.MeshBasicMaterial({ color: 0xFF6E91 });
-            specialPoint3D = new THREE.Mesh(specialPointGeometry, specialPointMaterial);
-            scene.add(specialPoint3D);
-            
-            // Position the special point
-            const specialF = calculateF(specialValue.time);
-            specialPoint3D.position.set(specialF.re, specialF.im, specialValue.time / maxTime * 1.5);
-            
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            
-            animate();
-            
-            // Add window resize listener
-            window.addEventListener('resize', () => {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
-            
-            return {
-                scene,
-                updateCurrentPoint: (t, f) => {
-                    currentPoint3D.position.set(f.re, f.im, t / maxTime * 1.5);
-                }
-            };
-        }
-
-        // Initialize Plotly.js Spiral Plot
-        function initSpiralPlot() {
-            const data = generateData();
-            
-            // Create the spiral trace
-            const spiralTrace = {
-                x: data.spiralData.map(p => p.re),
-                y: data.spiralData.map(p => p.im),
-                mode: 'lines',
-                line: { color: 'rgba(187, 134, 252, 0.8)', width: 2 },
-                name: 'Spiral'
-            };
-            
-            // Add the t0 point
-            const t0F = calculateF(t0);
-            const t0Trace = {
-                x: [t0F.re],
-                y: [t0F.im],
-                mode: 'markers+text',
-                marker: { color: '#65FF8F', size: 8 },
-                text: ['t₀'],
-                textposition: 'top right',
-                name: 't₀'
-            };
-            
-            // Add current point trace
-            const currentF = calculateF(currentTime);
-            const currentPointTrace = {
-                x: [currentF.re],
-                y: [currentF.im],
-                mode: 'markers',
-                marker: { color: '#33C4FF', size: 10 },
-                name: 'Current'
-            };
-            
-            // Add special point trace
-            const specialPointTrace = {
-                x: [specialValue.value.re],
-                y: [specialValue.value.im],
-                mode: 'markers+text',
-                marker: { color: '#FF6E91', size: 10 },
-                text: [`f(${specialValue.time}) = ${specialValue.value.re.toFixed(2)} + ${specialValue.value.im.toFixed(2)}i`],
-                textposition: 'top',
-                name: 'Special Value'
-            };
-            
-            const layout = {
-                title: {
-                    text: '2D Spiral in Re-Im Plane',
-                    font: { color: 'rgba(255, 255, 255, 0.87)' }
-                },
-                xaxis: { 
-                    title: {
-                        text: 'Re',
-                        font: { color: '#FF6E91' }
-                    },
-                    range: [-1.2, 1.2],
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                yaxis: { 
-                    title: {
-                        text: 'Im',
-                        font: { color: '#33C4FF' }
-                    },
-                    range: [-1.2, 1.2],
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                showlegend: false,
-                margin: { l: 50, r: 30, b: 50, t: 50 },
-                plot_bgcolor: '#1e1e1e',
-                paper_bgcolor: '#1e1e1e',
-                font: { color: 'rgba(255, 255, 255, 0.87)' }
-            };
-            
-            Plotly.newPlot('spiral-plot', [spiralTrace, t0Trace, currentPointTrace, specialPointTrace], layout);
-            
-            return {
-                updateCurrentPoint: (f) => {
-                    Plotly.restyle('spiral-plot', {
-                        x: [[f.re]],
-                        y: [[f.im]]
-                    }, 2);  // 2 is the index of the current point trace
-                }
-            };
-        }
-
-        // Initialize Real Component Plot
-        function initRealPlot() {
-            const data = generateData();
-            
-            // Create time series for real component
-            const realTrace = {
-                x: data.timeValues,
-                y: data.timeValues.map(t => calculateF(t).re),
-                mode: 'lines',
-                line: { color: '#FF6E91', width: 2 },
-                name: 'Re f(t)'
-            };
-            
-            // Add current point trace
-            const currentPointTrace = {
-                x: [currentTime],
-                y: [calculateF(currentTime).re],
-                mode: 'markers',
-                marker: { color: '#33C4FF', size: 10 },
-                name: 'Current'
-            };
-            
-            // Add t0 point
-            const t0PointTrace = {
-                x: [t0],
-                y: [calculateF(t0).re],
-                mode: 'markers+text',
-                marker: { color: '#65FF8F', size: 8 },
-                text: ['t₀'],
-                textposition: 'top right',
-                name: 't₀'
-            };
-            
-            // Add special point
-            const specialPointTrace = {
-                x: [specialValue.time],
-                y: [specialValue.value.re],
-                mode: 'markers',
-                marker: { color: '#FF6E91', size: 10 },
-                name: 'Special Value'
-            };
-            
-            const layout = {
-                title: {
-                    text: 'Real Component of f(t)',
-                    font: { color: 'rgba(255, 255, 255, 0.87)' }
-                },
-                xaxis: { 
-                    title: {
-                        text: 't',
-                        font: { color: '#65FF8F' }
-                    },
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                yaxis: { 
-                    title: {
-                        text: 'Re f(t)',
-                        font: { color: '#FF6E91' }
-                    },
-                    range: [-1.2, 1.2],
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                showlegend: false,
-                margin: { l: 50, r: 30, b: 50, t: 50 },
-                plot_bgcolor: '#1e1e1e',
-                paper_bgcolor: '#1e1e1e',
-                font: { color: 'rgba(255, 255, 255, 0.87)' }
-            };
-            
-            Plotly.newPlot('real-plot', [realTrace, currentPointTrace, t0PointTrace, specialPointTrace], layout);
-            
-            return {
-                updateCurrentPoint: (t, f) => {
-                    Plotly.restyle('real-plot', {
-                        x: [[t]],
-                        y: [[f.re]]
-                    }, 1);  // 1 is the index of the current point trace
-                }
-            };
-        }
-
-        // Initialize Imaginary Component Plot
-        function initImagPlot() {
-            const data = generateData();
-            
-            // Create time series for imaginary component
-            const imagTrace = {
-                x: data.timeValues,
-                y: data.timeValues.map(t => calculateF(t).im),
-                mode: 'lines',
-                line: { color: '#33C4FF', width: 2 },
-                name: 'Im f(t)'
-            };
-            
-            // Add current point trace
-            const currentPointTrace = {
-                x: [currentTime],
-                y: [calculateF(currentTime).im],
-                mode: 'markers',
-                marker: { color: '#33C4FF', size: 10 },
-                name: 'Current'
-            };
-            
-            // Add t0 point
-            const t0PointTrace = {
-                x: [t0],
-                y: [calculateF(t0).im],
-                mode: 'markers+text',
-                marker: { color: '#65FF8F', size: 8 },
-                text: ['t₀'],
-                textposition: 'top right',
-                name: 't₀'
-            };
-            
-            // Add special point
-            const specialPointTrace = {
-                x: [specialValue.time],
-                y: [specialValue.value.im],
-                mode: 'markers',
-                marker: { color: '#FF6E91', size: 10 },
-                name: 'Special Value'
-            };
-            
-            const layout = {
-                title: {
-                    text: 'Imaginary Component of f(t)',
-                    font: { color: 'rgba(255, 255, 255, 0.87)' }
-                },
-                xaxis: { 
-                    title: {
-                        text: 't',
-                        font: { color: '#65FF8F' }
-                    },
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                yaxis: { 
-                    title: {
-                        text: 'Im f(t)',
-                        font: { color: '#33C4FF' }
-                    },
-                    range: [-1.2, 1.2],
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
-                },
-                showlegend: false,
-                margin: { l: 50, r: 30, b: 50, t: 50 },
-                plot_bgcolor: '#1e1e1e',
-                paper_bgcolor: '#1e1e1e',
-                font: { color: 'rgba(255, 255, 255, 0.87)' }
-            };
-            
-            Plotly.newPlot('imag-plot', [imagTrace, currentPointTrace, t0PointTrace, specialPointTrace], layout);
-            
-            return {
-                updateCurrentPoint: (t, f) => {
-                    Plotly.restyle('imag-plot', {
-                        x: [[t]],
-                        y: [[f.im]]
-                    }, 1);  // 1 is the index of the current point trace
-                }
-            };
-        }
-
-        // Update all visualizations based on current parameters
-        function updateVisualizations() {
-            const f = calculateF(currentTime);
-            
-            // Update all plots
-            threeDPlot.updateCurrentPoint(currentTime, f);
-            spiralPlot.updateCurrentPoint(f);
-            realPlot.updateCurrentPoint(currentTime, f);
-            imagPlot.updateCurrentPoint(currentTime, f);
-            
-            // Update the time display
-            currentTimeDisplay.textContent = `t = ${currentTime.toFixed(2)}`;
-            timeSlider.value = currentTime;
-        }
-
-        // Update everything when parameters change
-        function updateParameters() {
-            gamma = parseFloat(gammaSlider.value);
-            t0 = parseFloat(t0Slider.value);
-            omega = parseFloat(omegaSlider.value);
-            
-            gammaValue.textContent = gamma.toFixed(2);
-            t0Value.textContent = t0.toFixed(1);
-            omegaValue.textContent = omega.toFixed(1);
-            
-            // Recalculate period and const
-            const period = 2 * Math.PI / omega;
-            const periodConst = (3.45 * period / omega).toFixed(2);
-            
-            // Update the period annotation
-            const periodAnnotation = document.querySelector('.period-annotation');
-            periodAnnotation.innerHTML = `\\(\\omega \\cdot ${periodConst} = 3.45T\\), where \\(T = \\frac{2\\pi}{\\omega}\\)`;
-            
-            // Re-render MathJax
-            if (window.MathJax) {
-                MathJax.typesetPromise();
-            }
-            
-            // Reinitialize all plots
-            document.getElementById('plot3d').innerHTML = '';
-            threeDPlot = init3DPlot();
-            spiralPlot = initSpiralPlot();
-            realPlot = initRealPlot();
-            imagPlot = initImagPlot();
-            
-            updateVisualizations();
-        }
-
-        // Animation loop
-        function animate() {
-            if (isPlaying) {
-                currentTime += timeStep;
-                if (currentTime > maxTime) {
-                    currentTime = 0;
-                }
-                updateVisualizations();
-                animationId = requestAnimationFrame(animate);
-            }
-        }
-
-        // Event listeners
-        gammaSlider.addEventListener('input', updateParameters);
-        t0Slider.addEventListener('input', updateParameters);
-        omegaSlider.addEventListener('input', updateParameters);
-        timeSlider.addEventListener('input', () => {
-            currentTime = parseFloat(timeSlider.value);
-            updateVisualizations();
-        });
-
-        playPauseButton.addEventListener('click', () => {
-            isPlaying = !isPlaying;
-            
-            if (isPlaying) {
-                playPauseButton.innerHTML = '<i class="fas fa-pause"></i> Pause';
-                animate();
-            } else {
-                playPauseButton.innerHTML = '<i class="fas fa-play"></i> Play';
-                cancelAnimationFrame(animationId);
-            }
-        });
-
-        // Initialize everything when the DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize plots
-            threeDPlot = init3DPlot();
-            spiralPlot = initSpiralPlot();
-            realPlot = initRealPlot();
-            imagPlot = initImagPlot();
-            
-            // Initial update
-            updateVisualizations();
-            
-            // Set the period annotation value
-            const period = 2 * Math.PI / omega;
-            const periodConst = (3.45 * period / omega).toFixed(2);
-            const periodAnnotation = document.querySelector('.period-annotation');
-            periodAnnotation.innerHTML = `\\(\\omega \\cdot ${periodConst} = 3.45T\\), where \\(T = \\frac{2\\pi}{\\omega}\\)`;
-            
-            // Re-render MathJax
-            if (window.MathJax) {
-                MathJax.typesetPromise();
-            }
-        });
-    </script>
     
     <!-- Footer -->
     <footer>
@@ -909,5 +428,575 @@
         </div>
     </footer>
     </div> <!-- Close main-content div -->
+    
+    <script>
+        // Global variables
+        let animationId;
+        let isPlaying = false;
+        let currentTime = 0;
+        let scene, camera, renderer, controls, oscillatorPath;
+        let pointCloud = [];
+        let maxPoints = 1000;
+        let timeStep = 0.01;
+        
+        // Initial parameter values
+        let gamma = 0.1;
+        let t0 = 5;
+        let omega = 2;
+        
+        // DOM references
+        const gammaSlider = document.getElementById('gamma');
+        const t0Slider = document.getElementById('t0');
+        const omegaSlider = document.getElementById('omega');
+        const timeSlider = document.getElementById('time-slider');
+        const playPauseButton = document.getElementById('play-pause');
+        const currentTimeDisplay = document.getElementById('current-time');
+        
+        // Value displays
+        const gammaValue = document.getElementById('gamma-value');
+        const t0Value = document.getElementById('t0-value');
+        const omegaValue = document.getElementById('omega-value');
+        
+        // Calculate the function f(t) = e^(-γ(t-t0)^2) * (cos(ωt) + i*sin(ωt))
+        function calculateF(t) {
+            const envelope = Math.exp(-gamma * Math.pow(t - t0, 2));
+            const real = envelope * Math.cos(omega * t);
+            const imag = envelope * Math.sin(omega * t);
+            return { real, imag, envelope, t };
+        }
+        
+        // Calculate the wave function for a range of time values
+        function calculateWaveFunction(tMin, tMax, steps) {
+            const data = [];
+            const stepSize = (tMax - tMin) / steps;
+            
+            for (let i = 0; i <= steps; i++) {
+                const t = tMin + i * stepSize;
+                data.push(calculateF(t));
+            }
+            
+            return data;
+        }
+        
+        // Initialize Three.js 3D plot
+        function init3DPlot() {
+            // Create scene, camera, and renderer
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1e1e1e);
+            
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, document.getElementById('plot3d').clientWidth / document.getElementById('plot3d').clientHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(document.getElementById('plot3d').clientWidth, document.getElementById('plot3d').clientHeight);
+            document.getElementById('plot3d').appendChild(renderer.domElement);
+            
+            // Controls setup
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.25;
+            
+            // Axis helpers
+            const axesHelper = new THREE.AxesHelper(10);
+            scene.add(axesHelper);
+            
+            // Add coordinate system labels
+            addCoordinateLabels();
+            
+            // Create path for oscillator
+            createOscillatorPath();
+            
+            // Animation loop
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', on3DWindowResize);
+        }
+        
+        // Add coordinate system labels to 3D plot
+        function addCoordinateLabels() {
+            const axisLabels = [
+                { text: "Re", position: new THREE.Vector3(10, 0, 0), color: 0xFF6E91 },
+                { text: "Im", position: new THREE.Vector3(0, 0, 10), color: 0x33C4FF },
+                { text: "t", position: new THREE.Vector3(0, 10, 0), color: 0xFFFFFF }
+            ];
+            
+            // Create canvas and context to render text
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            
+            axisLabels.forEach(label => {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = '#' + label.color.toString(16).padStart(6, '0');
+                context.font = 'Bold 80px Arial';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(label.text, 64, 64);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const material = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(material);
+                sprite.position.copy(label.position);
+                sprite.scale.set(1, 1, 1);
+                scene.add(sprite);
+            });
+        }
+        
+        // Create the oscillator path in 3D space
+        function createOscillatorPath() {
+            // Remove previous path if it exists
+            if (oscillatorPath) scene.remove(oscillatorPath);
+            
+            // Calculate wave function data
+            const data = calculateWaveFunction(0, 10, 1000);
+            
+            // Create geometry for the path
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(data.length * 3);
+            
+            // Set positions from data
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                positions[i * 3] = point.real * 5;     // Re axis (x)
+                positions[i * 3 + 1] = point.t;        // t axis (y)
+                positions[i * 3 + 2] = point.imag * 5; // Im axis (z)
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            // Create line material with gradient
+            const material = new THREE.LineBasicMaterial({
+                color: 0xBB86FC,
+                linewidth: 2
+            });
+            
+            // Create and add line to scene
+            oscillatorPath = new THREE.Line(geometry, material);
+            scene.add(oscillatorPath);
+            
+            // Current position indicator
+            updateCurrentPositionIndicator();
+        }
+        
+        // Create and update current position indicator
+        function updateCurrentPositionIndicator() {
+            // Remove existing indicator if present
+            scene.children.forEach(child => {
+                if (child.userData && child.userData.isPositionIndicator) {
+                    scene.remove(child);
+                }
+            });
+            
+            // Calculate current position
+            const f = calculateF(currentTime);
+            
+            // Create sphere geometry
+            const geometry = new THREE.SphereGeometry(0.15, 32, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0xCF6679 });
+            const sphere = new THREE.Mesh(geometry, material);
+            
+            // Set position
+            sphere.position.set(f.real * 5, currentTime, f.imag * 5);
+            sphere.userData = { isPositionIndicator: true };
+            
+            // Add to scene
+            scene.add(sphere);
+        }
+        
+        // Animation loop for 3D plot
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // Handle window resize for 3D plot
+        function on3DWindowResize() {
+            const container = document.getElementById('plot3d');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+        
+        // Initialize Plotly spiral plot
+        function initSpiralPlot() {
+            const data = calculateWaveFunction(0, 10, 1000);
+            
+            // Extract real and imaginary data
+            const realData = data.map(point => point.real);
+            const imagData = data.map(point => point.imag);
+            
+            // Create spiral plot
+            const trace = {
+                x: realData,
+                y: imagData,
+                mode: 'lines',
+                name: 'Complex Trajectory',
+                line: {
+                    color: 'rgb(187, 134, 252)',
+                    width: 2
+                }
+            };
+            
+            // Current position marker
+            const currentPoint = calculateF(currentTime);
+            const markerTrace = {
+                x: [currentPoint.real],
+                y: [currentPoint.imag],
+                mode: 'markers',
+                marker: {
+                    color: 'rgb(207, 102, 121)',
+                    size: 10
+                },
+                showlegend: false
+            };
+            
+            const layout = {
+                title: 'Complex Plane (Re-Im)',
+                xaxis: {
+                    title: 'Re',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+                },
+                yaxis: {
+                    title: 'Im',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {
+                    color: 'rgba(255, 255, 255, 0.87)'
+                },
+                margin: { l: 50, r: 30, t: 50, b: 50 }
+            };
+            
+            Plotly.newPlot('spiral-plot', [trace, markerTrace], layout);
+        }
+        
+        // Initialize real component plot
+        function initRealPlot() {
+            const data = calculateWaveFunction(0, 10, 1000);
+            
+            // Extract time and real data
+            const timeData = data.map(point => point.t);
+            const realData = data.map(point => point.real);
+            const envelopeData = data.map(point => point.envelope);
+            const negEnvelopeData = data.map(point => -point.envelope);
+            
+            // Create real component plot
+            const traceFn = {
+                x: timeData,
+                y: realData,
+                mode: 'lines',
+                name: 'Re(f)',
+                line: {
+                    color: 'rgb(255, 110, 145)',
+                    width: 2
+                }
+            };
+            
+            // Add positive envelope
+            const traceEnvPos = {
+                x: timeData,
+                y: envelopeData,
+                mode: 'lines',
+                name: 'Envelope',
+                line: {
+                    color: 'rgb(101, 255, 143)',
+                    width: 1,
+                    dash: 'dash'
+                }
+            };
+            
+            // Add negative envelope
+            const traceEnvNeg = {
+                x: timeData,
+                y: negEnvelopeData,
+                mode: 'lines',
+                name: 'Envelope',
+                line: {
+                    color: 'rgb(101, 255, 143)',
+                    width: 1,
+                    dash: 'dash'
+                },
+                showlegend: false
+            };
+            
+            // Current time marker
+            const currentPoint = calculateF(currentTime);
+            const markerTrace = {
+                x: [currentTime],
+                y: [currentPoint.real],
+                mode: 'markers',
+                marker: {
+                    color: 'rgb(207, 102, 121)',
+                    size: 10
+                },
+                showlegend: false
+            };
+            
+            const layout = {
+                title: 'Real Component vs Time',
+                xaxis: {
+                    title: 't',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+                },
+                yaxis: {
+                    title: 'Re(f)',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {
+                    color: 'rgba(255, 255, 255, 0.87)'
+                },
+                margin: { l: 50, r: 30, t: 50, b: 50 }
+            };
+            
+            Plotly.newPlot('real-plot', [traceFn, traceEnvPos, traceEnvNeg, markerTrace], layout);
+        }
+        
+        // Initialize imaginary component plot
+        function initImagPlot() {
+            const data = calculateWaveFunction(0, 10, 1000);
+            
+            // Extract time and imaginary data
+            const timeData = data.map(point => point.t);
+            const imagData = data.map(point => point.imag);
+            const envelopeData = data.map(point => point.envelope);
+            const negEnvelopeData = data.map(point => -point.envelope);
+            
+            // Create imaginary component plot
+            const traceFn = {
+                x: timeData,
+                y: imagData,
+                mode: 'lines',
+                name: 'Im(f)',
+                line: {
+                    color: 'rgb(51, 196, 255)',
+                    width: 2
+                }
+            };
+            
+            // Add positive envelope
+            const traceEnvPos = {
+                x: timeData,
+                y: envelopeData,
+                mode: 'lines',
+                name: 'Envelope',
+                line: {
+                    color: 'rgb(101, 255, 143)',
+                    width: 1,
+                    dash: 'dash'
+                }
+            };
+            
+            // Add negative envelope
+            const traceEnvNeg = {
+                x: timeData,
+                y: negEnvelopeData,
+                mode: 'lines',
+                name: 'Envelope',
+                line: {
+                    color: 'rgb(101, 255, 143)',
+                    width: 1,
+                    dash: 'dash'
+                },
+                showlegend: false
+            };
+            
+            // Current time marker
+            const currentPoint = calculateF(currentTime);
+            const markerTrace = {
+                x: [currentTime],
+                y: [currentPoint.imag],
+                mode: 'markers',
+                marker: {
+                    color: 'rgb(207, 102, 121)',
+                    size: 10
+                },
+                showlegend: false
+            };
+            
+            const layout = {
+                title: 'Imaginary Component vs Time',
+                xaxis: {
+                    title: 't',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+                },
+                yaxis: {
+                    title: 'Im(f)',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {
+                    color: 'rgba(255, 255, 255, 0.87)'
+                },
+                margin: { l: 50, r: 30, t: 50, b: 50 }
+            };
+            
+            Plotly.newPlot('imag-plot', [traceFn, traceEnvPos, traceEnvNeg, markerTrace], layout);
+        }
+        
+        // Update all plots with current parameters
+        function updatePlots() {
+            // Update 3D path
+            createOscillatorPath();
+            
+            // Update spiral plot
+            const data = calculateWaveFunction(0, 10, 1000);
+            const realData = data.map(point => point.real);
+            const imagData = data.map(point => point.imag);
+            const currentPoint = calculateF(currentTime);
+            
+            Plotly.update('spiral-plot', {
+                x: [realData, [currentPoint.real]],
+                y: [imagData, [currentPoint.imag]]
+            });
+            
+            // Update real plot
+            const timeData = data.map(point => point.t);
+            const realCompData = data.map(point => point.real);
+            const envelopeData = data.map(point => point.envelope);
+            const negEnvelopeData = data.map(point => -point.envelope);
+            
+            Plotly.update('real-plot', {
+                x: [timeData, timeData, timeData, [currentTime]],
+                y: [realCompData, envelopeData, negEnvelopeData, [currentPoint.real]]
+            });
+            
+            // Update imaginary plot
+            const imagCompData = data.map(point => point.imag);
+            
+            Plotly.update('imag-plot', {
+                x: [timeData, timeData, timeData, [currentTime]],
+                y: [imagCompData, envelopeData, negEnvelopeData, [currentPoint.imag]]
+            });
+        }
+        
+        // Update time in the animation
+        function updateTime(time) {
+            currentTime = time;
+            timeSlider.value = time;
+            currentTimeDisplay.textContent = `t = ${time.toFixed(2)}`;
+            
+            // Update position indicator in 3D plot
+            updateCurrentPositionIndicator();
+            
+            // Update 2D plots
+            const currentPoint = calculateF(currentTime);
+            
+            Plotly.update('spiral-plot', {
+                x: [[currentPoint.real]],
+                y: [[currentPoint.imag]]
+            }, {}, [1]);
+            
+            Plotly.update('real-plot', {
+                x: [[currentTime]],
+                y: [[currentPoint.real]]
+            }, {}, [3]);
+            
+            Plotly.update('imag-plot', {
+                x: [[currentTime]],
+                y: [[currentPoint.imag]]
+            }, {}, [3]);
+        }
+        
+        // Play/pause animation
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            
+            if (isPlaying) {
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                startAnimation();
+            } else {
+                playPauseButton.innerHTML = '<i class="fas fa-play"></i> Play';
+                stopAnimation();
+            }
+        }
+        
+        // Start animation loop
+        function startAnimation() {
+            let lastTime = performance.now();
+            let animSpeed = 0.5; // Animation speed multiplier
+            
+            function animationLoop(currentTimestamp) {
+                const deltaTime = (currentTimestamp - lastTime) / 1000;
+                lastTime = currentTimestamp;
+                
+                currentTime += deltaTime * animSpeed;
+                
+                // Loop back to start if we reach the end
+                if (currentTime > 10) {
+                    currentTime = 0;
+                }
+                
+                updateTime(currentTime);
+                
+                if (isPlaying) {
+                    animationId = requestAnimationFrame(animationLoop);
+                }
+            }
+            
+            animationId = requestAnimationFrame(animationLoop);
+        }
+        
+        // Stop animation loop
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+        
+        // Initialize all visualizations
+        function initVisualizations() {
+            init3DPlot();
+            initSpiralPlot();
+            initRealPlot();
+            initImagPlot();
+        }
+        
+        // Event listeners for controls
+        gammaSlider.addEventListener('input', function() {
+            gamma = parseFloat(this.value);
+            gammaValue.textContent = gamma.toFixed(2);
+            updatePlots();
+        });
+        
+        t0Slider.addEventListener('input', function() {
+            t0 = parseFloat(this.value);
+            t0Value.textContent = t0.toFixed(1);
+            updatePlots();
+        });
+        
+        omegaSlider.addEventListener('input', function() {
+            omega = parseFloat(this.value);
+            omegaValue.textContent = omega.toFixed(1);
+            updatePlots();
+        });
+        
+        timeSlider.addEventListener('input', function() {
+            currentTime = parseFloat(this.value);
+            updateTime(currentTime);
+        });
+        
+        playPauseButton.addEventListener('click', togglePlayPause);
+        
+        // Initialize everything on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initVisualizations();
+        });
+    </script>
 </body>
 </html> 

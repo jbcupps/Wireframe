@@ -584,6 +584,53 @@
         </header>
         
         <div class="main-content">
+            <!-- Top Matched Triplets Panel -->
+            <div class="controls-panel" style="flex: 1; min-width: 250px;">
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Top Matched Triplets</h3>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Triplets that best match the target quark configuration. Higher fitness values indicate better matches.</span>
+                        </div>
+                    </div>
+                    
+                    <div id="top-triplets-container">
+                        <p id="no-triplets-message">Generate population and evolve to find triplets that match quark characteristics.</p>
+                    </div>
+                </div>
+                
+                <!-- Target Configuration -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Target Quark Configuration</h3>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The target quark configuration we are evolving toward. Currently set to a proton with two up quarks and one down quark.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="topological-properties">
+                        <div class="property-row">
+                            <span class="property-name">Quark 1 (Up)</span>
+                            <span class="property-value">T = 2, Q = 2/3</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-name">Quark 2 (Up)</span>
+                            <span class="property-value">T = 2, Q = 2/3</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-name">Quark 3 (Down)</span>
+                            <span class="property-value">T = -1, Q = -1/3</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-name">Total Charge</span>
+                            <span class="property-value">Q = 1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Visualization Panel -->
             <div class="visualization-panel">
                 <div class="generation-info">
@@ -909,6 +956,59 @@
         });
     </script>
     <script src="/static/js/evolution.js"></script>
+    
+    <!-- Theory and Mathematics Section -->
+    <div class="container">
+        <div class="control-card" style="margin-top: 30px; margin-bottom: 30px;">
+            <div class="card-header">
+                <h3 class="card-title">Theory & Mathematics</h3>
+            </div>
+            <div style="padding: 15px;">
+                <h4>Evolutionary Algorithms in Topological Physics</h4>
+                <p>
+                    Evolutionary algorithms are computational methods inspired by biological evolution, using mechanisms of selection, recombination, and mutation to search for optimal solutions. In the context of 4D manifold physics, these algorithms help explore the vast configuration space of topological structures.
+                </p>
+                
+                <h4>Key Mathematical Concepts</h4>
+                <ul style="padding-left: 20px; margin: 15px 0;">
+                    <li><strong>Stiefel-Whitney Classes:</strong> Topological invariants (w₁, w₂, etc.) that characterize the non-orientability of manifolds.</li>
+                    <li><strong>Euler Characteristic (χ):</strong> A topological invariant calculated as χ = 2 - 2g, where g is the genus, measuring the manifold's complexity.</li>
+                    <li><strong>Intersection Form (Q):</strong> A bilinear form defining how topological cycles intersect, crucial for understanding how 4D manifolds behave under deformation.</li>
+                    <li><strong>Fitness Function:</strong> Mathematically expressed as:
+                        <div class="math-formula" style="text-align: center;">
+                            F(S₁, S₂) = α·Compatibility(w₁) + β·|χₑᵤₗₑᵣ - χₜₐᵣₒₑₜ|⁻¹ + γ·Definiteness(Q) + δ·TwistAlignment + ε·CTCStability
+                        </div>
+                    </li>
+                </ul>
+
+                <h4>Applications in Theoretical Physics</h4>
+                <p>
+                    The exploration of 4D manifolds through evolutionary algorithms has several significant applications:
+                </p>
+                
+                <ul style="padding-left: 20px; margin: 15px 0;">
+                    <li><strong>Particle Physics Models:</strong> Identifying topological configurations that could represent fundamental particles and their interactions.</li>
+                    <li><strong>Quantum Gravity:</strong> Exploring possible spacetime structures that reconcile quantum mechanics and general relativity.</li>
+                    <li><strong>Topological Quantum Computing:</strong> Finding manifolds with properties suitable for error-resistant quantum computation.</li>
+                    <li><strong>Emergence of Physical Laws:</strong> Understanding how topological constraints might give rise to the fundamental laws of physics.</li>
+                </ul>
+                
+                <h4>Historical Development</h4>
+                <p>
+                    The marriage of evolutionary computing and topology has its roots in diverse fields:
+                </p>
+                <p>
+                    Evolutionary algorithms were first formalized in the 1960s and 1970s by researchers like John Holland, who developed genetic algorithms, and Ingo Rechenberg, who pioneered evolution strategies. These computational approaches drew inspiration from Darwin's theory of natural selection.
+                </p>
+                <p>
+                    The mathematical theory of 4D manifolds was developed throughout the 20th century, with significant contributions from mathematicians like Michael Freedman, Simon Donaldson, and Edward Witten, who connected topology with quantum field theory, leading to revolutionary insights in both mathematics and theoretical physics.
+                </p>
+                <p>
+                    The application of evolutionary algorithms to topological physics gained momentum in the early 21st century as computational power increased, enabling researchers to explore complex configuration spaces that were previously inaccessible through analytical methods alone.
+                </p>
+            </div>
+        </div>
+    </div>
     
     <!-- Footer -->
     <footer>
