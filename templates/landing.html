@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spacetime Klein Bottle 4D Manifold Explorer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>4D Manifold Explorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             /* Modern color palette */
@@ -92,7 +93,6 @@
         
         .nav-links a:hover, .nav-links a.active {
             color: var(--primary);
-            border-bottom: 2px solid var(--primary);
         }
         
         .cta-button {
@@ -417,6 +417,111 @@
                 gap: 20px;
             }
         }
+        
+        /* Dropdown Menu Styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding: 5px 0;
+            position: relative;
+        }
+        
+        .dropdown-toggle:hover, .dropdown-toggle.active {
+            color: var(--primary);
+        }
+        
+        .dropdown-toggle i {
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--surface);
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .nav-dropdown:hover .dropdown-toggle i {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 15px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .dropdown-menu a::after {
+            display: none;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: var(--surface-light);
+        }
+        
+        /* Mobile styles for dropdown */
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dropdown-menu {
+                position: static;
+                opacity: 0;
+                visibility: hidden;
+                height: 0;
+                transform: none;
+                box-shadow: none;
+                padding: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .dropdown-menu.show {
+                opacity: 1;
+                visibility: visible;
+                height: auto;
+                padding: 10px 0;
+                margin-top: 10px;
+                margin-left: 15px;
+                border-left: 2px solid var(--primary);
+            }
+            
+            .dropdown-toggle {
+                justify-content: space-between;
+            }
+            
+            .nav-dropdown {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -431,10 +536,38 @@
                 <nav class="nav-links">
                     <a href="#features" class="active">Features</a>
                     <a href="#research">Research</a>
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/oscillator">Oscillator</a>
-                    <a href="/maxwell">Maxwell-Boltzmann</a>
+                    
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Manifold Physics</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/visualization">4D Manifold</a>
+                            <a href="/evolution">Evolution</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Quantum Physics</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/oscillator">Oscillator</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Electromagnetism</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/maxwell">Maxwell-Boltzmann</a>
+                            <a href="/maxwells">Maxwell's Equations</a>
+                        </div>
+                    </div>
                 </nav>
                 <a href="/visualization" class="cta-button">Launch Explorer</a>
             </div>
@@ -548,28 +681,74 @@
         </div>
     </footer>
     
+    <!-- Main JS -->
+    <script src="/static/js/landing.js"></script>
+    
+    <!-- Navigation Dropdown JS -->
     <script>
-        // Simple scroll behavior for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add active class to parent dropdown if child link is active
+            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
+            activeLinks.forEach(link => {
+                const parentDropdown = link.closest('.nav-dropdown');
+                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+                dropdownToggle.classList.add('active');
+            });
+            
+            // Handle click on dropdown toggle (for mobile)
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    // Only apply this on mobile
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const dropdown = this.closest('.nav-dropdown');
+                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                        
+                        // Close all other menus
+                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                            if (menu !== dropdownMenu) {
+                                menu.classList.remove('show');
+                            }
+                        });
+                        
+                        // Toggle this menu
+                        dropdownMenu.classList.toggle('show');
+                    }
                 });
             });
-        });
-        
-        // Header scroll effect
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.style.padding = '10px 0';
-                header.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
-            } else {
-                header.style.padding = '20px 0';
-                header.style.boxShadow = 'none';
-            }
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.nav-dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
+            
+            // Simple scroll behavior for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // Header scroll effect
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('header');
+                if (window.scrollY > 50) {
+                    header.style.padding = '10px 0';
+                    header.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+                } else {
+                    header.style.padding = '20px 0';
+                    header.style.boxShadow = 'none';
+                }
+            });
         });
     </script>
 </body>
