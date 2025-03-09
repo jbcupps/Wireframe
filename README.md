@@ -1,162 +1,141 @@
-# Spacetime Klein Bottle (SKB) Visualization - Web Interface
+# 4D Manifold Explorer
 
-This repository provides a web-based interactive visualization of Spacetime Klein Bottles (SKBs) representing quarks and baryons in a topological model.
+A sophisticated web application for exploring 4D manifold physics concepts, visualizing topological structures, and mapping them to particle properties.
 
-## About the Visualization
+## Overview
 
-The application displays:
-- Three sub-SKBs (representing quarks) with adjustable twist numbers
-- A merged stable SKB (representing a baryon)
-- Interactive controls to adjust visualization parameters
-- Evolutionary programming algorithm to discover compatible Sub-SKB configurations
+The 4D Manifold Explorer is a Flask-based web application that provides interactive visualizations and tools for exploring higher-dimensional topological manifolds, particularly Spacetime Klein Bottles (SKBs) and their relationship to particle physics. The application is organized into three main sections:
+
+1. **4D Manifold Visualization and Description**
+   - Interactive 3D visualization of 4D manifolds with adjustable parameters
+   - Real-time calculation and display of topological invariants
+   - Educational content explaining SKB topology and its relation to particle properties
+
+2. **Evolution, Iterative, and AI/ML**
+   - Evolutionary algorithms for finding stable particle structures
+   - Methodical iterative search tools for systematic analysis
+   - AI and ML integration for hypothesis generation and property prediction
+
+3. **Standard and Quantum Physics**
+   - Visualization of established physics theories (oscillators, distributions, fields)
+   - Mapping tools to compare 4D manifold results with standard models
+   - Interactive parameter adjustment for physics simulations
+
+## Installation
+
+### Prerequisites
+
+- Python 3.9+
+- Docker (optional, for containerized deployment)
+
+### Local Development Setup
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/4d-manifold-explorer.git
+   cd 4d-manifold-explorer
+   ```
+
+2. Create and activate a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+4. Run the application:
+   ```
+   python run.py
+   ```
+
+5. Access the application at http://localhost:5000
+
+### Docker Deployment
+
+1. Build the Docker image:
+   ```
+   docker build -t 4d-manifold-explorer .
+   ```
+
+2. Run the container:
+   ```
+   docker run -p 5000:5000 4d-manifold-explorer
+   ```
+
+3. Access the application at http://localhost:5000
+
+## Project Structure
+
+```
+4d-manifold-explorer/
+├── app/
+│   ├── __init__.py                 # Application factory
+│   ├── common/                     # Shared components
+│   │   ├── error_handlers.py       # Error handling
+│   │   ├── static/                 # Static assets
+│   │   └── templates/              # Common templates
+│   ├── manifold_vis/               # 4D Manifold Visualization section
+│   │   ├── controllers/            # Route definitions
+│   │   ├── models/                 # Data generation
+│   │   └── templates/              # Section templates
+│   ├── evolution_ai/               # Evolution and AI/ML section
+│   │   ├── controllers/            # Route definitions
+│   │   ├── models/                 # Evolution algorithms
+│   │   ├── iterative/              # Methodical search tools
+│   │   ├── ml/                     # Machine learning components
+│   │   └── templates/              # Section templates
+│   └── quantum_physics/            # Quantum Physics section
+│       ├── controllers/            # Route definitions
+│       ├── models/                 # Physics simulations
+│       └── templates/              # Section templates
+├── requirements.txt                # Python dependencies
+├── Dockerfile                      # Docker configuration
+└── run.py                          # Application entry point
+```
 
 ## Features
 
-### Interactive Visualization
-Explore and manipulate 3D visualizations of Spacetime Klein Bottles with adjustable parameters like twists, time evolution, and loop factors.
+### 4D Manifold Visualization
 
-### Evolutionary Programming
-The evolutionary algorithm allows you to:
-- Generate populations of Sub-SKB configurations
-- Evaluate topological compatibility between different Sub-SKBs
-- Optimize for target topological properties such as Euler characteristic and orientability
-- Visualize the evolution of compatible configurations over generations
+- Interactive 3D visualization of SKBs and sub-SKBs
+- Adjustable parameters for twists, loops, and time evolution
+- Real-time calculation of topological invariants
+- Educational content on manifold topology
 
-## Research Papers
+### Evolution and AI/ML
 
-This visualization is based on the following research papers:
+- Evolutionary algorithms for optimizing manifold configurations
+- Methodical search tools for systematic exploration
+- ML models for predicting particle properties from topology
+- LLM integration for hypothesis generation
 
-- [A Categorical Framework for Topological Features of Spacetime Klein Bottles in Particle Physics](https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969)
-- [4D Spacetime Klein Bottles as Fundamental Particle Models](https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963)
+### Quantum Physics
 
-## Security Updates
+- Quantum harmonic oscillator visualization
+- Maxwell-Boltzmann distribution simulation
+- Electromagnetic field visualization
+- Mapping tools to connect manifold topology to particle properties
 
-This repository has been updated to address the following security vulnerabilities:
+## Technologies
 
-- **Gunicorn HTTP Request Smuggling (CVE-2024-04-16)**: Updated to version 22.0.0 to fix vulnerability that could allow attackers to bypass security restrictions.
-- **Setuptools Remote Code Execution (CVE-2024-07-15)**: Updated to version 70.0.0 to prevent potential code injection via download functions.
-- **Setuptools Denial of Service (CVE-2022-12-23)**: Ensured version is above 65.5.1 to fix vulnerable Regular Expression in package_index.
+- **Backend**: Flask, NumPy, SciPy
+- **Frontend**: Bootstrap 5, Plotly.js, MathJax
+- **ML/AI**: TensorFlow, scikit-learn, Transformers
+- **Deployment**: Docker, Gunicorn
 
-## Prerequisites
+## Contributing
 
-- Docker installed on your system
-- A web browser
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Building the Docker Image
+## License
 
-1. Clone this repository or ensure all files are in the same directory.
-2. Build the image:
-   ```bash
-   docker build -t skb-web-visualizer .
-   ```
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Running the Container
+## Acknowledgments
 
-Run the container with the following command:
-
-```bash
-docker run -d -p 5000:5000 --name skb-visualization skb-web-visualizer
-```
-
-Then open your web browser and navigate to:
-```
-http://localhost:5000
-```
-
-## Using the Web Interface
-
-The web interface provides:
-
-1. **Sliders for Twist Parameters**:
-   - Each sub-SKB has three twist parameters (X, Y, Z) that control its topological properties
-   - These twist parameters may correspond to quantum numbers in the particle physics model
-
-2. **Loop Factor Controls**:
-   - Individual loop factors for each sub-SKB
-   - Global loop factor for the merged SKB
-   - In the topological model, loops may relate to energy levels and particle mass
-
-3. **Time Evolution**:
-   - Slider to control the time parameter
-   - Visualizes evolution through closed timelike curves (CTCs)
-   - Shows how particles maintain their topological identity through time
-
-4. **Toggle Switch**:
-   - Switch between individual quark-like components view and merged composite particle view
-   - In categorical theory, this represents a colimit of the sub-objects
-
-5. **Topological Properties Panel**:
-   - Displays mathematical characteristics such as Euler characteristic, genus, and homology groups
-   - These properties relate to fundamental aspects of the particle model
-
-6. **Interactive 3D Plot**:
-   - Rotate: Click and drag
-   - Zoom: Scroll wheel
-   - Pan: Right-click and drag
-   - Reset view: Double-click
-
-7. **Animation Controls**:
-   - Animate the time evolution to visualize dynamic behavior
-   - Reset button to return to default settings
-
-## Technical Details
-
-This application uses:
-- Flask: Python web framework
-- Plotly: Interactive visualization library
-- NumPy: Mathematical operations
-- Docker: Containerization
-
-## Theoretical Basis
-
-The SKB model explores a novel hypothesis in which fundamental particles are modeled as 4-dimensional spacetime Klein bottles endowed with closed timelike curves. Key aspects include:
-
-- **Non-orientable Topology**: SKBs are non-orientable surfaces with no boundary
-- **Quark-like Components**: Three sub-SKBs with distinct topological features represent quark-like particles
-- **Composite Structures**: Merged SKBs represent baryons or other composite particles
-- **Categorical Framework**: Category theory provides a mathematical foundation for analyzing topological features
-- **Emergent Properties**: Particle attributes like mass and charge emerge from topological characteristics
-
-## Stopping the Container
-
-To stop and remove the container:
-
-```bash
-docker stop skb-visualization
-docker rm skb-visualization
-```
-
-## Troubleshooting
-
-- **Cannot access the web interface**:
-  - Ensure port 5000 is not being used by another application
-  - Check that the container is running with `docker ps`
-  - Try accessing with the IP address of your machine instead of localhost
-
-- **Slow performance**:
-  - Reduce the complexity of the visualization by using simpler configurations
-  - Ensure your browser is up to date
-  - Try using a device with better graphics capabilities
-
-## Recent Updates
-
-### Landing Page
-- Added a modern landing page at the root URL `/`
-- Includes overview of the application's purpose, key features, and research background
-- The interactive visualization is available at `/visualization`
-
-### Evolutionary Programming
-- Added a new section for topological evolution of Sub-SKBs at `/evolution`
-- Implements an evolutionary algorithm to discover compatible Sub-SKB configurations
-- Features include:
-  - Interactive 3D visualization of evolving Sub-SKBs
-  - Configurable evolutionary parameters (population size, mutation rate, etc.)
-  - Real-time display of topological properties (Stiefel-Whitney class, Euler characteristic, etc.)
-  - Population grid showing fitness and compatibility metrics
-
-### UI Consistency Improvements
-- Implemented a standardized navigation bar across all pages for improved user experience
-- Added consistent footer across the application with copyright information
-- Enhanced stylesheets with consistent color variables including RGB variants for transparency effects
-- Added dedicated visualization styling with responsive design for various screen sizes
-- Streamlined page routing and normalized file structure across the application
+- The theoretical foundation is based on research in topological physics
+- Visualization techniques inspired by mathematical topology and differential geometry

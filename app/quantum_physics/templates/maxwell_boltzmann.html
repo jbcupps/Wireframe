@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Maxwell-Boltzmann Distribution - 4D Manifold Explorer{% endblock %}
+
+{% block head_extra %}
+<script src="{{ url_for('static', filename='js/maxwell_boltzmann.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Maxwell-Boltzmann Distribution</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Control Panel</h5>
+                </div>
+                <div class="card-body">
+                    <form id="mb-form">
+                        <div class="mb-3">
+                            <label for="temperature" class="form-label">Temperature (K)</label>
+                            <input type="range" class="form-range" id="temperature" min="50" max="1000" step="10" value="300">
+                            <div class="d-flex justify-content-between">
+                                <small>50 K</small>
+                                <small id="temp-value">300 K</small>
+                                <small>1000 K</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="mass" class="form-label">Particle Mass (atomic mass units)</label>
+                            <input type="range" class="form-range" id="mass" min="1" max="200" step="1" value="40">
+                            <div class="d-flex justify-content-between">
+                                <small>1 amu (Hydrogen)</small>
+                                <small id="mass-value">40 amu (Argon)</small>
+                                <small>200 amu (Heavy)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="particle-count" class="form-label">Particle Count</label>
+                            <select class="form-select" id="particle-count">
+                                <option value="500">500 (Faster)</option>
+                                <option value="1000" selected>1000 (Standard)</option>
+                                <option value="2000">2000 (Detailed)</option>
+                                <option value="5000">5000 (High Resolution)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Generate Distribution</button>
+                            <button type="button" id="reset-btn" class="btn btn-outline-secondary">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Distribution Information</h5>
+                </div>
+                <div class="card-body">
+                    <div id="stats" class="d-none">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <th>Most Probable Speed:</th>
+                                    <td id="most-probable-speed">--</td>
+                                </tr>
+                                <tr>
+                                    <th>Average Speed:</th>
+                                    <td id="average-speed">--</td>
+                                </tr>
+                                <tr>
+                                    <th>RMS Speed:</th>
+                                    <td id="rms-speed">--</td>
+                                </tr>
+                                <tr>
+                                    <th>Average Kinetic Energy:</th>
+                                    <td id="avg-energy">--</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="loading-spinner" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating particles...</p>
+                    </div>
+                    
+                    <div id="info-placeholder" class="text-center">
+                        <p class="text-muted mt-4">
+                            <i class="bi bi-info-circle"></i> 
+                            Generate a distribution to see statistical information.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="visualization-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="distribution-tab" data-bs-toggle="tab" data-bs-target="#distribution" type="button" role="tab">Speed Distribution</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="particles-tab" data-bs-toggle="tab" data-bs-target="#particles" type="button" role="tab">Particle Motion</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="energy-tab" data-bs-toggle="tab" data-bs-target="#energy" type="button" role="tab">Energy Distribution</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="visualization-content">
+                        <div class="tab-pane fade show active" id="distribution" role="tabpanel">
+                            <div id="distribution-plot" style="height: 500px;"></div>
+                        </div>
+                        <div class="tab-pane fade" id="particles" role="tabpanel">
+                            <div id="particles-plot" style="height: 500px;"></div>
+                        </div>
+                        <div class="tab-pane fade" id="energy" role="tabpanel">
+                            <div id="energy-plot" style="height: 500px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Maxwell-Boltzmann Distribution Theory</h5>
+                </div>
+                <div class="card-body">
+                    <p>The Maxwell-Boltzmann distribution describes the statistical distribution of particles in a gas that are in thermal equilibrium. It gives the probability of finding a particle with a specific velocity (or speed) in the gas.</p>
+                    
+                    <h6 class="mt-4">Key Formula</h6>
+                    <p>The probability density function for the speed distribution is given by:</p>
+                    <div class="text-center my-3">
+                        \[ f(v) = 4\pi \left( \frac{m}{2\pi k_B T} \right)^{3/2} v^2 e^{-\frac{mv^2}{2k_B T}} \]
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>\(v\) is the speed</li>
+                        <li>\(m\) is the particle mass</li>
+                        <li>\(k_B\) is the Boltzmann constant</li>
+                        <li>\(T\) is the temperature in Kelvin</li>
+                    </ul>
+                    
+                    <h6 class="mt-4">Important Speeds</h6>
+                    <ul>
+                        <li><strong>Most probable speed</strong>: \(v_p = \sqrt{\frac{2k_B T}{m}}\)</li>
+                        <li><strong>Average speed</strong>: \(v_{avg} = \sqrt{\frac{8k_B T}{\pi m}}\)</li>
+                        <li><strong>Root-mean-square speed</strong>: \(v_{rms} = \sqrt{\frac{3k_B T}{m}}\)</li>
+                    </ul>
+                    
+                    <h6 class="mt-4">Connection to 4D Manifold Physics</h6>
+                    <p>The Maxwell-Boltzmann distribution can be interpreted as a manifestation of underlying 4D manifold dynamics projected into our 3D space. The distribution emerges from the complex topology of interacting SKBs (Spin-Klein-Bottle) structures in 4D space.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

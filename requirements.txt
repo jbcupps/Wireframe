@@ -1,6 +1,23 @@
+# Core dependencies
 numpy==1.24.4
 plotly==5.18.0
 flask==2.3.3
 gunicorn==22.0.0
 setuptools>=65.5.1
 Werkzeug==2.3.7
+
+# Scientific and ML dependencies
+scipy==1.12.0
+pandas==2.2.0
+scikit-learn==1.4.0
+tensorflow==2.15.0
+transformers==4.36.2
+
+# Visualization enhancements
+matplotlib==3.8.2
+ipywidgets==8.1.1
+
+# Development tools
+pytest==7.4.3
+black==23.12.1
+flake8==6.1.0

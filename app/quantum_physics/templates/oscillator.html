@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - Quantum Oscillator{% endblock %}
+
+{% block head_extra %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/oscillator.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3">Quantum Harmonic Oscillator</h1>
+            <p class="text-muted">Explore the quantum mechanical behavior of a harmonic oscillator system</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Visualization Area -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Oscillator Visualization</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-wavefunction-btn">Wavefunction</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-probability-btn">Probability Density</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-energy-btn">Energy Levels</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-classical-btn">Classical vs. Quantum</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="oscillator-visualization" class="visualization-container"></div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quantum Properties</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Energy Spectrum</h6>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Quantum Number (n)</th>
+                                        <th>Energy (E<sub>n</sub>)</th>
+                                        <th>State</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="energy-levels-table">
+                                    <tr>
+                                        <td>0</td>
+                                        <td id="energy-level-0">½ ħω</td>
+                                        <td>Ground state</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td id="energy-level-1">3/2 ħω</td>
+                                        <td>First excited state</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td id="energy-level-2">5/2 ħω</td>
+                                        <td>Second excited state</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td id="energy-level-3">7/2 ħω</td>
+                                        <td>Third excited state</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Quantum Observables</h6>
+                            <table class="table table-sm">
+                                <tbody id="observables-table">
+                                    <tr>
+                                        <td>Expected Position ⟨x⟩</td>
+                                        <td id="expected-position">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Position Uncertainty Δx</td>
+                                        <td id="position-uncertainty">0.707</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Momentum Uncertainty Δp</td>
+                                        <td id="momentum-uncertainty">0.707</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Uncertainty Product Δx·Δp</td>
+                                        <td id="uncertainty-product">0.5 ħ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Oscillator Controls</h5>
+                </div>
+                <div class="card-body">
+                    <form id="oscillator-controls-form">
+                        <div class="control-group">
+                            <label class="control-label">Frequency (ω) <span id="frequency-value">1.0</span> Hz</label>
+                            <input type="range" class="form-range range-slider" id="frequency" min="0.1" max="5" step="0.1" value="1.0" data-value-display="frequency-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Quantum Number (n) <span id="quantum-n-value">0</span></label>
+                            <input type="range" class="form-range range-slider" id="quantum-n" min="0" max="5" step="1" value="0" data-value-display="quantum-n-value">
+                        </div>
+                        
+                        <h6 class="mt-4">Classical Parameters</h6>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Amplitude <span id="amplitude-value">1.0</span></label>
+                            <input type="range" class="form-range range-slider" id="amplitude" min="0.1" max="3" step="0.1" value="1.0" data-value-display="amplitude-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Damping Factor <span id="damping-factor-value">0.1</span></label>
+                            <input type="range" class="form-range range-slider" id="damping-factor" min="0" max="1" step="0.01" value="0.1" data-value-display="damping-factor-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Time Range <span id="time-range-value">10.0</span> s</label>
+                            <input type="range" class="form-range range-slider" id="time-range" min="1" max="30" step="1" value="10.0" data-value-display="time-range-value">
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" id="reset-controls-btn">Reset</button>
+                            <button type="button" class="btn btn-primary" id="update-oscillator-btn">Update</button>
+                            <button type="button" class="btn btn-outline-success" id="animate-btn">
+                                <i class="fas fa-play"></i> <span id="animate-label">Animate</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quantum Mechanics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="quantumAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    Quantum Harmonic Oscillator
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#quantumAccordion">
+                                <div class="accordion-body">
+                                    <p>The quantum harmonic oscillator is one of the most important model systems in quantum mechanics, describing a particle in a parabolic potential well.</p>
+                                    <p>The Hamiltonian operator for the system is:</p>
+                                    <div class="math-container">
+                                        \hat{H} = \frac{\hat{p}^2}{2m} + \frac{1}{2}m\omega^2\hat{x}^2
+                                    </div>
+                                    <p>where \(\hat{p}\) is the momentum operator, \(\hat{x}\) is the position operator, \(m\) is the mass, and \(\omega\) is the angular frequency.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    Energy Levels & Wavefunctions
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#quantumAccordion">
+                                <div class="accordion-body">
+                                    <p>The energy eigenvalues of the quantum harmonic oscillator are quantized:</p>
+                                    <div class="math-container">
+                                        E_n = \hbar\omega(n + \frac{1}{2})
+                                    </div>
+                                    <p>where \(n\) is the quantum number (n = 0, 1, 2, ...).</p>
+                                    <p>The wavefunctions are given by:</p>
+                                    <div class="math-container">
+                                        \psi_n(x) = \frac{1}{\sqrt{2^n n!}} \left(\frac{m\omega}{\pi\hbar}\right)^{1/4} e^{-\frac{m\omega x^2}{2\hbar}} H_n\left(\sqrt{\frac{m\omega}{\hbar}}x\right)
+                                    </div>
+                                    <p>where \(H_n\) are the Hermite polynomials.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Uncertainty Principle
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#quantumAccordion">
+                                <div class="accordion-body">
+                                    <p>The quantum harmonic oscillator demonstrates Heisenberg's uncertainty principle, which states that the product of uncertainties in position and momentum has a fundamental lower bound:</p>
+                                    <div class="math-container">
+                                        \Delta x \cdot \Delta p \geq \frac{\hbar}{2}
+                                    </div>
+                                    <p>For the ground state (n=0), the uncertainty product reaches this minimum value, making it a minimum uncertainty state.</p>
+                                    <p>For higher energy states, the uncertainty product increases according to:</p>
+                                    <div class="math-container">
+                                        \Delta x \cdot \Delta p = \hbar(n + \frac{1}{2})
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                    Connection to Manifold Theory
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#quantumAccordion">
+                                <div class="accordion-body">
+                                    <p>The quantum harmonic oscillator provides insights into possible connections with 4D manifold theory:</p>
+                                    <ul>
+                                        <li>The discrete energy spectrum may correspond to discrete topological invariants of manifolds</li>
+                                        <li>Wavefunctions can be interpreted as probability distributions over manifold configurations</li>
+                                        <li>The uncertainty principle may relate to the non-orientability of certain manifolds</li>
+                                        <li>Topological transitions between manifolds might correspond to quantum transitions between energy states</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error message container -->
+<div id="error-message" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+    <span id="error-text"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endblock %} 

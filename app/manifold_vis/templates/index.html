@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - Manifold Visualization{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">4D Manifold Visualization</h1>
+            <p class="lead">Explore 4D manifold structures and their topological properties</p>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">SKB Visualization</h5>
+                </div>
+                <div class="card-body">
+                    <p>Interactive 3D visualization of Spacetime Klein Bottles (SKBs) with adjustable parameters.</p>
+                    <ul>
+                        <li>Explore twist parameters in multiple dimensions</li>
+                        <li>Visualize loop factors and time evolution</li>
+                        <li>Observe topological features and invariants</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('manifold.skb_visualization') }}" class="btn btn-primary">Explore SKBs</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Educational Content</h5>
+                </div>
+                <div class="card-body">
+                    <p>Learn about the topological properties of 4D manifolds and their relation to particle physics.</p>
+                    <ul>
+                        <li>Understand non-orientability and genus</li>
+                        <li>Learn how topology relates to particle properties</li>
+                        <li>Explore mathematical foundations of 4D manifolds</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('manifold.educational_content') }}" class="btn btn-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">What are Spacetime Klein Bottles?</h5>
+                </div>
+                <div class="card-body">
+                    <p>Spacetime Klein Bottles (SKBs) are four-dimensional non-orientable manifolds that can be used to model fundamental particles in physics. Key properties include:</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Topological Properties</h5>
+                            <ul>
+                                <li>Non-orientability: A global property where a system cannot be consistently oriented</li>
+                                <li>Closed timelike curves: Paths that loop back in time</li>
+                                <li>Genus and Euler characteristic: Fundamental invariants of the topology</li>
+                                <li>Linking numbers and braiding: Relationships between multiple manifolds</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Physical Interpretations</h5>
+                            <ul>
+                                <li>Twist parameters may correspond to quantum numbers</li>
+                                <li>Non-orientability might explain spin-½ properties</li>
+                                <li>Sub-SKBs could represent quark-like particles</li>
+                                <li>SKB combinations may model composite particles like hadrons</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

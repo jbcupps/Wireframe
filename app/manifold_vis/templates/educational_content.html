@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Educational Content - 4D Manifold Explorer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">4D Manifold Physics: Educational Content</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Topics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group" id="topic-list" role="tablist">
+                        <a class="list-group-item list-group-item-action active" id="intro-tab" data-bs-toggle="list" href="#intro" role="tab">Introduction to 4D Manifolds</a>
+                        <a class="list-group-item list-group-item-action" id="skb-tab" data-bs-toggle="list" href="#skb" role="tab">Spin-Klein-Bottle (SKB)</a>
+                        <a class="list-group-item list-group-item-action" id="topology-tab" data-bs-toggle="list" href="#topology" role="tab">Topological Properties</a>
+                        <a class="list-group-item list-group-item-action" id="particles-tab" data-bs-toggle="list" href="#particles" role="tab">Particle Correspondence</a>
+                        <a class="list-group-item list-group-item-action" id="math-tab" data-bs-toggle="list" href="#math" role="tab">Mathematical Foundation</a>
+                        <a class="list-group-item list-group-item-action" id="resources-tab" data-bs-toggle="list" href="#resources" role="tab">Further Resources</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Interactive Learning</h5>
+                </div>
+                <div class="card-body">
+                    <p>Explore the 4D Manifold theory through our interactive tools:</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('manifold.skb_visualization') }}" class="btn btn-outline-primary">SKB Visualization</a>
+                        <a href="{{ url_for('evolution.evolution') }}" class="btn btn-outline-success">Evolution Algorithm</a>
+                        <a href="{{ url_for('quantum.oscillator') }}" class="btn btn-outline-info">Quantum Oscillator</a>
+                        <a href="{{ url_for('quantum.manifold_mapping') }}" class="btn btn-outline-warning">Manifold Mapping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Introduction Section -->
+                        <div class="tab-pane fade show active" id="intro" role="tabpanel">
+                            <h3>Introduction to 4D Manifolds</h3>
+                            <p>The 4D Manifold theory represents a novel approach to understanding the fundamental nature of particles and forces in physics. This theory proposes that the observable properties of elementary particles emerge from four-dimensional topological structures.</p>
+                            
+                            <h5 class="mt-4">Key Concepts</h5>
+                            <ul>
+                                <li><strong>Manifolds</strong>: Mathematical spaces that locally resemble Euclidean space near each point.</li>
+                                <li><strong>4D Space</strong>: A four-dimensional space beyond our everyday experience of three spatial dimensions.</li>
+                                <li><strong>Projection</strong>: How higher-dimensional structures appear when viewed or measured in lower dimensions.</li>
+                                <li><strong>Topology</strong>: The study of geometric properties and spatial relations unaffected by continuous deformation.</li>
+                            </ul>
+                            
+                            <div class="text-center my-4">
+                                <img src="{{ url_for('static', filename='img/4d_projection.png') }}" class="img-fluid rounded" alt="4D Projection Illustration" style="max-width: 500px;">
+                                <p class="text-muted mt-2"><small>Illustration: How a 4D object projects into 3D space</small></p>
+                            </div>
+                            
+                            <h5>Why 4D Manifolds?</h5>
+                            <p>The 4D Manifold approach offers several compelling advantages:</p>
+                            <ul>
+                                <li>Unifies particle properties (mass, charge, spin) as different aspects of the same topological structure</li>
+                                <li>Naturally explains quantization of properties through topology</li>
+                                <li>Provides geometric interpretations for quantum phenomena</li>
+                                <li>Suggests new relationships between particle families</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- SKB Section -->
+                        <div class="tab-pane fade" id="skb" role="tabpanel">
+                            <h3>The Spin-Klein-Bottle (SKB)</h3>
+                            <p>The Spin-Klein-Bottle (SKB) is a fundamental building block in 4D Manifold physics. It represents a specialized four-dimensional extension of the Klein bottle that incorporates spin-like rotational properties.</p>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h5>Properties of the SKB</h5>
+                                    <ul>
+                                        <li><strong>Non-orientability</strong>: Like the Klein bottle, an SKB has no distinct "inside" or "outside"</li>
+                                        <li><strong>Closure in 4D</strong>: Unlike the Klein bottle, the SKB can exist without self-intersection in 4D space</li>
+                                        <li><strong>Twist Parameters</strong>: Characterized by twist values along different axes (X, Y, Z)</li>
+                                        <li><strong>Loop Factor</strong>: Determines the "thickness" or "energy density" of the structure</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div id="skb-mini-visual" style="height: 200px;"></div>
+                                            <p class="text-muted mt-2"><small>Interactive: Adjust twist to see SKB shape change</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Sub-SKB Structures</h5>
+                            <p>Sub-SKBs are simplified versions of the full SKB that maintain key topological properties while having reduced complexity. They are useful for modeling simpler particles like leptons.</p>
+                            
+                            <h5 class="mt-4">SKB Combinations</h5>
+                            <p>More complex particles can be modeled as combinations or interactions between multiple SKB structures:</p>
+                            <ul>
+                                <li><strong>Nested SKBs</strong>: One SKB contained within another, modeling composite particles</li>
+                                <li><strong>Linked SKBs</strong>: Two or more SKBs connected topologically, representing bound states</li>
+                                <li><strong>Resonant SKBs</strong>: SKBs with harmonically related twist parameters, corresponding to unstable particles</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Topology Section -->
+                        <div class="tab-pane fade" id="topology" role="tabpanel">
+                            <h3>Topological Properties</h3>
+                            <p>Topology plays a central role in 4D Manifold physics, as it provides the mathematical framework for understanding how the shape and connectivity of manifolds relate to physical properties.</p>
+                            
+                            <h5 class="mt-4">Key Topological Concepts</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Property</th>
+                                            <th>Description</th>
+                                            <th>Physical Correspondence</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Genus</td>
+                                            <td>Number of "holes" in a surface</td>
+                                            <td>Relates to particle generation and family</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Orientability</td>
+                                            <td>Whether the surface has distinct sides</td>
+                                            <td>Corresponds to charge properties</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Euler Characteristic</td>
+                                            <td>Topological invariant χ = 2 - 2g</td>
+                                            <td>Relates to quantum numbers</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Twist</td>
+                                            <td>How the manifold turns through 4D space</td>
+                                            <td>Determines spin and related properties</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Embedding Dimension</td>
+                                            <td>Minimum dimension needed for the manifold</td>
+                                            <td>Relates to interaction capabilities</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">Topological Transformations</h5>
+                            <p>In 4D Manifold physics, particle interactions can be modeled as topological transformations:</p>
+                            <ul>
+                                <li><strong>Continuous Deformations</strong>: Changes that preserve topology (elastic transformations)</li>
+                                <li><strong>Surgery</strong>: Cutting and regluing manifolds (representing high-energy interactions)</li>
+                                <li><strong>Connected Sums</strong>: Joining manifolds (modeling particle combination)</li>
+                                <li><strong>Fiber Bundles</strong>: Structures with base space and fibers (modeling field interactions)</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Particles Section -->
+                        <div class="tab-pane fade" id="particles" role="tabpanel">
+                            <h3>Particle Correspondence</h3>
+                            <p>The 4D Manifold theory establishes correspondences between topological structures and known elementary particles.</p>
+                            
+                            <div class="table-responsive mt-4">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Particle Type</th>
+                                            <th>Manifold Structure</th>
+                                            <th>Key Topological Features</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Electron</td>
+                                            <td>Sub-SKB with single twist</td>
+                                            <td>Non-orientable, twist ≈ 1.0 in X-axis</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Neutrino</td>
+                                            <td>Oriented torus-like structure</td>
+                                            <td>Orientable, specific twist pattern</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Up Quark</td>
+                                            <td>Complex SKB with fractional topology</td>
+                                            <td>Non-orientable, multiple twist axes</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Down Quark</td>
+                                            <td>Complex SKB with different twist pattern</td>
+                                            <td>Non-orientable, complementary twist pattern to up quark</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Photon</td>
+                                            <td>Special connecting manifold</td>
+                                            <td>Self-dual structure with balanced properties</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4">Property Mapping</h5>
+                            <p>The fundamental properties of particles emerge from topological characteristics:</p>
+                            <ul>
+                                <li><strong>Mass</strong>: Related to the complexity and "loop factor" of the manifold</li>
+                                <li><strong>Charge</strong>: Corresponds to orientability and specific twist patterns</li>
+                                <li><strong>Spin</strong>: Emerges from the rotational properties of the manifold in 4D</li>
+                                <li><strong>Color Charge</strong>: Represented by more complex topological invariants</li>
+                            </ul>
+                            
+                            <div class="alert alert-info mt-4">
+                                <h5 class="alert-heading">Research Frontier</h5>
+                                <p>The exact mapping between all Standard Model particles and 4D manifold structures is an active area of research. Use our interactive tools to explore possible correspondences and contribute to this emerging field.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Math Section -->
+                        <div class="tab-pane fade" id="math" role="tabpanel">
+                            <h3>Mathematical Foundation</h3>
+                            <p>The 4D Manifold theory draws on advanced mathematical concepts from differential geometry, topology, and group theory.</p>
+                            
+                            <h5 class="mt-4">Core Mathematical Structures</h5>
+                            <ul>
+                                <li><strong>Manifold Theory</strong>: Provides the framework for understanding the shapes in 4D space</li>
+                                <li><strong>Differential Forms</strong>: Used to describe fields and their transformations</li>
+                                <li><strong>Fiber Bundles</strong>: Mathematical structures that model field theories</li>
+                                <li><strong>Homology and Cohomology</strong>: Tools for analyzing topological properties</li>
+                                <li><strong>Spin Structures</strong>: Mathematical formulation of intrinsic angular momentum</li>
+                            </ul>
+                            
+                            <h5 class="mt-4">Key Equations</h5>
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <p>The SKB manifold can be parametrized using the following equations in ℝ⁴:</p>
+                                    <div class="text-center my-3">
+                                        <p>\[ X(u,v) = (R + c\cos{v})\cos{u} \]</p>
+                                        <p>\[ Y(u,v) = (R + c\cos{v})\sin{u} \]</p>
+                                        <p>\[ Z(u,v) = c\sin{v}\cos{(u/2)} \]</p>
+                                        <p>\[ W(u,v) = c\sin{v}\sin{(u/2)} \]</p>
+                                    </div>
+                                    <p>Where twist parameters modify these equations to create different SKB configurations.</p>
+                                </div>
+                            </div>
+                            
+                            <p>The 4D Manifold approach also uses concepts from:</p>
+                            <ul>
+                                <li><strong>Gauge Theory</strong>: Providing connections to the Standard Model</li>
+                                <li><strong>Clifford Algebras</strong>: Used for spin representations</li>
+                                <li><strong>Knot Theory</strong>: Relevant for understanding complex manifold interactions</li>
+                                <li><strong>Category Theory</strong>: Organizing the relationships between different structures</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Resources Section -->
+                        <div class="tab-pane fade" id="resources" role="tabpanel">
+                            <h3>Further Resources</h3>
+                            <p>Deepen your understanding of 4D Manifold physics with these resources:</p>
+                            
+                            <h5 class="mt-4">Recommended Reading</h5>
+                            <div class="list-group mb-4">
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Introduction to Manifold Theory</h6>
+                                        <small>Textbook</small>
+                                    </div>
+                                    <p class="mb-1">Comprehensive introduction to the mathematical foundations of manifolds.</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Topology and Physics</h6>
+                                        <small>Advanced Text</small>
+                                    </div>
+                                    <p class="mb-1">Explores the connections between topological concepts and physical theories.</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Journal of 4D Physics Research</h6>
+                                        <small>Academic Journal</small>
+                                    </div>
+                                    <p class="mb-1">Latest research findings in the field of 4D manifold physics.</p>
+                                </a>
+                            </div>
+                            
+                            <h5>Online Courses and Videos</h5>
+                            <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Visualizing Higher Dimensions</h6>
+                                            <p class="card-text">Online course on techniques for understanding and working with 4D objects.</p>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="#" class="btn btn-sm btn-outline-primary">View Course</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Topology for Physicists</h6>
+                                            <p class="card-text">Video lecture series explaining topological concepts relevant to physics.</p>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="#" class="btn btn-sm btn-outline-primary">Watch Videos</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5>Software Tools</h5>
+                            <ul>
+                                <li><a href="#">4D Manifold Simulator</a> - Desktop software for advanced manifold visualization</li>
+                                <li><a href="#">Topological Analysis Package</a> - Python library for computing manifold properties</li>
+                                <li><a href="#">SKB Generator</a> - Tool for creating and exploring SKB configurations</li>
+                            </ul>
+                            
+                            <div class="alert alert-success mt-4">
+                                <h5 class="alert-heading">Join the Community</h5>
+                                <p>Connect with other researchers and enthusiasts exploring 4D Manifold physics:</p>
+                                <ul class="mb-0">
+                                    <li>Annual 4D Physics Conference (next: October 2024)</li>
+                                    <li>Online forums and discussion groups</li>
+                                    <li>Collaborative research opportunities</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Simple mini-visualization of SKB for educational purposes
+    if (document.getElementById('skb-mini-visual')) {
+        const container = document.getElementById('skb-mini-visual');
+        
+        // This would be replaced with actual visualization code
+        // using Plotly or other visualization library
+        const placeholder = document.createElement('div');
+        placeholder.style.width = '100%';
+        placeholder.style.height = '100%';
+        placeholder.style.backgroundColor = '#f8f9fa';
+        placeholder.style.display = 'flex';
+        placeholder.style.alignItems = 'center';
+        placeholder.style.justifyContent = 'center';
+        
+        placeholder.innerHTML = '<p class="text-muted">SKB Visualization Placeholder</p>';
+        container.appendChild(placeholder);
+    }
+});
+</script>
+{% endblock %} 

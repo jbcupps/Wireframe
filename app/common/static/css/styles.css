@@ -1,0 +1,227 @@
+/* 
+   4D Manifold Explorer Stylesheet
+   Core styles for the application
+*/
+
+/* Global variables */
+:root {
+    --primary-color: #4a6fa5;
+    --primary-light: #6a8cc5;
+    --primary-dark: #2a5085;
+    
+    --secondary-color: #5a9a78;
+    --secondary-light: #7aba98;
+    --secondary-dark: #3a7a58;
+    
+    --info-color: #5a7ba5;
+    --info-light: #7a9bc5;
+    --info-dark: #3a5b85;
+    
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    
+    --text-color: #212529;
+    --muted-text: #6c757d;
+    
+    --border-radius: 0.375rem;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --box-shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Body styles */
+body {
+    font-family: 'Roboto', 'Segoe UI', 'Arial', sans-serif;
+    color: var(--text-color);
+    padding-top: 0.5rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make footer stick to bottom */
+.footer {
+    margin-top: auto;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.lead {
+    font-weight: 300;
+    font-size: 1.25rem;
+}
+
+/* Cards */
+.card {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--box-shadow-lg);
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Buttons */
+.btn {
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Visualization containers */
+.visualization-container {
+    height: 70vh;
+    min-height: 500px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    background-color: #f8f9fa;
+    position: relative;
+}
+
+/* Control panels */
+.control-panel {
+    padding: 1rem;
+    background-color: rgba(248, 249, 250, 0.9);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.control-group {
+    margin-bottom: 1rem;
+}
+
+.control-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Sliders */
+.slider-container {
+    padding: 0.5rem 0;
+}
+
+.slider-value {
+    width: 3rem;
+    display: inline-block;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Nav customization */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+/* Results display */
+.results-panel {
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.results-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .visualization-container {
+        height: 50vh;
+    }
+    
+    .card-deck .card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation effects */
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Mathematical notation */
+.math-container {
+    overflow-x: auto;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background-color: rgba(248, 249, 250, 0.5);
+    border-radius: var(--border-radius);
+}
+
+/* Tooltip customization */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+.tooltip-inner {
+    max-width: 300px;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+}
+
+/* Info badges and labels */
+.info-badge {
+    background-color: var(--info-light);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+/* Loading indicators */
+.loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 0.25rem solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+} 

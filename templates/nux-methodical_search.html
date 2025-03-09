@@ -844,55 +844,7 @@
         </div>
     </div>
     
-    <!-- Include footer -->
-    {% include 'footer.html' %}
-
-    <!-- Add this before the end of the body tag -->
-    <script>
-    // Add global error handler to catch any JavaScript errors
-    window.addEventListener('error', function(event) {
-        console.error('Global error caught:', event.error);
-        // Report errors to the console
-        if (event.error && event.error.stack) {
-            console.error('Error stack:', event.error.stack);
-        }
-    });
-
-    // Initialize when the DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM content loaded - initializing methodical search');
-        
-        // Check if Plotly is available
-        if (typeof Plotly === 'undefined') {
-            console.error('Plotly library not loaded! Adding it dynamically...');
-            var plotlyScript = document.createElement('script');
-            plotlyScript.src = 'https://cdn.plot.ly/plotly-latest.min.js';
-            plotlyScript.onload = function() {
-                console.log('Plotly loaded successfully');
-                initMethodicalSearch();
-            };
-            plotlyScript.onerror = function() {
-                console.error('Failed to load Plotly');
-                alert('Failed to load visualization library. Please refresh the page.');
-            };
-            document.head.appendChild(plotlyScript);
-        } else {
-            console.log('Plotly already loaded');
-            initMethodicalSearch();
-        }
-    });
-
-    // Backup initialization in case DOMContentLoaded fails
-    window.addEventListener('load', function() {
-        console.log('Window fully loaded - checking initialization');
-        
-        // Check if visualization exists
-        const visualizationElement = document.getElementById('visualization');
-        if (visualizationElement && (!visualizationElement.children.length || !visualizationState || !visualizationState.isInitialized)) {
-            console.log('Visualization not initialized, running backup initialization');
-            initMethodicalSearch();
-        }
-    });
-    </script>
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/methodical_search_visualizations.js') }}"></script>
 </body>
 </html> 

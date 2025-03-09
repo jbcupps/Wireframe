@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-3">4D Manifold Explorer</h1>
+            <p class="lead">Explore the connections between 4D manifold topology and particle physics</p>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-3">4D Manifold Visualization</h3>
+                    <i class="fas fa-cube fa-4x mb-3 text-primary"></i>
+                    <p class="card-text">Interact with 4D manifolds and visualize their topological properties in three dimensions.</p>
+                    <a href="/manifold/" class="btn btn-outline-primary">Explore Manifolds</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-3">Evolution & AI/ML</h3>
+                    <i class="fas fa-brain fa-4x mb-3 text-success"></i>
+                    <p class="card-text">Use evolutionary algorithms and AI/ML to discover and analyze manifold configurations.</p>
+                    <a href="/evolution/" class="btn btn-outline-success">Discover Patterns</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-3">Quantum Physics</h3>
+                    <i class="fas fa-atom fa-4x mb-3 text-info"></i>
+                    <p class="card-text">Map manifold properties to particle physics and explore established quantum theories.</p>
+                    <a href="/quantum/" class="btn btn-outline-info">Connect Theories</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">About the 4D Manifold Explorer</h4>
+                </div>
+                <div class="card-body">
+                    <p>The 4D Manifold Explorer is an interactive web application for exploring the connection between higher-dimensional topological manifolds and fundamental particle physics. Based on research into Spacetime Klein Bottles (SKBs) as models for particles, this tool provides:</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Key Features</h5>
+                            <ul>
+                                <li>Interactive 3D visualization of 4D manifolds</li>
+                                <li>Real-time calculation of topological invariants</li>
+                                <li>Evolutionary algorithms for discovering stable configurations</li>
+                                <li>AI/ML tools for analyzing topological patterns</li>
+                                <li>Mapping between topology and particle properties</li>
+                                <li>Educational content on manifold theory</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Research Foundation</h5>
+                            <p>This explorer is based on theoretical research suggesting that fundamental particles might be modeled as 4D non-orientable manifolds with closed timelike curves. The theory proposes that:</p>
+                            <ul>
+                                <li>Particle properties emerge from topological features</li>
+                                <li>Quantum behavior arises from geometric structure</li>
+                                <li>Interactions between particles can be modeled as topological operations</li>
+                                <li>The standard model might be derivable from manifold theory</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %} 

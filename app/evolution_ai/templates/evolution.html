@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - Evolutionary Algorithm{% endblock %}
+
+{% block head_extra %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/evolution.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3">Evolutionary Algorithm for Sub-SKB Optimization</h1>
+            <p class="text-muted">Discover optimal manifold configurations through simulated evolution</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Results Visualization Area -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Evolution Results</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-fitness-btn">Fitness Graph</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-best-skb-btn">Best Individual</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-population-btn">Population Grid</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="evolution-visualization" class="visualization-container">
+                        <!-- Initial state shows loading or instructions -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                            <p class="text-muted mb-4">Configure evolution parameters and click "Run Evolution" to begin</p>
+                            <i class="fas fa-dna fa-5x text-muted mb-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Best Individual Properties</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Parameters</h6>
+                            <table class="table table-sm">
+                                <tbody id="best-params-table">
+                                    <tr>
+                                        <td>X-Axis Twist</td>
+                                        <td id="best-twist-x">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Y-Axis Twist</td>
+                                        <td id="best-twist-y">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Z-Axis Twist</td>
+                                        <td id="best-twist-z">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Loop Factor</td>
+                                        <td id="best-loop-factor">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fitness</td>
+                                        <td id="best-fitness">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Predicted Particle Properties</h6>
+                            <table class="table table-sm">
+                                <tbody id="best-properties-table">
+                                    <tr>
+                                        <td>Mass (MeV/c²)</td>
+                                        <td id="best-mass">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Charge (e)</td>
+                                        <td id="best-charge">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Spin (ħ)</td>
+                                        <td id="best-spin">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Likely Particle</td>
+                                        <td id="best-particle">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Confidence</td>
+                                        <td id="best-confidence">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-sm btn-primary" id="use-best-params-btn">Use These Parameters in Visualization</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="export-best-params-btn">Export Parameters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Evolution Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form id="evolution-controls-form">
+                        <div class="control-group">
+                            <label class="control-label">Population Size <span id="population-size-value">20</span></label>
+                            <input type="range" class="form-range range-slider" id="population-size" min="5" max="50" step="5" value="20" data-value-display="population-size-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Generations <span id="generations-value">10</span></label>
+                            <input type="range" class="form-range range-slider" id="generations" min="5" max="50" step="5" value="10" data-value-display="generations-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Mutation Rate <span id="mutation-rate-value">0.1</span></label>
+                            <input type="range" class="form-range range-slider" id="mutation-rate" min="0.01" max="0.5" step="0.01" value="0.1" data-value-display="mutation-rate-value">
+                        </div>
+                        
+                        <h6 class="mt-4">Fitness Criteria</h6>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Target Twist Sum <span id="target-twist-sum-value">3.0</span></label>
+                            <input type="range" class="form-range range-slider" id="target-twist-sum" min="0" max="10" step="0.1" value="3.0" data-value-display="target-twist-sum-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Target Loop Factor <span id="target-loop-factor-value">1.5</span></label>
+                            <input type="range" class="form-range range-slider" id="target-loop-factor" min="0.5" max="3" step="0.1" value="1.5" data-value-display="target-loop-factor-value">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="control-group">
+                                    <label class="control-label">Twist Weight <span id="twist-weight-value">0.6</span></label>
+                                    <input type="range" class="form-range range-slider" id="twist-weight" min="0" max="1" step="0.1" value="0.6" data-value-display="twist-weight-value">
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="control-group">
+                                    <label class="control-label">Loop Weight <span id="loop-weight-value">0.4</span></label>
+                                    <input type="range" class="form-range range-slider" id="loop-weight" min="0" max="1" step="0.1" value="0.4" data-value-display="loop-weight-value">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="button" class="btn btn-primary" id="run-evolution-btn">Run Evolution</button>
+                            <button type="button" class="btn btn-outline-secondary" id="reset-evolution-btn">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">How It Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="explanationAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingEvolution">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEvolution" aria-expanded="false" aria-controls="collapseEvolution">
+                                    Evolutionary Algorithm
+                                </button>
+                            </h2>
+                            <div id="collapseEvolution" class="accordion-collapse collapse" aria-labelledby="headingEvolution" data-bs-parent="#explanationAccordion">
+                                <div class="accordion-body">
+                                    <p>The evolutionary algorithm uses principles inspired by natural selection to find optimal Sub-SKB configurations:</p>
+                                    <ol>
+                                        <li><strong>Initialization:</strong> Creates a population of random Sub-SKB configurations</li>
+                                        <li><strong>Evaluation:</strong> Calculates fitness for each individual based on how well they match target criteria</li>
+                                        <li><strong>Selection:</strong> Chooses individuals with higher fitness to become parents</li>
+                                        <li><strong>Crossover:</strong> Creates new individuals by combining parameters from parents</li>
+                                        <li><strong>Mutation:</strong> Randomly modifies some parameters to maintain diversity</li>
+                                        <li><strong>Iteration:</strong> Repeats the process for multiple generations</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFitness">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFitness" aria-expanded="false" aria-controls="collapseFitness">
+                                    Fitness Calculation
+                                </button>
+                            </h2>
+                            <div id="collapseFitness" class="accordion-collapse collapse" aria-labelledby="headingFitness" data-bs-parent="#explanationAccordion">
+                                <div class="accordion-body">
+                                    <p>The fitness function determines how well a Sub-SKB configuration matches the desired properties:</p>
+                                    <ul>
+                                        <li><strong>Twist Sum:</strong> The sum of the absolute twist values along all axes (|X| + |Y| + |Z|)</li>
+                                        <li><strong>Loop Factor:</strong> Influences the number of loops in the manifold</li>
+                                    </ul>
+                                    <p>Fitness is calculated based on the proximity to target values, weighted by their importance:</p>
+                                    <div class="math-container">
+                                        \begin{align}
+                                        F_{twist} &= \frac{1}{1 + |T_{actual} - T_{target}|} \\
+                                        F_{loop} &= \frac{1}{1 + |L_{actual} - L_{target}|} \\
+                                        Fitness &= w_{twist} \cdot F_{twist} + w_{loop} \cdot F_{loop}
+                                        \end{align}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingInterpretation">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInterpretation" aria-expanded="false" aria-controls="collapseInterpretation">
+                                    Results Interpretation
+                                </button>
+                            </h2>
+                            <div id="collapseInterpretation" class="accordion-collapse collapse" aria-labelledby="headingInterpretation" data-bs-parent="#explanationAccordion">
+                                <div class="accordion-body">
+                                    <p>The results of the evolutionary algorithm can be interpreted in several ways:</p>
+                                    <ul>
+                                        <li><strong>Fitness Graph:</strong> Shows how the population fitness improves over generations</li>
+                                        <li><strong>Best Individual:</strong> The Sub-SKB configuration with the highest fitness</li>
+                                        <li><strong>Population Grid:</strong> Visual representation of all individuals in the final population</li>
+                                    </ul>
+                                    <p>For the best individual, we predict particle properties using a machine learning model trained on hypothetical correlations between topological features and physical properties.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error message container -->
+<div id="error-message" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+    <span id="error-text"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endblock %} 

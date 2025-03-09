@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - Methodical Search{% endblock %}
+
+{% block head_extra %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/iterative.js') }}" defer></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3">Methodical Parameter Search for Sub-SKBs</h1>
+            <p class="text-muted">Systematically explore sub-SKB manifold configurations through parameter space optimization</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Results Visualization Area -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Search Results</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-parameter-space-btn">Parameter Space</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-best-result-btn">Best Result</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-optimization-btn">Optimization Path</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="search-visualization" class="visualization-container" style="height: 500px;">
+                        <!-- Initial state shows loading or instructions -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                            <p class="text-muted mb-4">Configure search parameters and click "Run Search" to begin</p>
+                            <i class="fas fa-search fa-5x text-muted mb-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Best Configuration Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Sub-SKB Parameters</h6>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>X Twist:</th>
+                                        <td id="best-twist-x">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Y Twist:</th>
+                                        <td id="best-twist-y">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Z Twist:</th>
+                                        <td id="best-twist-z">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Loop Factor:</th>
+                                        <td id="best-loop-factor">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Derived Properties</h6>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Total Twist Sum:</th>
+                                        <td id="best-twist-sum">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Error Value:</th>
+                                        <td id="best-error">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Physical Interpretation:</th>
+                                        <td>Sub-SKB with these parameters may represent a quark-like component.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button id="export-results-btn" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Results</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>X Twist</th>
+                                    <th>Y Twist</th>
+                                    <th>Z Twist</th>
+                                    <th>Loop Factor</th>
+                                    <th>Error</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body">
+                                <!-- Results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Target Results Table (for iterative search) -->
+            <div class="card mb-4" id="target-results-card" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">Theoretical Target Results</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Target Twist</th>
+                                    <th>Target Loop</th>
+                                    <th>Actual Twist</th>
+                                    <th>Actual Loop</th>
+                                    <th>Error</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="target-table-body">
+                                <!-- Target results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button id="export-iterative-btn" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-download"></i> Export Iterative Results
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parameter Configuration Area -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="standard-search-tab" data-bs-toggle="tab" data-bs-target="#standard-search" type="button" role="tab" aria-controls="standard-search" aria-selected="true">Standard Search</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="iterative-search-tab" data-bs-toggle="tab" data-bs-target="#iterative-search" type="button" role="tab" aria-controls="iterative-search" aria-selected="false">Particle Target Search</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Standard Search Tab -->
+                        <div class="tab-pane fade show active" id="standard-search" role="tabpanel" aria-labelledby="standard-search-tab">
+                            <form id="search-form">
+                                <h6>Twist Parameters</h6>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">X-Axis Twist Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-x-min" placeholder="Min" value="-2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-x-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-x-steps" placeholder="Steps" value="8" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Y-Axis Twist Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-y-min" placeholder="Min" value="-2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-y-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-y-steps" placeholder="Steps" value="8" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Z-Axis Twist Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-z-min" placeholder="Min" value="-2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-z-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="twist-z-steps" placeholder="Steps" value="8" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Loop Factor Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="loop-factor-min" placeholder="Min" value="0.5" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="loop-factor-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="loop-factor-steps" placeholder="Steps" value="4" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-4">Target Properties</h6>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Target Twist Sum</label>
+                                    <input type="number" class="form-control" id="target-twist-sum" value="1.0" step="0.1">
+                                    <small class="text-muted">For quark-like sub-SKBs, 1/3 or 2/3 may correspond to fractional charges</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Target Loop Factor</label>
+                                    <input type="number" class="form-control" id="target-loop-factor" value="1.0" step="0.1">
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label">Twist Weight</label>
+                                        <input type="number" class="form-control" id="twist-weight" value="0.6" step="0.1" min="0" max="1">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Loop Weight</label>
+                                        <input type="number" class="form-control" id="loop-weight" value="0.4" step="0.1" min="0" max="1">
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-4">Search Control</h6>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label">Max Iterations</label>
+                                        <input type="number" class="form-control" id="max-iterations" value="100" min="1">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Error Tolerance</label>
+                                        <input type="number" class="form-control" id="tolerance" value="0.01" step="0.001" min="0.001">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="button" id="run-search-btn" class="btn btn-primary">
+                                        <i class="fas fa-play me-1"></i> Run Standard Search
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Iterative Search Tab -->
+                        <div class="tab-pane fade" id="iterative-search" role="tabpanel" aria-labelledby="iterative-search-tab">
+                            <form id="iterative-search-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Particle Target Type</label>
+                                    <select class="form-select" id="target-type">
+                                        <option value="all" selected>All Particles</option>
+                                        <option value="quark">Quarks Only</option>
+                                        <option value="lepton">Leptons Only</option>
+                                        <option value="baryon">Baryon Components</option>
+                                    </select>
+                                    <small class="text-muted">Select which type of theoretical particles to target in the search</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Maximum Targets</label>
+                                    <input type="number" class="form-control" id="max-targets" value="5" min="1" max="20">
+                                    <small class="text-muted">The maximum number of theoretical targets to search for</small>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="optimize-each">
+                                    <label class="form-check-label" for="optimize-each">Optimize Each Target Separately</label>
+                                    <small class="d-block text-muted">When enabled, stores detailed results for each target</small>
+                                </div>
+                                
+                                <h6 class="mt-4">Parameter Space</h6>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">X-Axis Twist Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-x-min" placeholder="Min" value="-2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-x-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-x-steps" placeholder="Steps" value="6" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Y-Axis Twist Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-y-min" placeholder="Min" value="-2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-y-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-y-steps" placeholder="Steps" value="6" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Z-Axis Twist Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-z-min" placeholder="Min" value="-2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-z-max" placeholder="Max" value="2.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-twist-z-steps" placeholder="Steps" value="6" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Loop Factor Range</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-loop-factor-min" placeholder="Min" value="0.5" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-loop-factor-max" placeholder="Max" value="3.0" step="0.1">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control form-control-sm" id="iter-loop-factor-steps" placeholder="Steps" value="6" min="2">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="alert alert-info small">
+                                        <i class="fas fa-info-circle me-1"></i> The iterative search will find the best sub-SKB configurations that match theoretical particle properties based on the categorical framework.
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="button" id="run-iterative-search-btn" class="btn btn-primary">
+                                        <i class="fas fa-play me-1"></i> Run Particle Target Search
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Physical Interpretation</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">In the Spacetime Klein Bottle (SKB) model, sub-SKBs are components of larger particles:</p>
+                    <ul class="small">
+                        <li><strong>Twist sum</strong> correlates with electric charge - e.g., a twist sum of 1/3 may represent a d-quark.</li>
+                        <li><strong>X/Y/Z twist parameters</strong> control the topological configuration of the sub-SKB.</li>
+                        <li><strong>Loop factor</strong> influences how the manifold connects to itself in 4D spacetime.</li>
+                    </ul>
+                    <p class="small">
+                        A sub-SKB with 3 twists may represent an electron-like particle. Configurations with
+                        fractional twists could correspond to quarks with fractional charges.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Setup tab switching behavior
+    document.addEventListener('DOMContentLoaded', function() {
+        const standardSearchTab = document.getElementById('standard-search-tab');
+        const iterativeSearchTab = document.getElementById('iterative-search-tab');
+        const targetResultsCard = document.getElementById('target-results-card');
+        
+        if (standardSearchTab && iterativeSearchTab && targetResultsCard) {
+            // Show/hide target results card based on active tab
+            standardSearchTab.addEventListener('click', function() {
+                targetResultsCard.style.display = 'none';
+            });
+            
+            iterativeSearchTab.addEventListener('click', function() {
+                targetResultsCard.style.display = 'block';
+            });
+        }
+    });
+    
+    // Copy parameters between standard and iterative search forms
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to copy values from standard to iterative or vice versa
+        function copyParameterValues(fromPrefix, toPrefix) {
+            const parameters = ['twist-x-min', 'twist-x-max', 'twist-x-steps', 
+                                'twist-y-min', 'twist-y-max', 'twist-y-steps',
+                                'twist-z-min', 'twist-z-max', 'twist-z-steps',
+                                'loop-factor-min', 'loop-factor-max', 'loop-factor-steps'];
+            
+            parameters.forEach(param => {
+                const fromElement = document.getElementById(`${fromPrefix}${param}`);
+                const toElement = document.getElementById(`${toPrefix}${param}`);
+                
+                if (fromElement && toElement) {
+                    toElement.value = fromElement.value;
+                }
+            });
+        }
+        
+        // Copy when switching to iterative tab
+        const iterativeSearchTab = document.getElementById('iterative-search-tab');
+        if (iterativeSearchTab) {
+            iterativeSearchTab.addEventListener('click', function() {
+                copyParameterValues('', 'iter-');
+            });
+        }
+        
+        // Copy when switching to standard tab
+        const standardSearchTab = document.getElementById('standard-search-tab');
+        if (standardSearchTab) {
+            standardSearchTab.addEventListener('click', function() {
+                copyParameterValues('iter-', '');
+            });
+        }
+    });
+</script>
+{% endblock %} 

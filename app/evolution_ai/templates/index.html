@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - Evolution & AI/ML{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">Evolution, Iterative, and AI/ML Tools</h1>
+            <p class="text-muted">Explore the 4D Manifold hypothesis through evolutionary algorithms, methodical search, and AI/ML approaches</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Evolution -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Evolutionary Algorithm</h5>
+                </div>
+                <div class="card-body">
+                    <p>Use evolutionary approaches to discover optimal Sub-SKB configurations through simulated natural selection.</p>
+                    <ul>
+                        <li>Generate populations of Sub-SKB configurations</li>
+                        <li>Evaluate fitness based on target criteria</li>
+                        <li>Evolve parameters through many generations</li>
+                        <li>Identify high-fitness manifolds for further study</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('evolution.evolution') }}" class="btn btn-primary">Explore Evolution</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Methodical Search -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Methodical Search</h5>
+                </div>
+                <div class="card-body">
+                    <p>Systematically explore the parameter space of manifold configurations using iterative optimization.</p>
+                    <ul>
+                        <li>Define parameter search spaces</li>
+                        <li>Use gradient-based optimization</li>
+                        <li>Conduct grid, random, or Bayesian searches</li>
+                        <li>Map relationships between parameters and topology</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('evolution.iterative') }}" class="btn btn-primary">Try Methodical Search</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI/ML -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">AI/ML Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <p>Apply machine learning to predict particle properties from topological features and generate new hypotheses.</p>
+                    <ul>
+                        <li>Predict mass, charge, and spin from topology</li>
+                        <li>Identify likely particle classifications</li>
+                        <li>Generate new hypotheses with LLMs</li>
+                        <li>Discover patterns in parameter-property relationships</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('evolution.ai_ml') }}" class="btn btn-primary">Explore AI/ML Tools</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Getting Started</h5>
+                </div>
+                <div class="card-body">
+                    <p>To begin exploring the 4D Manifold hypothesis through computational approaches:</p>
+                    <ol>
+                        <li>Visit the <a href="{{ url_for('evolution.evolution') }}">Evolutionary Algorithm</a> section to discover optimal manifold configurations</li>
+                        <li>Try the <a href="{{ url_for('evolution.iterative') }}">Methodical Search</a> tools for systematic parameter exploration</li>
+                        <li>Use the <a href="{{ url_for('evolution.ai_ml') }}">AI/ML Analysis</a> tools to predict properties and generate hypotheses</li>
+                    </ol>
+                    <p>For the full experience, experiment with all three approaches and compare the results!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

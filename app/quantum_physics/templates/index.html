@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - Quantum Physics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">Standard and Quantum Physics</h1>
+            <p class="lead">Visualize established physics theories and map 4D manifold results to known models</p>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Quantum Oscillator</h5>
+                </div>
+                <div class="card-body">
+                    <p>Explore quantum harmonic oscillator models with adjustable parameters.</p>
+                    <ul>
+                        <li>Visualize quantum wavefunctions</li>
+                        <li>Compare classical and quantum behavior</li>
+                        <li>Explore energy levels and uncertainty</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('quantum.oscillator') }}" class="btn btn-primary">Explore Oscillator</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Maxwell-Boltzmann</h5>
+                </div>
+                <div class="card-body">
+                    <p>Visualize Maxwell-Boltzmann distribution for particle ensembles.</p>
+                    <ul>
+                        <li>Adjust temperature and mass parameters</li>
+                        <li>Observe velocity distributions</li>
+                        <li>Analyze statistical properties</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('quantum.maxwell_boltzmann') }}" class="btn btn-primary">View Distribution</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Maxwell's Equations</h5>
+                </div>
+                <div class="card-body">
+                    <p>Visualize electromagnetic fields and Maxwell's equations.</p>
+                    <ul>
+                        <li>Explore electric and magnetic fields</li>
+                        <li>Interact with field configurations</li>
+                        <li>Study electromagnetic waves</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('quantum.maxwell_equations') }}" class="btn btn-primary">View Fields</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Manifold Mapping</h5>
+                </div>
+                <div class="card-body">
+                    <p>Map 4D manifold properties to known particle physics models.</p>
+                    <ul>
+                        <li>Compare manifold predictions with standard model</li>
+                        <li>Map topological invariants to particle properties</li>
+                        <li>Visualize correspondences</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('quantum.manifold_mapping') }}" class="btn btn-primary">Explore Mapping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Connecting Manifold Topology to Particle Physics</h5>
+                </div>
+                <div class="card-body">
+                    <p>This section provides tools to connect the 4D manifold hypothesis with established physics theories:</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Theoretical Connections</h5>
+                            <ul>
+                                <li><strong>Wave-Particle Duality:</strong> Manifold topology may provide a geometric foundation for the wave-particle duality observed in quantum mechanics.</li>
+                                <li><strong>Quantum Numbers:</strong> Topological invariants of manifolds may correspond to quantum numbers of particles.</li>
+                                <li><strong>Uncertainty Principle:</strong> The non-orientability of SKBs may provide a geometric interpretation of quantum uncertainty.</li>
+                                <li><strong>Field Theory:</strong> Manifold configurations can be mapped to field equations in standard quantum field theory.</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Experimental Predictions</h5>
+                            <ul>
+                                <li><strong>Particle Masses:</strong> Manifold properties may predict particle mass ratios that can be experimentally verified.</li>
+                                <li><strong>Interaction Strengths:</strong> Topological relationships between manifolds might predict interaction coupling constants.</li>
+                                <li><strong>New Particles:</strong> The theory predicts possible configurations for particles not yet observed.</li>
+                                <li><strong>Symmetry Breaking:</strong> Manifold topology may explain symmetry breaking in particle interactions.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

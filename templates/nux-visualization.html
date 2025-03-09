@@ -368,13 +368,32 @@
         </div>
     </div>
     
-    <!-- Include footer -->
-    {% include 'footer.html' %}
-    
-    <!-- JavaScript for the visualization -->
-    <script src="{{ url_for('static', filename='js/hadron_validator.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/visualization.js') }}"></script>
+    <!-- Guided Tour -->
+    <div id="guided-tour-overlay" class="guided-tour-overlay hidden">
+        <div class="guided-tour-content neu-card">
+            <div class="guided-tour-header">
+                <h3 id="guided-tour-title">Welcome to 4D Manifold Explorer</h3>
+                <button id="guided-tour-close" class="guided-tour-close neu-btn">&times;</button>
+            </div>
+            <div id="guided-tour-body" class="guided-tour-body">
+                <p>This guided tour will help you understand how to use the 4D Manifold Explorer.</p>
+            </div>
+            <div class="guided-tour-footer">
+                <button id="guided-tour-prev" class="neu-btn guided-tour-btn" disabled>Previous</button>
+                <span id="guided-tour-progress" class="guided-tour-progress">1/6</span>
+                <button id="guided-tour-next" class="neu-btn guided-tour-btn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script src="{{ url_for('static', filename='js/modular_layout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/visualization.js') }}"></script>
+
+    <!-- Neumorphic-specific scripts -->
+    <script src="{{ url_for('static', filename='js/neumorphic.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/neumorphic-layout.js') }}"></script>
+
     <script>
     // Add global error handler to catch any JavaScript errors
     window.addEventListener('error', function(event) {

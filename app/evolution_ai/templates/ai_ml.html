@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - AI/ML Analysis{% endblock %}
+
+{% block head_extra %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/ai_ml.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3">AI/ML Analysis Tools</h1>
+            <p class="text-muted">Apply machine learning and artificial intelligence to analyze manifold configurations</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Visualization & Results Area -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Analysis Results</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-predictions-btn">Predictions</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-properties-btn">Property Mapping</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-hypotheses-btn">Hypotheses</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="ai-ml-visualization" class="visualization-container">
+                        <!-- Initial state shows loading or instructions -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                            <p class="text-muted mb-4">Select an analysis tool and input parameters to begin</p>
+                            <i class="fas fa-brain fa-5x text-muted mb-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Particle Property Predictions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Input Parameters</h6>
+                            <table class="table table-sm">
+                                <tbody id="input-params-table">
+                                    <tr>
+                                        <td>X-Axis Twist</td>
+                                        <td id="input-twist-x">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Y-Axis Twist</td>
+                                        <td id="input-twist-y">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Z-Axis Twist</td>
+                                        <td id="input-twist-z">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Loop Factor</td>
+                                        <td id="input-loop-factor">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Twist Sum</td>
+                                        <td id="twist-sum">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Predicted Properties</h6>
+                            <table class="table table-sm">
+                                <tbody id="prediction-table">
+                                    <tr>
+                                        <td>Mass (MeV/c²)</td>
+                                        <td id="predicted-mass">-</td>
+                                        <td id="mass-confidence" class="text-muted">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Charge (e)</td>
+                                        <td id="predicted-charge">-</td>
+                                        <td id="charge-confidence" class="text-muted">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Spin (ħ)</td>
+                                        <td id="predicted-spin">-</td>
+                                        <td id="spin-confidence" class="text-muted">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Likely Particle</td>
+                                        <td id="likely-particle" colspan="2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Overall Confidence</td>
+                                        <td id="overall-confidence" colspan="2">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-sm btn-primary" id="use-params-btn">Use These Parameters in Visualization</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="export-results-btn">Export Results</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="col-lg-4">
+            <ul class="nav nav-tabs" id="ai-ml-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="prediction-tab" data-bs-toggle="tab" data-bs-target="#prediction-pane" type="button" role="tab">
+                        Property Prediction
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="hypothesis-tab" data-bs-toggle="tab" data-bs-target="#hypothesis-pane" type="button" role="tab">
+                        Hypothesis Generation
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mapping-tab" data-bs-toggle="tab" data-bs-target="#mapping-pane" type="button" role="tab">
+                        Property Mapping
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="ai-ml-tab-content">
+                <!-- Property Prediction Tab -->
+                <div class="tab-pane fade show active" id="prediction-pane" role="tabpanel">
+                    <div class="card border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            <form id="prediction-form">
+                                <p class="text-muted mb-3">Input manifold parameters to predict particle properties using our ML model</p>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">X-Axis Twist</label>
+                                    <input type="number" class="form-control" id="twist-x" value="1.0" step="0.1">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Y-Axis Twist</label>
+                                    <input type="number" class="form-control" id="twist-y" value="0.5" step="0.1">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Z-Axis Twist</label>
+                                    <input type="number" class="form-control" id="twist-z" value="1.5" step="0.1">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Loop Factor</label>
+                                    <input type="number" class="form-control" id="loop-factor" value="1.0" step="0.1">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Prediction Model</label>
+                                    <select class="form-select" id="prediction-model">
+                                        <option value="ensemble">Ensemble (Default)</option>
+                                        <option value="neural_network">Neural Network</option>
+                                        <option value="random_forest">Random Forest</option>
+                                        <option value="gradient_boosting">Gradient Boosting</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="show-confidence" checked>
+                                    <label class="form-check-label" for="show-confidence">
+                                        Show confidence intervals
+                                    </label>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" id="predict-btn">Predict Properties</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hypothesis Generation Tab -->
+                <div class="tab-pane fade" id="hypothesis-pane" role="tabpanel">
+                    <div class="card border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            <form id="hypothesis-form">
+                                <p class="text-muted mb-3">Generate hypotheses about relationships between manifold topology and particle physics</p>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Hypothesis Focus</label>
+                                    <select class="form-select" id="hypothesis-focus">
+                                        <option value="general">General Relationships</option>
+                                        <option value="mass">Mass Correlation</option>
+                                        <option value="charge">Charge Correlation</option>
+                                        <option value="spin">Spin Correlation</option>
+                                        <option value="specific">Specific Particle Type</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3" id="specific-particle-container" style="display: none;">
+                                    <label class="form-label">Specific Particle</label>
+                                    <select class="form-select" id="specific-particle">
+                                        <option value="electron">Electron</option>
+                                        <option value="muon">Muon</option>
+                                        <option value="tau">Tau</option>
+                                        <option value="proton">Proton</option>
+                                        <option value="neutron">Neutron</option>
+                                        <option value="photon">Photon</option>
+                                        <option value="gluon">Gluon</option>
+                                        <option value="quark">Quark</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Topological Elements to Consider</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="consider-twists" checked>
+                                        <label class="form-check-label" for="consider-twists">
+                                            Twist Parameters
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="consider-loop" checked>
+                                        <label class="form-check-label" for="consider-loop">
+                                            Loop Factor
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="consider-invariants" checked>
+                                        <label class="form-check-label" for="consider-invariants">
+                                            Topological Invariants
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Number of Hypotheses</label>
+                                    <input type="number" class="form-control" id="hypothesis-count" value="3" min="1" max="5">
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" id="generate-hypothesis-btn">Generate Hypotheses</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Property Mapping Tab -->
+                <div class="tab-pane fade" id="mapping-pane" role="tabpanel">
+                    <div class="card border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            <form id="mapping-form">
+                                <p class="text-muted mb-3">Explore the relationship between manifold parameters and particle properties</p>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">X-Axis Parameter</label>
+                                    <select class="form-select" id="x-axis-param">
+                                        <option value="twist_x">X-Axis Twist</option>
+                                        <option value="twist_y">Y-Axis Twist</option>
+                                        <option value="twist_z">Z-Axis Twist</option>
+                                        <option value="loop_factor">Loop Factor</option>
+                                        <option value="twist_sum">Twist Sum</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Y-Axis Property</label>
+                                    <select class="form-select" id="y-axis-property">
+                                        <option value="mass">Mass</option>
+                                        <option value="charge">Charge</option>
+                                        <option value="spin">Spin</option>
+                                        <option value="confidence">Prediction Confidence</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Parameter Range</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="number" class="form-control" id="param-min" placeholder="Min" value="0">
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" class="form-control" id="param-max" placeholder="Max" value="3">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Number of Sample Points</label>
+                                    <input type="number" class="form-control" id="sample-points" value="20" min="5" max="50">
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="show-reference-particles" checked>
+                                    <label class="form-check-label" for="show-reference-particles">
+                                        Show reference particles
+                                    </label>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" id="generate-mapping-btn">Generate Mapping</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error message container -->
+<div id="error-message" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+    <span id="error-text"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<!-- Hypothesis results modal -->
+<div class="modal fade" id="hypothesisModal" tabindex="-1" aria-labelledby="hypothesisModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hypothesisModalLabel">Generated Hypotheses</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="hypothesis-results">
+                    <!-- Hypotheses will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-hypotheses-btn">Save Hypotheses</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: 4d-manifold-explorer
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app:/app/app
+      - ./instance:/app/instance
+      - ./tests:/app/tests
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=production
+      - PYTHONPATH=/app
+      # Uncomment the following line to disable TensorFlow warnings
+      - TF_CPP_MIN_LOG_LEVEL=2
+    # Uncomment the following lines to enable GPU support (requires nvidia-docker)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    networks:
+      - manifold-network
+
+  nginx:
+    image: nginx:latest
+    container_name: 4d-manifold-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./app/common/static:/usr/share/nginx/html/static
+    depends_on:
+      - app
+    networks:
+      - manifold-network
+
+networks:
+  manifold-network:
+    driver: bridge 

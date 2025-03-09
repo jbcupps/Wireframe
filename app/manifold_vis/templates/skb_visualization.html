@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}4D Manifold Explorer - SKB Visualization{% endblock %}
+
+{% block head_extra %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/manifold_vis.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3">Spacetime Klein Bottle (SKB) Visualization</h1>
+            <p class="text-muted">Explore the topological features of 4D manifolds with interactive controls</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Visualization Area -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">4D Manifold Visualization</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-skb-btn">SKB View</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-sub-skb-btn">Sub-SKB View</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="view-combined-btn">Combined View</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="manifold-visualization" class="visualization-container"></div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Topological Invariants</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Invariant</th>
+                                        <th>Value</th>
+                                        <th>Interpretation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invariants-table">
+                                    <tr>
+                                        <td>Euler Characteristic</td>
+                                        <td id="euler-characteristic">0</td>
+                                        <td>Surface topology</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Orientability</td>
+                                        <td id="orientability">Non-orientable</td>
+                                        <td>Relates to spin-½</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Genus</td>
+                                        <td id="genus">2</td>
+                                        <td>Number of "holes"</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Twist Complexity</td>
+                                        <td id="twist-complexity">3.0</td>
+                                        <td>Sum of twist values</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Particle Property</th>
+                                        <th>Predicted Value</th>
+                                        <th>Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="properties-table">
+                                    <tr>
+                                        <td>Mass (MeV/c²)</td>
+                                        <td id="property-mass">-</td>
+                                        <td id="confidence-mass">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Charge (e)</td>
+                                        <td id="property-charge">-</td>
+                                        <td id="confidence-charge">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Spin (ħ)</td>
+                                        <td id="property-spin">-</td>
+                                        <td id="confidence-spin">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Likely Particle</td>
+                                        <td id="likely-particle" colspan="2">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">SKB Controls</h5>
+                </div>
+                <div class="card-body">
+                    <form id="skb-controls-form">
+                        <div class="control-group">
+                            <label class="control-label">X-Axis Twist <span id="twist-x-value">1.0</span></label>
+                            <input type="range" class="form-range range-slider" id="twist-x" min="0" max="5" step="0.1" value="1.0" data-value-display="twist-x-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Y-Axis Twist <span id="twist-y-value">0.5</span></label>
+                            <input type="range" class="form-range range-slider" id="twist-y" min="0" max="5" step="0.1" value="0.5" data-value-display="twist-y-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Z-Axis Twist <span id="twist-z-value">1.5</span></label>
+                            <input type="range" class="form-range range-slider" id="twist-z" min="0" max="5" step="0.1" value="1.5" data-value-display="twist-z-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Loop Factor <span id="loop-factor-value">1.0</span></label>
+                            <input type="range" class="form-range range-slider" id="loop-factor" min="0.1" max="3" step="0.1" value="1.0" data-value-display="loop-factor-value">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="control-label">Time <span id="time-value">0.0</span></label>
+                            <input type="range" class="form-range range-slider" id="time" min="0" max="10" step="0.1" value="0.0" data-value-display="time-value">
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" id="reset-controls-btn">Reset</button>
+                            <button type="button" class="btn btn-primary" id="update-visualization-btn">Update</button>
+                            <button type="button" class="btn btn-outline-success" id="animate-btn">
+                                <i class="fas fa-play"></i> <span id="animate-label">Animate</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Educational Notes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="educationAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    What is a Spacetime Klein Bottle?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#educationAccordion">
+                                <div class="accordion-body">
+                                    <p>A Spacetime Klein Bottle (SKB) is a four-dimensional non-orientable manifold that can represent fundamental particles. Unlike regular bottles, an SKB has no inside or outside, representing the non-orientable nature of certain particles.</p>
+                                    <p>The visualization shows a 3D projection of this 4D object, with twist parameters controlling its topological features.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    How do twist parameters relate to particles?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#educationAccordion">
+                                <div class="accordion-body">
+                                    <p>The twist parameters in the visualization correspond to quantum numbers in particle physics:</p>
+                                    <ul>
+                                        <li><strong>X-Axis Twist:</strong> May correspond to electric charge</li>
+                                        <li><strong>Y-Axis Twist:</strong> May correspond to weak isospin</li>
+                                        <li><strong>Z-Axis Twist:</strong> May correspond to color charge</li>
+                                    </ul>
+                                    <p>The sum of these twist values creates a "twist complexity" that relates to a particle's overall energy/mass.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    What are Topological Invariants?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#educationAccordion">
+                                <div class="accordion-body">
+                                    <p>Topological invariants are properties that remain unchanged under continuous deformations of the manifold:</p>
+                                    <ul>
+                                        <li><strong>Euler Characteristic:</strong> A numerical invariant that describes the shape's topology (χ = 2 - 2g for orientable surfaces, where g is genus)</li>
+                                        <li><strong>Orientability:</strong> Whether the manifold has a consistent normal direction (SKBs are non-orientable)</li>
+                                        <li><strong>Genus:</strong> Intuitively, the number of "holes" in the manifold</li>
+                                    </ul>
+                                    <p>These invariants may directly relate to fundamental properties of particles in the Standard Model.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">SKB Theory and Particle Physics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>The Mathematics of SKBs</h5>
+                            <p>Spacetime Klein Bottles are represented mathematically as embeddings of non-orientable surfaces in 4D spacetime. The basic SKB can be parametrized as:</p>
+                            
+                            <div class="math-container">
+                                \begin{align}
+                                x &= (a + b\cos(v))\cos(u + k_x t) \\
+                                y &= (a + b\cos(v))\sin(u + k_y t) \\
+                                z &= b\sin(v)\cos((u + k_z t)/2) \\
+                                w &= b\sin(v)\sin((u + k_z t)/2)
+                                \end{align}
+                            </div>
+                            
+                            <p>where \(u\) and \(v\) are the surface parameters, \(k_x\), \(k_y\), and \(k_z\) are the twist factors along each axis, and \(t\) represents time.</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Connection to the Standard Model</h5>
+                            <p>The SKB hypothesis suggests that fundamental particles can be modeled as 4D manifolds with specific topological properties:</p>
+                            
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Particle</th>
+                                        <th>Twist Configuration</th>
+                                        <th>Topological Invariants</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Electron</td>
+                                        <td>X:~1.0, Y:~0.5, Z:~1.5</td>
+                                        <td>Non-orientable, Genus=1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Proton</td>
+                                        <td>X:~2.0, Y:~2.0, Z:~2.0</td>
+                                        <td>Non-orientable, Genus=2</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Photon</td>
+                                        <td>X:~0.5, Y:~0.5, Z:~0.5</td>
+                                        <td>Orientable, Genus=1</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <p>By adjusting the twist parameters and analyzing the resulting topological invariants, we can explore potential correlations with real particle properties.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error message container -->
+<div id="error-message" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+    <span id="error-text"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endblock %} 
