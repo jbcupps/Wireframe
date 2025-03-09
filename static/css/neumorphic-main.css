@@ -1,0 +1,309 @@
+/*
+ * Neumorphic Design Main Stylesheet
+ * This file imports all neumorphic styles and provides global overrides
+ */
+
+/* Import neumorphic component styles */
+@import url('neumorphic.css');
+@import url('animations.css');
+
+/* Additional global neumorphic styling */
+
+/* Neumorphic headings */
+.neu-heading {
+    color: var(--neu-text-primary);
+    margin-bottom: 1rem;
+    padding: 8px;
+    border-radius: var(--neu-border-radius);
+    transition: all 0.3s ease;
+}
+
+h1.neu-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+h2.neu-heading {
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 12px;
+    margin-top: 1.5rem;
+}
+
+h3.neu-heading {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-top: 1.2rem;
+}
+
+/* Neumorphic tables */
+.neu-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    border-radius: var(--neu-border-radius);
+    overflow: hidden;
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+}
+
+.neu-table thead {
+    background-color: rgba(var(--neu-primary-rgb), 0.1);
+}
+
+.neu-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--neu-text-primary);
+    border-bottom: 1px solid rgba(var(--neu-text-primary-rgb), 0.05);
+}
+
+.neu-table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(var(--neu-text-primary-rgb), 0.05);
+}
+
+.neu-table tbody tr {
+    background-color: var(--neu-surface);
+    transition: all 0.3s ease;
+}
+
+.neu-table tbody tr:hover {
+    box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+}
+
+.neu-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Neumorphic code blocks */
+pre.neu-code {
+    background-color: var(--neu-surface);
+    border-radius: var(--neu-border-radius);
+    box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+    padding: 20px;
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+code.neu-code {
+    background-color: var(--neu-surface);
+    border-radius: 4px;
+    padding: 2px 6px;
+    box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+    font-family: 'Courier New', monospace;
+}
+
+/* Neumorphic dividers */
+.neu-divider {
+    height: 2px;
+    background: var(--neu-surface);
+    box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+    margin: 30px 0;
+    border-radius: 1px;
+}
+
+/* Neumorphic badges */
+.neu-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: var(--neu-surface);
+    color: var(--neu-text-primary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+    margin: 0 5px;
+}
+
+.neu-badge-primary {
+    background: var(--neu-primary);
+    color: white;
+}
+
+/* Neumorphic tooltips */
+.neu-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.neu-tooltip .neu-tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--neu-surface);
+    color: var(--neu-text-primary);
+    text-align: center;
+    border-radius: var(--neu-border-radius);
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+}
+
+.neu-tooltip .neu-tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--neu-surface) transparent transparent transparent;
+}
+
+.neu-tooltip:hover .neu-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Neumorphic toast notifications */
+.neu-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.neu-toast {
+    display: flex;
+    align-items: center;
+    min-width: 250px;
+    max-width: 400px;
+    background-color: var(--neu-surface);
+    color: var(--neu-text-primary);
+    padding: 15px;
+    border-radius: var(--neu-border-radius);
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.neu-toast-icon {
+    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.neu-toast-message {
+    flex-grow: 1;
+}
+
+.neu-toast-info .neu-toast-icon {
+    background-color: var(--neu-info);
+}
+
+.neu-toast-success .neu-toast-icon {
+    background-color: var(--neu-success);
+}
+
+.neu-toast-warning .neu-toast-icon {
+    background-color: var(--neu-warning);
+}
+
+.neu-toast-error .neu-toast-icon {
+    background-color: var(--neu-error);
+}
+
+.neu-toast-hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* Neumorphic loader */
+.neu-loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    transition: opacity 0.3s ease;
+}
+
+.neu-loader-message {
+    margin-top: 15px;
+    color: var(--neu-text-secondary);
+    font-size: 1rem;
+}
+
+/* Neumorphic icons */
+.neu-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--neu-surface);
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+.neu-icon:hover {
+    box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+}
+
+.neu-icon i {
+    color: var(--neu-primary);
+    font-size: 1.2rem;
+}
+
+/* Neumorphic grid layout */
+.neu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .neu-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    h1.neu-heading {
+        font-size: 1.75rem;
+        margin-bottom: 1.2rem;
+    }
+    
+    h2.neu-heading {
+        font-size: 1.3rem;
+        padding: 10px;
+        margin-top: 1.2rem;
+    }
+    
+    h3.neu-heading {
+        font-size: 1.1rem;
+        margin-top: 1rem;
+    }
+}
+
+/* Neumorphic page section */
+.neu-section {
+    padding: 40px 0;
+    margin-bottom: 40px;
+}
+
+/* Dark mode improvements for neumorphic elements */
+body.dark-theme .neu-card,
+body.dark-theme .neu-box {
+    background: linear-gradient(145deg, rgba(46, 49, 66, 0.6), rgba(42, 45, 62, 0.8));
+}
+
+body.dark-theme .neu-box-concave {
+    background: linear-gradient(145deg, rgba(38, 41, 58, 0.8), rgba(42, 45, 62, 0.6));
+} 

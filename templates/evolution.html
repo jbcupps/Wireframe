@@ -3,47 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKB Evolution</title>
+    <title>SKB Evolution - 4D Manifold Explorer</title>
+    
+    <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modular_layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/education_features.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/new_styles.css') }}">
+    
+    <!-- External JS -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <style>
-        :root {
-            --background: #121212;
-            --surface: #1e1e1e;
-            --surface-light: #2d2d2d;
-            --primary: #6200ee;
-            --primary-variant: #3700b3;
-            --secondary: #03dac6;
-            --secondary-variant: #018786;
-            --error: #cf6679;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border-color: #333333;
-            
-            /* SKB Colors */
-            --skb1-color: #FF6E91;  /* Vivid pink */
-            --skb2-color: #33C4FF;  /* Bright blue */
-            --skb3-color: #65FF8F;  /* Bright green */
-            --skb-merged: #BB86FC;  /* Purple */
-            
-            /* Evolution specific colors */
-            --evo-compatible: #65FF8F;  /* Green for compatible */
-            --evo-incompatible: #FF6E91;  /* Pink for incompatible */
-            --evo-neutral: #33C4FF;  /* Blue for neutral */
-            --evo-highlight: #FFCF33;  /* Yellow for highlighting */
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: var(--font-family);
             background-color: var(--background);
             color: var(--text-primary);
-            line-height: 1.6;
-            transition: all 0.3s ease;
+            margin: 0;
+            padding: 0;
         }
         
         .container {
@@ -100,7 +89,12 @@
         
         /* Main content padding for fixed header */
         .main-content {
-            margin-top: 80px;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;  /* Three column layout */
+            gap: 20px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            min-height: 800px;  /* Ensure minimum height for proper layout */
         }
         
         header {
@@ -129,44 +123,32 @@
             color: var(--text-secondary);
         }
         
-        .main-content {
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .visualization-panel {
-            flex: 2;
-            background-color: var(--surface);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            position: relative;
-            min-width: 300px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .plot-container {
-            flex: 1;
-            height: 500px;
-            width: 100%;
-            min-height: 400px;
-            background-color: rgba(30, 30, 30, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: visible !important;
-            display: block !important; /* Force display */
-            z-index: 10; /* Ensure it's above other elements */
-        }
-        
         .controls-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 15px;
             min-width: 300px;
+        }
+        
+        .visualization-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 500px;
+            height: 100%;  /* Take full height of the grid cell */
+        }
+        
+        /* Ensure the plot container takes up available space */
+        .plot-container {
+            flex: 1;
+            min-height: 400px;
+            height: 100%;
+            width: 100%;
+            background-color: #333;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         
         .control-card {
@@ -584,13 +566,20 @@
         }
         
         /* Responsive design */
-        @media (max-width: 1024px) {
+        @media screen and (max-width: 1200px) {
             .main-content {
-                flex-direction: column;
+                grid-template-columns: 1fr 2fr;  /* Two columns on medium screens */
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;  /* One column on small screens */
             }
             
-            .plot-container {
-                height: 400px;
+            .visualization-panel {
+                order: -1;  /* Move visualization to the top on mobile */
+                min-height: 500px;
             }
         }
         
@@ -637,80 +626,18 @@
     </style>
 </head>
 <body>
-    <!-- Site Header -->
-    <header class="site-header">
-        <div class="header-content">
-            <a href="/" class="site-logo">4D Manifold Explorer</a>
-            <nav class="site-nav">
-                <a href="/">Home</a>
-                <a href="/visualization">4D Manifold</a>
-                <a href="/evolution" class="active">Evolution</a>
-                <a href="/oscillator">Oscillator</a>
-            </nav>
-        </div>
-    </header>
+    <!-- Include Navbar -->
+    {% include 'navbar.html' %}
 
     <div class="container" style="padding-top: 80px;">
         <header>
             <h1>Evolutionary Algorithm for 4D Manifolds</h1>
             <p class="subtitle">Evolving Topological Structures for Compatibility</p>
-            
-            <div class="nav-links">
-                <a href="/">Home</a>
-                
-                <div class="nav-dropdown">
-                    <div class="dropdown-toggle">
-                        <span>Manifold Physics</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu">
-                        <a href="/visualization">4D Manifold</a>
-                        <a href="/evolution" class="active">Evolution</a>
-                    </div>
-                </div>
-                
-                <div class="nav-dropdown">
-                    <div class="dropdown-toggle">
-                        <span>Quantum Physics</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu">
-                        <a href="/oscillator">Oscillator</a>
-                    </div>
-                </div>
-                
-                <div class="nav-dropdown">
-                    <div class="dropdown-toggle">
-                        <span>Electromagnetism</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu">
-                        <a href="/maxwell">Maxwell-Boltzmann</a>
-                        <a href="/maxwells">Maxwell's Equations</a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Stable Hadrons Section -->
-            <div class="control-card" id="stable-hadrons-section" style="display: none; margin-bottom: 20px;">
-                <div class="card-header">
-                    <h3 class="card-title">Stable Hadrons Found</h3>
-                    <div class="tooltip">
-                        <i class="fas fa-info-circle tooltip-icon"></i>
-                        <span class="tooltip-text">Sets of three Sub-SKBs that can form stable hadrons. These have been removed from the evolutionary process.</span>
-                    </div>
-                </div>
-                
-                <div id="stable-hadrons-container">
-                    <!-- Stable hadrons will be listed here -->
-                    <p id="no-stable-hadrons-message">No stable hadrons found yet. Continue evolving to find compatible triplets.</p>
-                </div>
-            </div>
         </header>
         
         <div class="main-content">
             <!-- Top Matched Triplets Panel -->
-            <div class="controls-panel" style="flex: 1; min-width: 250px;">
+            <div class="controls-panel">
                 <div class="control-card">
                     <div class="card-header">
                         <h3 class="card-title">Top Matched Triplets</h3>
@@ -777,7 +704,7 @@
                     </div>
                 </div>
                 
-                <div id="evolution-plot" class="plot-container"></div>
+                <div id="evolution-plot" class="plot-container" style="height: 400px; width: 100%; min-height: 400px; background-color: #333;"></div>
                 
                 <div class="control-card">
                     <div class="card-header">
@@ -1082,6 +1009,121 @@
     </script>
     <script src="/static/js/evolution.js"></script>
     
+    <!-- Safety script to ensure visualization is properly initialized -->
+    <script>
+        // Wait for window to fully load then check the plot
+        window.addEventListener('load', function() {
+            console.log("Safety check: Ensuring evolution plot is properly initialized");
+            
+            setTimeout(function() {
+                const plotContainer = document.getElementById('evolution-plot');
+                if (!plotContainer) {
+                    console.error("Plot container not found!");
+                    return;
+                }
+                
+                // Ensure the container has proper dimensions
+                if (plotContainer.offsetHeight < 400) {
+                    console.log("Fixing plot container height");
+                    plotContainer.style.height = "400px";
+                    plotContainer.style.minHeight = "400px";
+                }
+                
+                // Check if plot has been initialized
+                if (!plotContainer.querySelector('.js-plotly-plot')) {
+                    console.log("Plot not initialized - creating backup plot");
+                    
+                    // Create a backup plot if Plotly is available
+                    if (typeof Plotly !== 'undefined') {
+                        try {
+                            // Create a simple empty 3D plot
+                            const data = [{
+                                type: 'scatter3d',
+                                x: [0],
+                                y: [0],
+                                z: [0],
+                                mode: 'markers',
+                                marker: {
+                                    size: 5,
+                                    color: '#65FF8F'
+                                },
+                                name: 'Origin',
+                                hoverinfo: 'name'
+                            }];
+                            
+                            const layout = {
+                                title: 'Sub-SKB Visualization',
+                                scene: {
+                                    xaxis: { title: 'X', range: [-2, 2] },
+                                    yaxis: { title: 'Y', range: [-2, 2] },
+                                    zaxis: { title: 'Z', range: [-2, 2] },
+                                    aspectmode: 'cube',
+                                    camera: {
+                                        eye: { x: 1.25, y: 1.25, z: 1.25 }
+                                    }
+                                },
+                                paper_bgcolor: '#1e1e1e',
+                                plot_bgcolor: '#1e1e1e',
+                                font: { color: '#ffffff' },
+                                margin: { l: 0, r: 0, b: 0, t: 50, pad: 4 },
+                                autosize: true,
+                                showlegend: true,
+                                annotations: [{
+                                    text: 'Generate population and run evolution to visualize Sub-SKBs',
+                                    showarrow: false,
+                                    x: 0.5,
+                                    y: 0.5,
+                                    xref: 'paper',
+                                    yref: 'paper',
+                                    font: {
+                                        size: 14,
+                                        color: '#ffffff'
+                                    }
+                                }]
+                            };
+                            
+                            Plotly.newPlot('evolution-plot', data, layout);
+                            console.log("Backup plot created successfully");
+                        } catch (error) {
+                            console.error("Error creating backup plot:", error);
+                        }
+                    } else {
+                        // If Plotly is not available, display a message
+                        plotContainer.innerHTML = '<div style="display: flex; height: 100%; justify-content: center; align-items: center; color: white; text-align: center;">Generate population and run evolution to visualize Sub-SKBs</div>';
+                        console.log("Added placeholder message in plot container");
+                    }
+                } else {
+                    console.log("Plot already initialized, resizing to ensure proper display");
+                    if (typeof Plotly !== 'undefined') {
+                        try {
+                            Plotly.relayout('evolution-plot', {
+                                width: plotContainer.offsetWidth,
+                                height: plotContainer.offsetHeight
+                            });
+                        } catch (error) {
+                            console.error("Error resizing plot:", error);
+                        }
+                    }
+                }
+                
+                // Fix any other layout issues
+                const visualizationPanel = document.querySelector('.visualization-panel');
+                if (visualizationPanel) {
+                    if (getComputedStyle(visualizationPanel).height === 'auto') {
+                        visualizationPanel.style.height = '100%';
+                    }
+                }
+                
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    if (getComputedStyle(mainContent).height === 'auto') {
+                        mainContent.style.minHeight = '800px';
+                    }
+                }
+            }, 300); // Wait a bit to ensure DOM is fully processed
+        });
+    </script>
+    
     <!-- Theory and Mathematics Section -->
     <div class="container">
         <div class="control-card" style="margin-top: 30px; margin-bottom: 30px;">
@@ -1197,5 +1239,145 @@
             });
         });
     </script>
+    
+    <!-- AI Analysis Panel (Hidden by default) -->
+    <div id="ai-analysis-panel" class="panel">
+        <div class="panel-header">
+            <h3>AI Analysis</h3>
+            <button id="toggle-ai-panel" class="panel-toggle-btn">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+        </div>
+        <div class="panel-content">
+            <div class="ai-tools-section">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>SKB Topological Clustering</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="analysis-status">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i> Select SKB configurations to analyze or generate a population first.
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="cluster-count">Number of Clusters:</label>
+                            <div class="d-flex align-items-center">
+                                <input type="range" id="cluster-count" min="2" max="10" value="3" class="form-control-range">
+                                <span id="cluster-count-value" class="ml-2">3</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex mb-4">
+                            <button id="run-clustering-btn" class="btn btn-primary mr-2">
+                                <i class="fas fa-project-diagram"></i> Run Clustering
+                            </button>
+                            <button id="predict-particle-btn" class="btn btn-secondary">
+                                <i class="fas fa-atom"></i> Predict Particle Type
+                            </button>
+                        </div>
+                        
+                        <div id="cluster-visualization" style="width: 100%; height: 350px;"></div>
+                        
+                        <div id="cluster-statistics" class="mt-4">
+                            <h4>Cluster Statistics</h4>
+                            <p>Run clustering to see statistics</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Particle Prediction</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Select a Sub-SKB configuration and click "Predict Particle Type" to analyze its properties.</p>
+                        <div id="prediction-results">
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-atom mr-2"></i> No prediction results yet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add the AI Analysis JS file -->
+    <script src="{{ url_for('static', filename='js/ai_analysis.js') }}"></script>
+    
+    <!-- Standard Model Comparison Panel -->
+    <div id="standard-model-panel" class="panel">
+        <div class="panel-header">
+            <h3>Standard Model Comparison</h3>
+            <button id="toggle-sm-panel" class="panel-toggle-btn">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+        </div>
+        <div class="panel-content">
+            <div class="sm-comparison-section">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Compare to Standard Model</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="comparison-status"></div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="standard-model-particle">Select Standard Model Particle:</label>
+                            <select id="standard-model-particle" class="form-control">
+                                <option value="">Select a particle...</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div id="sm-particle-info" class="mb-3">
+                            <p>Select a Standard Model particle to view its properties</p>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Comparison Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="charge-tolerance">Charge Tolerance (e):</label>
+                                    <input type="number" id="charge-tolerance" class="form-control" 
+                                           value="0.1" min="0.01" max="1" step="0.01">
+                                    <small class="form-text text-muted">
+                                        Maximum allowed difference in electric charge
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="mass-tolerance">Mass Tolerance (% difference):</label>
+                                    <input type="number" id="mass-tolerance" class="form-control" 
+                                           value="0.15" min="0.01" max="1" step="0.01">
+                                    <small class="form-text text-muted">
+                                        Maximum allowed relative difference in mass
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="compare-to-sm-btn" class="btn btn-primary">
+                            <i class="fas fa-sync-alt"></i> Compare to Standard Model
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="comparison-results" class="mt-4">
+                    <!-- Comparison results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add the Standard Model Comparison JS file -->
+    <script src="{{ url_for('static', filename='js/standard_model_comparison.js') }}"></script>
+    
+    <!-- Include footer -->
+    {% include 'footer.html' %}
 </body>
 </html> 

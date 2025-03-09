@@ -3,49 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maxwell-Boltzmann Distribution</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Maxwell's Equations - 4D Manifold Explorer</title>
+    
+    <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/education_features.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modular_layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/new_styles.css') }}">
+    
+    <!-- External JS -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Local JS -->
+    <script src="{{ url_for('static', filename='js/maxwell.js') }}"></script>
+    
     <style>
-        :root {
-            /* Modern color palette - same as main app */
-            --dark-bg: #121212;
-            --surface: #1e1e1e;
-            --surface-light: #2d2d2d;
-            --primary: #BB86FC;
-            --primary-variant: #3700B3;
-            --secondary: #03DAC6;
-            --accent: #CF6679;
-            --text-primary: rgba(255, 255, 255, 0.87);
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --border-color: rgba(255, 255, 255, 0.12);
-            
-            /* Function Colors */
-            --velocity-color: #FF6E91;  /* Vivid pink */
-            --energy-color: #33C4FF;   /* Bright blue */
-            --distribution-color: #65FF8F;  /* Bright green */
-            --special-value: #BB86FC;  /* Purple */
-            
-            /* Visualization Colors */
-            --particle-low: #0000FF;   /* Blue for low energy */
-            --particle-med: #00FF00;   /* Green for medium energy */
-            --particle-high: #FF0000;  /* Red for high energy */
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-family);
+            background-color: var(--background);
+            color: var(--text-primary);
             margin: 0;
             padding: 0;
-            background-color: var(--dark-bg);
-            color: var(--text-primary);
             line-height: 1.6;
-            transition: all 0.3s ease;
         }
         
         .container {
@@ -54,131 +47,15 @@
             padding: 20px;
         }
         
-        /* Site Header Styles */
-        .site-header {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-            padding: 15px 0;
+        /* Maxwell page specific styles */
+        .maxwell-content {
+            margin-top: 40px;
         }
         
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* Note: Header styles now in navbar.css */
         
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            font-size: 1.5rem;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-        
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            padding: 5px 0;
-            position: relative;
-        }
-        
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-        }
-        
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: var(--primary);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-links a:hover::after, .nav-links a.active::after {
-            width: 100%;
-        }
-        
-        /* Dropdown Menu Styles */
-        .nav-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .dropdown-toggle {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .dropdown-toggle i {
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: var(--bg-primary);
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-dropdown:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .nav-dropdown:hover .dropdown-toggle i {
-            transform: rotate(180deg);
-        }
-        
-        .dropdown-menu a {
-            display: block;
-            padding: 8px 15px;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .dropdown-menu a::after {
-            display: none;
-        }
-        
-        .dropdown-menu a:hover {
-            background-color: var(--bg-secondary);
-        }
-        
-        .content {
+        /* Main Content Styles */
+        .main-content {
             margin-top: 80px;
             padding: 20px;
         }
@@ -439,55 +316,11 @@
     </style>
 </head>
 <body>
-    <!-- Site Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-atom"></i>
-                    4D Manifold Explorer
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Manifold Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/visualization">SKB Visualization</a>
-                            <a href="/evolution">SKB Evolution</a>
-                        </div>
-                    </div>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Harmonic Oscillator</a>
-                        </div>
-                    </div>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell" class="active">Maxwell-Boltzmann</a>
-                            <a href="/maxwells">Maxwell's Equations</a>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
+    <!-- Include Navbar -->
+    {% include 'navbar.html' %}
     
     <!-- Main Content -->
-    <div class="content">
+    <div class="main-content">
         <div class="container">
             <h1>Maxwell-Boltzmann Distribution Visualization</h1>
             
@@ -787,5 +620,24 @@
             });
         });
     </script>
+    
+    <!-- Initialize Maxwell-Boltzmann Visualizations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create and initialize the Maxwell-Boltzmann visualizer
+            const visualizer = new MaxwellBoltzmannVisualizer();
+            
+            // Initialize all visualizations
+            visualizer.initDistributionPlot();
+            visualizer.initParticleSimulation();
+            visualizer.init3DVisualization();
+            
+            // Update all visualizations with default parameters
+            visualizer.updateAllVisualizations();
+        });
+    </script>
+    
+    <!-- Include Footer -->
+    {% include 'footer.html' %}
 </body>
 </html> 

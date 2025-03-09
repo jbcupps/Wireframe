@@ -1,0 +1,307 @@
+/*
+ * Global CSS Variables
+ * This file defines variables for consistent styling across the application
+ */
+
+:root {
+    /* Base Colors - Modern Light Theme */
+    --background: #f8fafc;
+    --background-rgb: 248, 250, 252;
+    --surface: #ffffff;
+    --surface-rgb: 255, 255, 255;
+    --surface-light: #f0f5fa;
+    --primary: #4361ee;
+    --primary-rgb: 67, 97, 238;
+    --primary-variant: #3949ab;
+    --primary-variant-rgb: 57, 73, 171;
+    --secondary: #00b4d8;
+    --secondary-rgb: 0, 180, 216;
+    --secondary-variant: #0096c7;
+    --accent: #7b2cbf;
+    --accent-rgb: 123, 44, 191;
+    --error: #e63946;
+    --error-rgb: 230, 57, 70;
+    --success: #2dc653;
+    --success-rgb: 45, 198, 83;
+    --warning: #f9a826;
+    --warning-rgb: 249, 168, 38;
+    --info: #0582ca;
+    --info-rgb: 5, 130, 202;
+    
+    /* Text Colors */
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-hint: #94a3b8;
+    --text-disabled: #cbd5e1;
+    
+    /* Border Colors */
+    --border-color: #e2e8f0;
+    --divider-color: #f1f5f9;
+    
+    /* Visualization Specific Colors */
+    --skb1-color: #f1548a;  /* Softer pink */
+    --skb2-color: #4a9ff5;  /* Softer blue */
+    --skb3-color: #42cd7e;  /* Softer green */
+    --skb-merged: #7c3aed;  /* Softer purple */
+    
+    /* Shadows */
+    --shadow-small: 0 2px 5px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-large: 0 10px 25px rgba(0, 0, 0, 0.07), 0 6px 10px rgba(0, 0, 0, 0.05);
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+    
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+    
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    
+    /* Typography */
+    --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 24px;
+    --font-size-3xl: 30px;
+    --font-size-4xl: 36px;
+    
+    /* Line heights */
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    
+    /* Font weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Z-index layers */
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1020;
+    --z-index-fixed: 1030;
+    --z-index-modal-backdrop: 1040;
+    --z-index-modal: 1050;
+    --z-index-popover: 1060;
+    --z-index-tooltip: 1070;
+    
+    /* Transitions */
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark theme variables */
+body.dark-theme {
+    --background: #0f172a;
+    --background-rgb: 15, 23, 42;
+    --surface: #1e293b;
+    --surface-rgb: 30, 41, 59;
+    --surface-light: #334155;
+    --primary: #4361ee;
+    --primary-rgb: 67, 97, 238;
+    --primary-variant: #3949ab;
+    --primary-variant-rgb: 57, 73, 171;
+    --secondary: #00b4d8;
+    --secondary-rgb: 0, 180, 216;
+    --secondary-variant: #0096c7;
+    --accent: #9d4edd;
+    --accent-rgb: 157, 78, 221;
+    --error: #ef4444;
+    --error-rgb: 239, 68, 68;
+    --success: #22c55e;
+    --success-rgb: 34, 197, 94;
+    --warning: #f59e0b;
+    --warning-rgb: 245, 158, 11;
+    --info: #0ea5e9;
+    --info-rgb: 14, 165, 233;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-hint: #94a3b8;
+    --text-disabled: #64748b;
+    
+    --border-color: #334155;
+    --divider-color: #1e293b;
+    
+    /* Shadow adjustments for dark theme */
+    --shadow-small: 0 2px 5px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-large: 0 10px 25px rgba(0, 0, 0, 0.4), 0 6px 10px rgba(0, 0, 0, 0.3);
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* High Contrast theme for accessibility */
+body.high-contrast-theme {
+    --background: #000000;
+    --surface: #121212;
+    --surface-light: #1e1e1e;
+    --primary: #3ef7ff;
+    --primary-variant: #00cee6;
+    --secondary: #ffff00;
+    --secondary-variant: #e6e600;
+    --error: #ff4040;
+    --success: #40ff40;
+    --warning: #ffaa00;
+    --info: #40c0ff;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #f0f0f0;
+    --text-hint: #d0d0d0;
+    --text-disabled: #a0a0a0;
+    
+    --border-color: #ffffff;
+    --divider-color: #ffffff;
+    
+    /* Visualization colors with higher contrast */
+    --skb1-color: #ff55aa;
+    --skb2-color: #55aaff;
+    --skb3-color: #55ff55;
+    --skb-merged: #ffaa55;
+    
+    /* Increase shadow contrast */
+    --shadow-small: 0 2px 5px rgba(255, 255, 255, 0.25), 0 1px 2px rgba(255, 255, 255, 0.2);
+    --shadow-medium: 0 4px 10px rgba(255, 255, 255, 0.25), 0 2px 4px rgba(255, 255, 255, 0.2);
+    --shadow-large: 0 10px 25px rgba(255, 255, 255, 0.25), 0 6px 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Clear helper classes for consistent spacing */
+.margin-xs { margin: var(--space-xs); }
+.margin-sm { margin: var(--space-sm); }
+.margin-md { margin: var(--space-md); }
+.margin-lg { margin: var(--space-lg); }
+.margin-xl { margin: var(--space-xl); }
+.margin-xxl { margin: var(--space-xxl); }
+
+.padding-xs { padding: var(--space-xs); }
+.padding-sm { padding: var(--space-sm); }
+.padding-md { padding: var(--space-md); }
+.padding-lg { padding: var(--space-lg); }
+.padding-xl { padding: var(--space-xl); }
+.padding-xxl { padding: var(--space-xxl); }
+
+/* Typography helper classes */
+.text-xs { font-size: var(--font-size-xs); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-md { font-size: var(--font-size-md); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-2xl); }
+.text-3xl { font-size: var(--font-size-3xl); }
+.text-4xl { font-size: var(--font-size-4xl); }
+
+.font-light { font-weight: var(--font-weight-light); }
+.font-normal { font-weight: var(--font-weight-normal); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+
+.line-tight { line-height: var(--line-height-tight); }
+.line-normal { line-height: var(--line-height-normal); }
+.line-relaxed { line-height: var(--line-height-relaxed); }
+
+/* Utility classes for text colors */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-hint { color: var(--text-hint); }
+.text-disabled { color: var(--text-disabled); }
+.text-error { color: var(--error); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-info { color: var(--info); }
+.text-accent { color: var(--accent); }
+
+/* Background utility classes */
+.bg-background { background-color: var(--background); }
+.bg-surface { background-color: var(--surface); }
+.bg-surface-light { background-color: var(--surface-light); }
+.bg-primary { background-color: var(--primary); }
+.bg-primary-variant { background-color: var(--primary-variant); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-accent { background-color: var(--accent); }
+
+/* Button utility classes */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    border: none;
+    outline: none;
+    text-decoration: none;
+    gap: 8px;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-variant);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-variant);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--primary);
+}
+
+/* Card utility classes */
+.card {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-small);
+    padding: var(--space-lg);
+    transition: all var(--transition-normal);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+} 

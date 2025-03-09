@@ -1,0 +1,403 @@
+/* 
+ * Modular Visualization Layout for 4D Manifold Explorer
+ * Core layout system for the visualization interface
+ */
+
+/* 
+ * CSS Variables - moved from inline styles for consistency
+ * These should be set at :root level in a global CSS file
+ */
+
+/* Main grid layout */
+.explorer-layout {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "left-sidebar main right-sidebar"
+        "bottom bottom bottom";
+    grid-template-columns: minmax(250px, 15%) 1fr minmax(0, 20%);
+    grid-template-rows: auto 1fr auto;
+    height: calc(100vh - 100px);
+    gap: 15px;
+    padding: 0 20px;
+    margin-top: 20px;
+}
+
+/* Top header area with manifold selector */
+.explorer-header {
+    grid-area: header;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--surface);
+    padding: 15px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 0;
+    box-shadow: var(--shadow-small);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-normal);
+}
+
+.explorer-header:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Left sidebar for controls */
+.explorer-sidebar-left {
+    grid-area: left-sidebar;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    overflow-y: auto;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-small);
+    max-height: calc(100vh - 160px);
+    border: 1px solid var(--border-color);
+}
+
+.explorer-sidebar-left:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Main visualization area */
+.explorer-main {
+    grid-area: main;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-small);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-normal);
+    min-height: 500px;
+}
+
+.explorer-main:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Right sidebar for invariants */
+.explorer-sidebar-right {
+    grid-area: right-sidebar;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    overflow-y: auto;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-small);
+    max-height: calc(100vh - 160px);
+    border: 1px solid var(--border-color);
+}
+
+.explorer-sidebar-right:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Bottom panel for validation results */
+.explorer-bottom {
+    grid-area: bottom;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-small);
+    transition: all var(--transition-normal);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.explorer-bottom:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Plots and visualization containers */
+.explorer-plot-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    position: relative;
+    padding: 20px;
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 1200px) {
+    .explorer-layout {
+        grid-template-columns: minmax(220px, 18%) 1fr minmax(0, 22%);
+        grid-template-rows: auto 1fr auto;
+        height: calc(100vh - 100px);
+    }
+}
+
+@media (max-width: 992px) {
+    .explorer-layout {
+        grid-template-columns: 25% 1fr 25%;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .explorer-layout {
+        grid-template-areas:
+            "header"
+            "main"
+            "left-sidebar"
+            "right-sidebar"
+            "bottom";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto;
+        height: auto;
+        gap: 15px;
+    }
+    
+    .explorer-sidebar-left,
+    .explorer-sidebar-right {
+        max-height: 400px;
+    }
+    
+    .explorer-header, 
+    .explorer-sidebar-left, 
+    .explorer-sidebar-right, 
+    .explorer-bottom {
+        padding: 16px;
+    }
+}
+
+/* Panel collapsing */
+.sidebar-collapsed {
+    transform: translateX(-110%);
+    width: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    grid-column: 1 / 2;
+}
+
+.sidebar-right-collapsed {
+    transform: translateX(110%);
+    width: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    grid-column: 3 / 4;
+}
+
+.bottom-panel-collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+    opacity: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Sidebar toggle buttons */
+.panel-toggle {
+    position: absolute;
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-small);
+}
+
+.panel-toggle:hover {
+    background-color: var(--primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: var(--shadow-medium);
+}
+
+.panel-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(82, 113, 255, 0.3);
+}
+
+.left-panel-toggle {
+    top: 20px;
+    left: -16px;
+    transform: translateX(0);
+}
+
+.right-panel-toggle {
+    top: 20px;
+    right: -16px;
+    transform: translateX(0);
+}
+
+.bottom-panel-toggle {
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    top: 0;
+}
+
+/* Controls container styling */
+.controls-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.control-group {
+    background-color: var(--surface-light);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.control-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.control-group-title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Animations */
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-animate {
+    animation: slideIn 0.3s ease forwards;
+}
+
+/* Main content area styling */
+.content-area {
+    padding: 24px;
+    margin: 0 auto;
+    max-width: 1200px;
+    width: 100%;
+}
+
+/* Content section styling */
+.content-section {
+    margin-bottom: 32px;
+}
+
+.content-section-header {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin: 0;
+    line-height: var(--line-height-tight);
+}
+
+/* Card grid layout */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+/* Visualization card styling */
+.visualization-card {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    border: 1px solid var(--border-color);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.visualization-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--primary);
+}
+
+.visualization-card-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.visualization-card-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.visualization-card-body {
+    padding: 16px;
+    flex: 1;
+}
+
+.visualization-card-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Form element styling */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(82, 113, 255, 0.15);
+}
+
+.form-input::placeholder {
+    color: var(--text-hint);
+} 

@@ -1,0 +1,203 @@
+/* 
+ * Neumorphic Design Animations
+ * This file contains animations for the neumorphic design system
+ */
+
+/* Gentle fade in animation */
+@keyframes neuFadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Soft scale animation */
+@keyframes neuScale {
+    0% { transform: scale(0.95); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Smooth slide in from bottom */
+@keyframes neuSlideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Smooth slide in from top */
+@keyframes neuSlideDown {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Smooth slide in from left */
+@keyframes neuSlideRight {
+    0% { transform: translateX(-20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Smooth slide in from right */
+@keyframes neuSlideLeft {
+    0% { transform: translateX(20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Soft pulse animation */
+@keyframes neuPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+/* Gentle float animation */
+@keyframes neuFloat {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Soft shadow pulse animation */
+@keyframes neuShadowPulse {
+    0% { 
+        box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+    }
+    50% { 
+        box-shadow: 8px 8px 16px rgba(163, 177, 198, 0.6), -8px -8px 16px rgba(255, 255, 255, 0.9);
+    }
+    100% { 
+        box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+    }
+}
+
+/* Animation utility classes */
+.neu-anim-fade {
+    animation: neuFadeIn 0.6s ease-out forwards;
+}
+
+.neu-anim-scale {
+    animation: neuScale 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.neu-anim-slide-up {
+    animation: neuSlideUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.neu-anim-slide-down {
+    animation: neuSlideDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.neu-anim-slide-right {
+    animation: neuSlideRight 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.neu-anim-slide-left {
+    animation: neuSlideLeft 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.neu-anim-pulse {
+    animation: neuPulse 2s ease-in-out infinite;
+}
+
+.neu-anim-float {
+    animation: neuFloat 3s ease-in-out infinite;
+}
+
+.neu-anim-shadow-pulse {
+    animation: neuShadowPulse 3s ease-in-out infinite;
+}
+
+/* Animation delays */
+.neu-delay-100 {
+    animation-delay: 0.1s;
+}
+
+.neu-delay-200 {
+    animation-delay: 0.2s;
+}
+
+.neu-delay-300 {
+    animation-delay: 0.3s;
+}
+
+.neu-delay-400 {
+    animation-delay: 0.4s;
+}
+
+.neu-delay-500 {
+    animation-delay: 0.5s;
+}
+
+/* Staggered animations for lists */
+.neu-list-item:nth-child(1) { animation-delay: 0.1s; }
+.neu-list-item:nth-child(2) { animation-delay: 0.2s; }
+.neu-list-item:nth-child(3) { animation-delay: 0.3s; }
+.neu-list-item:nth-child(4) { animation-delay: 0.4s; }
+.neu-list-item:nth-child(5) { animation-delay: 0.5s; }
+.neu-list-item:nth-child(6) { animation-delay: 0.6s; }
+.neu-list-item:nth-child(7) { animation-delay: 0.7s; }
+.neu-list-item:nth-child(8) { animation-delay: 0.8s; }
+.neu-list-item:nth-child(9) { animation-delay: 0.9s; }
+.neu-list-item:nth-child(10) { animation-delay: 1s; }
+
+/* Hover effects with animations */
+.neu-hover-float:hover {
+    animation: neuFloat 3s ease-in-out infinite;
+}
+
+.neu-hover-pulse:hover {
+    animation: neuPulse 2s ease-in-out infinite;
+}
+
+.neu-hover-shadow:hover {
+    animation: neuShadowPulse 3s ease-in-out infinite;
+}
+
+/* Loading animation */
+.neu-loading {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    position: relative;
+    margin: 30px auto;
+    background: var(--neu-surface);
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+}
+
+.neu-loading:before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border-radius: 50%;
+    box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+}
+
+.neu-loading:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--neu-primary);
+    animation: neuRotate 1.5s linear infinite;
+}
+
+@keyframes neuRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Transition utilities */
+.neu-transition-300 {
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.neu-transition-500 {
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.neu-transition-700 {
+    transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+} 

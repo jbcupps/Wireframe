@@ -3,44 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Harmonic Oscillator</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Quantum Harmonic Oscillator - 4D Manifold Explorer</title>
+    
+    <!-- External CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modular_layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/education_features.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/new_styles.css') }}">
+    
+    <!-- External JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        :root {
-            /* Modern color palette - same as main app */
-            --dark-bg: #121212;
-            --surface: #1e1e1e;
-            --surface-light: #2d2d2d;
-            --primary: #BB86FC;
-            --primary-variant: #3700B3;
-            --secondary: #03DAC6;
-            --accent: #CF6679;
-            --text-primary: rgba(255, 255, 255, 0.87);
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --border-color: rgba(255, 255, 255, 0.12);
-            
-            /* Function Colors */
-            --real-color: #FF6E91;  /* Vivid pink */
-            --imag-color: #33C4FF;  /* Bright blue */
-            --envelope-color: #65FF8F;  /* Bright green */
-            --special-value: #BB86FC;  /* Purple */
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-family);
+            background-color: var(--background);
+            color: var(--text-primary);
             margin: 0;
             padding: 0;
-            background-color: var(--dark-bg);
-            color: var(--text-primary);
             line-height: 1.6;
-            transition: all 0.3s ease;
         }
         
         .container {
@@ -388,53 +383,10 @@
     </style>
 </head>
 <body>
-    <!-- Site Navigation Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Manifold Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/visualization">4D Manifold</a>
-                            <a href="/evolution">Evolution</a>
-                        </div>
-                    </div>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator" class="active">Oscillator</a>
-                        </div>
-                    </div>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell-Boltzmann</a>
-                            <a href="/maxwells">Maxwell's Equations</a>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
-
+    <!-- Include Navbar -->
+    {% include 'navbar.html' %}
+    
+    <!-- Main Content -->
     <div class="main-content">
         <div class="container">
             <header>
@@ -601,5 +553,8 @@
             });
         });
     </script>
+    
+    <!-- Include Footer -->
+    {% include 'footer.html' %}
 </body>
 </html> 

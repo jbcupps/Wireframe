@@ -1,0 +1,446 @@
+/* New Modern Styles for 4D Manifold Explorer
+   This stylesheet provides a clean, minimalist look with ample white space, modern typography, and a responsive design.
+   It is intended to update the look and feel of the website without altering its functionality.
+*/
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f7f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+header.site-header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+}
+
+header.site-header .logo {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    margin: 0 12px;
+    transition: color 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #0056b3;
+}
+
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown .dropdown-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.nav-dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.nav-dropdown .dropdown-menu a {
+    padding: 10px 15px;
+    white-space: nowrap;
+}
+
+.nav-dropdown .dropdown-menu a:hover {
+    background-color: #f0f0f0;
+}
+
+.nav-dropdown .dropdown-menu.show {
+    display: flex;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.cta-button {
+    background-color: #0056b3;
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #004494;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav-links {
+        flex-direction: column;
+        background: #ffffff;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        display: none;
+    }
+    .nav-links.active {
+        display: flex;
+    }
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+footer.footer {
+    background-color: #222;
+    color: #ccc;
+    padding: 30px 0;
+}
+
+footer.footer a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer.footer a:hover {
+    color: #fff;
+}
+
+.footer .footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 15px;
+}
+
+.footer .footer-about,
+.footer .footer-nav {
+    flex: 1 1 250px;
+    margin: 10px;
+}
+
+.footer .social-links a {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .footer .footer-content {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* 
+ * Additional styles to fix issues and ensure consistency across the site
+ */
+
+/* Fix for range sliders */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--surface-light);
+    outline: none;
+    transition: background 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+input[type="range"]::-ms-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+    background: var(--primary-variant);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+    transform: scale(1.2);
+    background: var(--primary-variant);
+}
+
+input[type="range"]:hover::-ms-thumb {
+    transform: scale(1.2);
+    background: var(--primary-variant);
+}
+
+/* Fix for buttons */
+.btn {
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    outline: none;
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-variant);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background-color: var(--surface-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-small);
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Fix for form controls */
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: var(--font-size-md);
+    line-height: 1.5;
+    color: var(--text-primary);
+    background-color: var(--surface);
+    background-clip: padding-box;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(82, 113, 255, 0.25);
+}
+
+/* Fix for cards */
+.card {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+.card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    background-color: #f9f9f9;
+    font-size: 1rem;
+}
+
+.card-body {
+    padding: 16px;
+    flex-grow: 1;
+}
+
+.card-title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Fix for tooltips */
+.tooltip {
+    position: absolute;
+    z-index: var(--z-index-tooltip);
+    display: none;
+    max-width: 200px;
+    padding: 8px 12px;
+    font-size: var(--font-size-sm);
+    color: white;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: var(--radius-sm);
+    pointer-events: none;
+}
+
+/* Fix for modals */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: var(--z-index-modal);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-large);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Fix for responsive tables */
+@media (max-width: 768px) {
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Responsive adjustments for better visualization display */
+@media (max-width: 768px) {
+    .card-header {
+        padding: 10px 14px;
+    }
+    
+    .card-body {
+        padding: 14px;
+    }
+    
+    .btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    body {
+        font-size: 13px;
+    }
+} 

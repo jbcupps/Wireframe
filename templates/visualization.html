@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4D Manifold Explorer - Visualization</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Order of CSS files matters - neumorphic variables first, then component styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/education_features.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modular_layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/visualization.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/new_styles.css') }}">
+    <!-- Neumorphic Design System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/neumorphic.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/neumorphic-main.css') }}">
+    <style>
+        /* Page-specific styles with neumorphic design */
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            background-color: var(--neu-background);
+            color: var(--neu-text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        /* Neumorphic visualization container */
+        .visualization-container {
+            border-radius: var(--neu-border-radius);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        /* Neumorphic control panel */
+        .control-panel {
+            padding: 20px;
+            border-radius: var(--neu-border-radius);
+        }
+        
+        /* Override slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 20px;
+            background: var(--neu-surface);
+            box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+            outline: none;
+            margin: 15px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--neu-primary);
+            cursor: pointer;
+            box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--neu-primary);
+            cursor: pointer;
+            box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        /* Override button styling */
+        .btn {
+            border-radius: var(--neu-border-radius);
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+            background: var(--neu-surface);
+            color: var(--neu-text-primary);
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            color: var(--neu-primary);
+        }
+        
+        .btn:active {
+            box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(145deg, var(--neu-primary-variant), var(--neu-primary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            color: white;
+            filter: brightness(1.05);
+        }
+    </style>
+    <!-- Neumorphic JavaScript -->
+    <script src="{{ url_for('static', filename='js/neumorphic.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/neumorphic-layout.js') }}" defer></script>
+</head>
+<body>
+    <!-- Site Navigation Header -->
+    {% include 'navbar.html' %}
+
+    <div class="main-content">
+        <div class="container">
+            <!-- Main Page Header -->
+            <header>
+                <h1>Spacetime Klein Bottle 4D Manifold Explorer</h1>
+                <div class="subtitle">Interactive visualization and exploration of 4D manifold topological structures</div>
+            </header>
+    
+            <div class="research-links">
+                <p>Research: <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">Categorical Framework</a> | <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">SKB Particle Models</a></p>
+            </div>
+    
+            <!-- Modular Explorer Layout -->
+            <div class="explorer-layout">
+                <!-- Top Header with Manifold Selector -->
+                <div class="explorer-header">
+                    <div class="manifold-selection" id="manifold-selection">
+                        <div class="control-label">
+                            <span>Manifold Type</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Select the type of 4D manifold to visualize. Each has unique topological properties.</span>
+                            </div>
+                        </div>
+                        <select id="manifold-type" class="select-control">
+                            <option value="skb" data-content="Non-orientable surface representing fundamental particles">Spacetime Klein Bottle</option>
+                            <option value="4d_torus" data-content="Orientable closed surface representing bosonic structures">4D Torus</option>
+                            <option value="projective_plane" data-content="Non-orientable surface with single-sided topology, related to fundamental fermions">Projective Plane</option>
+                        </select>
+                    </div>
+                    
+                    <button id="guided-tour-btn" class="education-btn">
+                        <i class="fas fa-route"></i> Guided Tour
+                    </button>
+                </div>
+                
+                <!-- Left Sidebar for Controls -->
+                <div class="explorer-sidebar-left">
+                    <div class="controls-container">
+                        <!-- Global Controls -->
+                        <div class="control-group">
+                            <div class="control-group-header">
+                                <h4 class="control-group-title">Global Controls</h4>
+                                <button id="reset-btn" class="btn-small" title="Reset Controls" onclick="resetControls()">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Time Control -->
+                            <div class="slider-container" id="time-control">
+                                <div class="control-label">
+                                    <span>Time</span>
+                                    <span id="time-value" class="slider-value">0</span>
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Compton Period: T=h/mc², encodes particle mass</span>
+                                    </div>
+                                </div>
+                                <input type="range" min="0" max="6.28" step="0.01" value="0" id="time-slider" class="slider">
+                            </div>
+                            
+                            <!-- Loop Factor Control -->
+                            <div class="slider-container" id="loop-control">
+                                <div class="control-label">
+                                    <span>Loop Factor</span>
+                                    <span id="loop-factor-value" class="slider-value">1</span>
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Quantum numbers: Integer=bosons, Half-integer=fermions</span>
+                                    </div>
+                                </div>
+                                <input type="range" min="1" max="5" step="0.5" value="1" id="loop-factor-slider" class="slider">
+                            </div>
+                            
+                            <!-- Merge Toggle -->
+                            <div class="toggle-container" id="merge-toggle-container">
+                                <div class="control-label">
+                                    <span>Merge Sub-SKBs</span>
+                                    <div class="tooltip">
+                                        <i class="fas fa-info-circle tooltip-icon"></i>
+                                        <span class="tooltip-text">Combine sub-manifolds to form composite particles</span>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="merge-toggle">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- SKB Controls -->
+                        <div class="control-group skb-controls" id="skb-controls">
+                            <!-- SKB controls will be dynamically generated -->
+                        </div>
+                        
+                        <!-- Hadron Validation Controls -->
+                        <div class="control-group" id="hadron-validator">
+                            <!-- Hadron validation controls will be dynamically generated -->
+                        </div>
+                    </div>
+                    
+                    <!-- Left Panel Toggle Button -->
+                    <button id="toggle-left-panel" class="panel-toggle left-panel-toggle">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                
+                <!-- Main Visualization Area -->
+                <div class="explorer-main">
+                    <div class="visualization-header">
+                        <h3>4D Manifold Explorer</h3>
+                        <div class="visualization-controls">
+                            <button id="fullscreen-btn" class="btn-small" title="Fullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="plot" class="explorer-plot-container"></div>
+                </div>
+                
+                <!-- Right Sidebar for Invariants -->
+                <div class="explorer-sidebar-right sidebar-right-collapsed">
+                    <div class="invariants-header">
+                        <h4>Topological Invariants</h4>
+                        <button id="close-invariants-btn" class="btn btn-sm btn-link text-white">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="invariants-content">
+                        <!-- Basic Invariants Section -->
+                        <div class="invariants-section">
+                            <div class="section-header" data-toggle="collapse" data-target="#basic-invariants-content">
+                                <h5>Basic Invariants <i class="fas fa-chevron-down"></i></h5>
+                            </div>
+                            <div id="basic-invariants-content" class="section-content collapse show">
+                                <!-- Basic invariants content will be dynamically generated -->
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced Invariants Section -->
+                        <div class="invariants-section">
+                            <div class="section-header" data-toggle="collapse" data-target="#advanced-invariants-content">
+                                <h5>Advanced Invariants <i class="fas fa-chevron-down"></i></h5>
+                            </div>
+                            <div id="advanced-invariants-content" class="section-content collapse">
+                                <!-- Advanced invariants content will be dynamically generated -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Panel Toggle Button -->
+                    <button id="toggle-right-panel" class="panel-toggle right-panel-toggle">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                
+                <!-- Bottom Panel for Validation Results -->
+                <div class="explorer-bottom bottom-panel-collapsed">
+                    <div class="validation-header">
+                        <h4>Hadron Validation Results</h4>
+                        <button id="close-validation-btn" class="btn btn-sm btn-link text-white">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="validation-content">
+                        <!-- Validation results will be dynamically generated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Educational Modals -->
+    <div class="education-modal" id="guided-tour-modal">
+        <div class="education-modal-content">
+            <div class="education-modal-header">
+                <h2 class="education-modal-title">Guided Tour: 4D Manifold Explorer</h2>
+                <span class="education-modal-close">&times;</span>
+            </div>
+            <div class="education-modal-body">
+                <div class="tour-step" data-step="1">
+                    <h3>Welcome to the 4D Manifold Explorer</h3>
+                    <p>This interactive tool allows you to visualize and explore four-dimensional manifolds and their relationship to particle physics.</p>
+                    <p>In this guided tour, we'll walk through the key features and concepts.</p>
+                </div>
+                
+                <div class="tour-step" data-step="2" style="display: none;">
+                    <h3>Manifold Types</h3>
+                    <p>You can select different types of 4D manifolds to explore:</p>
+                    <ul>
+                        <li><strong>Spacetime Klein Bottle (SKB):</strong> A non-orientable surface that can model fundamental particles</li>
+                        <li><strong>4D Torus:</strong> An orientable closed surface that can represent bosonic structures</li>
+                        <li><strong>Projective Plane:</strong> A non-orientable surface related to fundamental fermions</li>
+                    </ul>
+                </div>
+                
+                <div class="tour-step" data-step="3" style="display: none;">
+                    <h3>Control Parameters</h3>
+                    <p>The left panel contains controls that let you adjust various parameters:</p>
+                    <ul>
+                        <li><strong>Time:</strong> Controls the temporal evolution of the manifold</li>
+                        <li><strong>Loop Factor:</strong> Adjusts the number of loops in the visualization</li>
+                        <li><strong>Twist Parameters:</strong> Modify the topological structure of the manifold</li>
+                    </ul>
+                </div>
+                
+                <div class="tour-step" data-step="4" style="display: none;">
+                    <h3>Topological Invariants</h3>
+                    <p>The right panel displays topological invariants - mathematical properties that remain unchanged under continuous deformations:</p>
+                    <ul>
+                        <li><strong>Euler Characteristic:</strong> A topological invariant related to the genus</li>
+                        <li><strong>Homology Groups:</strong> Describe the "holes" in different dimensions</li>
+                        <li><strong>Stiefel-Whitney Classes:</strong> Obstruction classes for orientability</li>
+                    </ul>
+                </div>
+                
+                <div class="tour-step" data-step="5" style="display: none;">
+                    <h3>Physics Interpretation</h3>
+                    <p>The bottom panel shows how the current manifold configuration relates to particle physics:</p>
+                    <ul>
+                        <li><strong>Particle Analogies:</strong> Which particles the configuration resembles</li>
+                        <li><strong>Stability Analysis:</strong> Whether the configuration is stable</li>
+                        <li><strong>CTC Existence:</strong> Presence of closed timelike curves</li>
+                    </ul>
+                </div>
+                
+                <div class="tour-step" data-step="6" style="display: none;">
+                    <h3>Ready to Explore!</h3>
+                    <p>You're now ready to explore 4D manifolds on your own. Try adjusting different parameters and observe how they affect the visualization and topological properties.</p>
+                    <p>For more in-depth information, check out the research papers linked at the top of the page.</p>
+                </div>
+                
+                <div class="tour-navigation">
+                    <button id="prev-step" class="btn btn-outline" disabled>Previous</button>
+                    <div class="tour-progress">
+                        <span id="current-step">1</span>/<span id="total-steps">6</span>
+                    </div>
+                    <button id="next-step" class="btn btn-primary">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Include footer -->
+    {% include 'footer.html' %}
+    
+    <!-- JavaScript for the visualization -->
+    <script src="{{ url_for('static', filename='js/hadron_validator.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/visualization.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modular_layout.js') }}"></script>
+    <script>
+    // Add global error handler to catch any JavaScript errors
+    window.addEventListener('error', function(event) {
+        console.error('Global error caught:', event.error);
+        // Report errors to the console
+        if (event.error && event.error.stack) {
+            console.error('Error stack:', event.error.stack);
+        }
+    });
+
+    // Ensure all dependencies are loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if Plotly is available
+        if (typeof Plotly === 'undefined') {
+            console.error('Plotly library not loaded! Adding it dynamically...');
+            var plotlyScript = document.createElement('script');
+            plotlyScript.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+            plotlyScript.onload = function() {
+                console.log('Plotly loaded successfully');
+                checkOtherDependencies();
+            };
+            plotlyScript.onerror = function() {
+                console.error('Failed to load Plotly');
+                alert('Failed to load visualization library. Please refresh the page.');
+            };
+            document.head.appendChild(plotlyScript);
+        } else {
+            console.log('Plotly already loaded');
+            checkOtherDependencies();
+        }
+        
+        // Check if other dependencies are loaded
+        function checkOtherDependencies() {
+            // Check jQuery
+            if (typeof $ === 'undefined') {
+                console.error('jQuery not loaded! Adding it dynamically...');
+                var jqueryScript = document.createElement('script');
+                jqueryScript.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+                jqueryScript.onload = function() {
+                    console.log('jQuery loaded successfully');
+                };
+                jqueryScript.onerror = function() {
+                    console.error('Failed to load jQuery');
+                };
+                document.head.appendChild(jqueryScript);
+            } else {
+                console.log('jQuery already loaded');
+            }
+            
+            // Check Math.js
+            if (typeof math === 'undefined') {
+                console.error('Math.js not loaded! Adding it dynamically...');
+                var mathScript = document.createElement('script');
+                mathScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js';
+                mathScript.onload = function() {
+                    console.log('Math.js loaded successfully');
+                };
+                mathScript.onerror = function() {
+                    console.error('Failed to load Math.js');
+                };
+                document.head.appendChild(mathScript);
+            } else {
+                console.log('Math.js already loaded');
+            }
+        }
+    });
+
+    // When everything is fully loaded (including images, CSS, etc.)
+    window.addEventListener('load', function() {
+        console.log('Window fully loaded - all resources are ready');
+        
+        // Add a backup initialization trigger after a short delay
+        // This ensures everything initializes even if other script events fail
+        setTimeout(function() {
+            console.log('Running fallback initialization');
+            
+            try {
+                // Check if plot container is empty
+                const plotContainer = document.getElementById('plot');
+                if (plotContainer && plotContainer.children.length === 0) {
+                    console.log('Plot not initialized, running fallback');
+                    
+                    // Create a fallback visualization
+                    if (typeof Plotly !== 'undefined' && Plotly.newPlot) {
+                        console.log('Creating fallback visualization with Plotly directly');
+                        
+                        // Simple Klein bottle points
+                        const points = [];
+                        for (let u = 0; u < Math.PI * 2; u += Math.PI / 10) {
+                            for (let v = 0; v < Math.PI * 2; v += Math.PI / 10) {
+                                const x = Math.cos(u) * Math.cos(v);
+                                const y = Math.sin(u) * Math.cos(v);
+                                const z = Math.sin(v);
+                                points.push({x: x, y: y, z: z});
+                            }
+                        }
+                        
+                        // Create trace
+                        const trace = {
+                            x: points.map(p => p.x),
+                            y: points.map(p => p.y),
+                            z: points.map(p => p.z),
+                            mode: 'markers',
+                            type: 'scatter3d',
+                            marker: {
+                                size: 3,
+                                color: points.map(p => p.z),
+                                colorscale: 'Viridis',
+                                opacity: 0.8
+                            }
+                        };
+                        
+                        // Create layout
+                        const layout = {
+                            title: {
+                                text: '4D Manifold (Demo Mode)',
+                                font: {
+                                    color: 'rgba(255, 255, 255, 0.87)'
+                                }
+                            },
+                            scene: {
+                                xaxis: { title: 'X' },
+                                yaxis: { title: 'Y' },
+                                zaxis: { title: 'Z' },
+                                camera: {
+                                    eye: { x: 1.5, y: 1.5, z: 1.5 }
+                                }
+                            },
+                            paper_bgcolor: 'rgba(30, 30, 30, 0)',
+                            plot_bgcolor: 'rgba(30, 30, 30, 0)',
+                            margin: {
+                                l: 0, r: 0, t: 50, b: 0
+                            }
+                        };
+                        
+                        Plotly.newPlot('plot', [trace], layout);
+                    }
+                }
+                
+                // Ensure all sliders have event listeners
+                const sliders = document.querySelectorAll('input[type="range"]');
+                sliders.forEach(function(slider) {
+                    // Remove existing event listeners by cloning
+                    const newSlider = slider.cloneNode(true);
+                    slider.parentNode.replaceChild(newSlider, slider);
+                    
+                    // Get value display element
+                    const valueId = newSlider.id + '-value';
+                    const valueDisplay = document.getElementById(valueId);
+                    
+                    // Initialize value display
+                    if (valueDisplay) {
+                        valueDisplay.textContent = parseFloat(newSlider.value).toFixed(2);
+                    }
+                    
+                    // Add event listener
+                    newSlider.addEventListener('input', function() {
+                        console.log(`Slider ${this.id} changed:`, this.value);
+                        
+                        // Update value display
+                        if (valueDisplay) {
+                            valueDisplay.textContent = parseFloat(this.value).toFixed(2);
+                        }
+                        
+                        // Try to update visualization
+                        try {
+                            if (typeof updateVisualization === 'function') {
+                                updateVisualization({
+                                    manifold_type: document.getElementById('manifold-type').value,
+                                    time: parseFloat(document.getElementById('time-slider').value),
+                                    loop_factor: parseFloat(document.getElementById('loop-factor-slider').value),
+                                    merge: document.getElementById('merge-toggle').checked
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error updating visualization on slider change:', error);
+                        }
+                    });
+                });
+                
+                // Ensure all toggle switches have event listeners
+                const toggles = document.querySelectorAll('input[type="checkbox"]');
+                toggles.forEach(function(toggle) {
+                    // Remove existing event listeners by cloning
+                    const newToggle = toggle.cloneNode(true);
+                    toggle.parentNode.replaceChild(newToggle, toggle);
+                    
+                    // Add event listener
+                    newToggle.addEventListener('change', function() {
+                        console.log(`Toggle ${this.id} changed:`, this.checked);
+                        
+                        // Try to update visualization
+                        try {
+                            if (typeof updateVisualization === 'function') {
+                                updateVisualization({
+                                    manifold_type: document.getElementById('manifold-type').value,
+                                    time: parseFloat(document.getElementById('time-slider').value),
+                                    loop_factor: parseFloat(document.getElementById('loop-factor-slider').value),
+                                    merge: document.getElementById('merge-toggle').checked
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error updating visualization on toggle change:', error);
+                        }
+                    });
+                });
+                
+                // Ensure all selects have event listeners
+                const selects = document.querySelectorAll('select');
+                selects.forEach(function(select) {
+                    // Remove existing event listeners by cloning
+                    const newSelect = select.cloneNode(true);
+                    select.parentNode.replaceChild(newSelect, select);
+                    
+                    // Add event listener
+                    newSelect.addEventListener('change', function() {
+                        console.log(`Select ${this.id} changed:`, this.value);
+                        
+                        // Try to update visualization
+                        try {
+                            if (typeof updateVisualization === 'function') {
+                                updateVisualization({
+                                    manifold_type: document.getElementById('manifold-type').value,
+                                    time: parseFloat(document.getElementById('time-slider').value),
+                                    loop_factor: parseFloat(document.getElementById('loop-factor-slider').value),
+                                    merge: document.getElementById('merge-toggle').checked
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error updating visualization on select change:', error);
+                        }
+                    });
+                });
+                
+                // Ensure reset button works
+                const resetBtn = document.getElementById('reset-btn');
+                if (resetBtn) {
+                    // Remove existing event listeners by cloning
+                    const newResetBtn = resetBtn.cloneNode(true);
+                    resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+                    
+                    // Add event listener
+                    newResetBtn.addEventListener('click', function() {
+                        console.log('Reset button clicked');
+                        
+                        // Reset slider values
+                        const timeSlider = document.getElementById('time-slider');
+                        const timeValue = document.getElementById('time-value');
+                        if (timeSlider) {
+                            timeSlider.value = 0;
+                            if (timeValue) {
+                                timeValue.textContent = '0';
+                            }
+                        }
+                        
+                        const loopSlider = document.getElementById('loop-factor-slider');
+                        const loopValue = document.getElementById('loop-factor-value');
+                        if (loopSlider) {
+                            loopSlider.value = 1;
+                            if (loopValue) {
+                                loopValue.textContent = '1';
+                            }
+                        }
+                        
+                        // Reset merge toggle
+                        const mergeToggle = document.getElementById('merge-toggle');
+                        if (mergeToggle) {
+                            mergeToggle.checked = false;
+                        }
+                        
+                        // Try to update visualization
+                        try {
+                            if (typeof updateVisualization === 'function') {
+                                updateVisualization({
+                                    manifold_type: document.getElementById('manifold-type').value,
+                                    time: 0,
+                                    loop_factor: 1,
+                                    merge: false
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error updating visualization on reset:', error);
+                        }
+                    });
+                }
+                
+                // Ensure guided tour button works
+                const tourBtn = document.getElementById('guided-tour-btn');
+                if (tourBtn) {
+                    // Remove existing event listeners by cloning
+                    const newTourBtn = tourBtn.cloneNode(true);
+                    tourBtn.parentNode.replaceChild(newTourBtn, tourBtn);
+                    
+                    // Add event listener
+                    newTourBtn.addEventListener('click', function() {
+                        console.log('Guided tour button clicked');
+                        
+                        // Open guided tour modal
+                        const modal = document.getElementById('guided-tour-modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            
+                            // Show first step
+                            const steps = modal.querySelectorAll('.tour-step');
+                            steps.forEach(s => s.style.display = 'none');
+                            if (steps.length > 0) {
+                                steps[0].style.display = 'block';
+                            }
+                            
+                            // Reset counter
+                            const currentStep = document.getElementById('current-step');
+                            if (currentStep) {
+                                currentStep.textContent = '1';
+                            }
+                            
+                            // Update button states
+                            const prevBtn = document.getElementById('prev-step');
+                            if (prevBtn) {
+                                prevBtn.disabled = true;
+                            }
+                            
+                            const nextBtn = document.getElementById('next-step');
+                            if (nextBtn && steps.length > 0) {
+                                nextBtn.textContent = steps.length === 1 ? 'Finish' : 'Next';
+                            }
+                        }
+                    });
+                }
+                
+                // Ensure panel toggle buttons work
+                setupPanelToggle('toggle-left-panel', '.explorer-sidebar-left', 'sidebar-left-collapsed');
+                setupPanelToggle('toggle-right-panel', '.explorer-sidebar-right', 'sidebar-right-collapsed');
+                
+                // Ensure close buttons work
+                setupCloseButton('close-invariants-btn', '.explorer-sidebar-right', 'sidebar-right-collapsed');
+                setupCloseButton('close-validation-btn', '.explorer-bottom', 'bottom-panel-collapsed');
+                
+                // Initialize tour navigation buttons
+                initTourNavigation();
+                
+                console.log('Fallback initialization complete');
+            } catch (error) {
+                console.error('Error in fallback initialization:', error);
+            }
+        }, 1000);
+        
+        // Helper function for panel toggles
+        function setupPanelToggle(buttonId, panelSelector, collapsedClass) {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+            
+            // Remove existing event listeners by cloning
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+            
+            // Add event listener
+            newButton.addEventListener('click', function() {
+                const panel = document.querySelector(panelSelector);
+                if (!panel) return;
+                
+                panel.classList.toggle(collapsedClass);
+                console.log(`Panel ${panelSelector} toggle state changed`);
+            });
+        }
+        
+        // Helper function for close buttons
+        function setupCloseButton(buttonId, panelSelector, collapsedClass) {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+            
+            // Remove existing event listeners by cloning
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+            
+            // Add event listener
+            newButton.addEventListener('click', function() {
+                const panel = document.querySelector(panelSelector);
+                if (!panel) return;
+                
+                panel.classList.add(collapsedClass);
+                console.log(`Panel ${panelSelector} closed`);
+            });
+        }
+        
+        // Helper function for tour navigation
+        function initTourNavigation() {
+            const modal = document.getElementById('guided-tour-modal');
+            if (!modal) return;
+            
+            const closeBtn = modal.querySelector('.education-modal-close');
+            const prevBtn = document.getElementById('prev-step');
+            const nextBtn = document.getElementById('next-step');
+            const currentStepEl = document.getElementById('current-step');
+            const totalStepsEl = document.getElementById('total-steps');
+            const steps = modal.querySelectorAll('.tour-step');
+            
+            let currentStep = 1;
+            const totalSteps = steps.length;
+            
+            if (totalStepsEl) {
+                totalStepsEl.textContent = totalSteps;
+            }
+            
+            // Close button
+            if (closeBtn) {
+                // Remove existing event listeners by cloning
+                const newCloseBtn = closeBtn.cloneNode(true);
+                closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+                
+                // Add event listener
+                newCloseBtn.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            }
+            
+            // Previous button
+            if (prevBtn) {
+                // Remove existing event listeners by cloning
+                const newPrevBtn = prevBtn.cloneNode(true);
+                prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+                
+                // Add event listener
+                newPrevBtn.addEventListener('click', function() {
+                    if (currentStep > 1) {
+                        showStep(--currentStep);
+                    }
+                });
+            }
+            
+            // Next button
+            if (nextBtn) {
+                // Remove existing event listeners by cloning
+                const newNextBtn = nextBtn.cloneNode(true);
+                nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+                
+                // Add event listener
+                newNextBtn.addEventListener('click', function() {
+                    if (currentStep < totalSteps) {
+                        showStep(++currentStep);
+                    } else {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Show step function
+            function showStep(step) {
+                steps.forEach(s => s.style.display = 'none');
+                steps[step - 1].style.display = 'block';
+                
+                if (currentStepEl) {
+                    currentStepEl.textContent = step;
+                }
+                
+                if (prevBtn) {
+                    prevBtn.disabled = step === 1;
+                }
+                
+                if (nextBtn) {
+                    nextBtn.textContent = step === totalSteps ? 'Finish' : 'Next';
+                }
+            }
+            
+            // Ensure modal closes when clicked outside
+            modal.addEventListener('click', function(event) {
+                if (event.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html> 

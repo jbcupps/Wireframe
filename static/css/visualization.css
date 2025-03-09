@@ -1,0 +1,238 @@
+/**
+ * Visualization Specific Styles
+ * Styles specific to the 4D Manifold Explorer visualization page
+ */
+
+/* Main visualization container */
+.explorer-plot-container {
+    width: 100%;
+    height: 70vh;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-small);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Loading indicator for visualization */
+.loading-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--background-rgb), 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(var(--primary-rgb), 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 10px;
+}
+
+.loading-text {
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Invariants styles */
+.invariant-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.invariant-item:last-child {
+    border-bottom: none;
+}
+
+.invariant-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.invariant-value {
+    color: var(--primary);
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.9rem;
+}
+
+/* Resize handle for panels */
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    background-color: transparent;
+    cursor: col-resize;
+    z-index: 10;
+}
+
+.resize-handle-left {
+    right: -5px;
+    top: 0;
+    height: 100%;
+}
+
+.resize-handle-right {
+    left: -5px;
+    top: 0;
+    height: 100%;
+}
+
+/* Visualization controls */
+.visualization-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Research links */
+.research-links {
+    margin-bottom: var(--space-md);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.research-links a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.research-links a:hover {
+    color: var(--primary-variant);
+    text-decoration: underline;
+}
+
+/* Tooltip styles specific to visualization */
+.control-label .tooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 4px;
+}
+
+.tooltip-icon {
+    color: var(--text-hint);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: rgba(var(--surface-rgb), 0.95);
+    color: var(--text-primary);
+    text-align: center;
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    position: absolute;
+    z-index: var(--z-index-tooltip);
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-color);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-normal);
+    pointer-events: none;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Custom slider styles for visualization page */
+.slider-container {
+    margin-bottom: var(--space-md);
+}
+
+.control-label {
+    font-weight: var(--font-weight-medium);
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.slider-value {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .explorer-plot-container {
+        height: 60vh;
+    }
+    
+    .explorer-sidebar-left,
+    .explorer-sidebar-right {
+        max-height: 50vh;
+        width: 100%;
+    }
+    
+    .explorer-sidebar-left {
+        left: 0;
+        transform: translateX(-100%);
+    }
+    
+    .explorer-sidebar-right {
+        right: 0;
+        transform: translateX(100%);
+    }
+    
+    .explorer-sidebar-left:not(.sidebar-left-collapsed) {
+        transform: translateX(0);
+    }
+    
+    .explorer-sidebar-right:not(.sidebar-right-collapsed) {
+        transform: translateX(0);
+    }
+    
+    .panel-toggle {
+        position: fixed;
+        z-index: var(--z-index-modal);
+    }
+    
+    .left-panel-toggle {
+        left: 0;
+        transform: translateX(0);
+    }
+    
+    .right-panel-toggle {
+        right: 0;
+        transform: translateX(0);
+    }
+    
+    .explorer-sidebar-left:not(.sidebar-left-collapsed) .left-panel-toggle {
+        transform: translateX(calc(100% - 30px));
+    }
+    
+    .explorer-sidebar-right:not(.sidebar-right-collapsed) .right-panel-toggle {
+        transform: translateX(calc(-100% + 30px));
+    }
+
+    .visualization-controls {
+        flex-direction: row;
+        justify-content: center;
+    }
+} 

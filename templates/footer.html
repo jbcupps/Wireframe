@@ -1,0 +1,158 @@
+<!-- Footer with Neumorphic Design -->
+<footer class="footer neu-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-about neu-card neu-anim-fade">
+                <div class="footer-logo">
+                    <i class="fas fa-cube neu-anim-pulse"></i>
+                    <span>4D Manifold Explorer</span>
+                </div>
+                <p>An educational platform for exploring higher-dimensional mathematics through interactive visualizations.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter" class="neu-btn neu-hover-float"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="GitHub" class="neu-btn neu-hover-float"><i class="fab fa-github"></i></a>
+                    <a href="#" aria-label="LinkedIn" class="neu-btn neu-hover-float"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-nav neu-card neu-anim-fade neu-delay-100">
+                <h3 class="neu-box-concave">Explore</h3>
+                <ul class="footer-links neu-staggered-list">
+                    <li><a href="/methodical-search" class="neu-list-item">Methodical Search</a></li>
+                    <li><a href="/evolution" class="neu-list-item">Evolution Equations</a></li>
+                    <li><a href="/maxwell" class="neu-list-item">Maxwell's Equations</a></li>
+                    <li><a href="/oscillator" class="neu-list-item">Quantum Oscillator</a></li>
+                    <li><a href="/visualization" class="neu-list-item">Visualization</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-nav neu-card neu-anim-fade neu-delay-200">
+                <h3 class="neu-box-concave">Resources</h3>
+                <ul class="footer-links neu-staggered-list">
+                    <li><a href="#" class="neu-list-item">Documentation</a></li>
+                    <li><a href="#" class="neu-list-item">Tutorials</a></li>
+                    <li><a href="#" class="neu-list-item">API Reference</a></li>
+                    <li><a href="#" class="neu-list-item">Examples</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-nav neu-card neu-anim-fade neu-delay-300">
+                <h3 class="neu-box-concave">About</h3>
+                <ul class="footer-links neu-staggered-list">
+                    <li><a href="#" class="neu-list-item">About Us</a></li>
+                    <li><a href="#" class="neu-list-item">Contact</a></li>
+                    <li><a href="#" class="neu-list-item">Privacy Policy</a></li>
+                    <li><a href="#" class="neu-list-item">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright neu-box-concave neu-anim-fade neu-delay-400">
+            <p>&copy; 2024 4D Manifold Explorer. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Neumorphic Footer Specific Styles */
+    .neu-footer {
+        padding-top: 40px;
+        padding-bottom: 20px;
+    }
+    
+    .footer-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .footer-about {
+        flex: 1 1 300px;
+    }
+    
+    .footer-nav {
+        flex: 1 1 200px;
+    }
+    
+    .footer-logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: var(--neu-primary);
+    }
+    
+    .footer-logo i {
+        margin-right: 10px;
+        font-size: 1.4rem;
+    }
+    
+    .social-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .social-links a {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: var(--neu-text-primary);
+        font-size: 1.2rem;
+    }
+    
+    .footer-nav h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding: 10px;
+        font-size: 1.1rem;
+        color: var(--neu-primary);
+    }
+    
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .footer-links li {
+        margin-bottom: 12px;
+    }
+    
+    .footer-links a {
+        color: var(--neu-text-primary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: block;
+        padding: 8px;
+        border-radius: 8px;
+    }
+    
+    .footer-links a:hover {
+        color: var(--neu-primary);
+        box-shadow: var(--neu-shadow-inset-light), var(--neu-shadow-inset-dark);
+    }
+    
+    .copyright {
+        text-align: center;
+        padding: 15px;
+        color: var(--neu-text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .footer-content {
+            flex-direction: column;
+        }
+        
+        .footer-about, .footer-nav {
+            flex-basis: 100%;
+        }
+    }
+</style> 

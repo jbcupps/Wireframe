@@ -823,17 +823,46 @@ class EvolutionaryAlgorithm {
 class EvolutionUI {
     constructor() {
         console.log("Initializing Evolution UI");
+        
+        // Initialize the algorithm
         this.algorithm = new EvolutionaryAlgorithm();
         this.selectedIndividual = null;
         this.selectedIndices = new Set();
         this.stableHadrons = [];
         this.frozenIndices = new Set();
         
+        // Set up UI event listeners
         this.initEventListeners();
         
-        // Delayed initialization to ensure DOM is ready
-        setTimeout(() => {
-            console.log("DOM should be fully loaded, testing plot functionality");
+        // Check if the plot container is ready and has dimensions
+        const checkPlotContainerAndInit = () => {
+            console.log("Checking plot container readiness");
+            const plotContainer = document.getElementById('evolution-plot');
+            
+            if (!plotContainer) {
+                console.error("Plot container not found! Retrying in 500ms...");
+                setTimeout(checkPlotContainerAndInit, 500);
+                return;
+            }
+            
+            // Ensure the container has proper dimensions
+            if (plotContainer.offsetHeight < 100 || plotContainer.offsetWidth < 100) {
+                console.log("Plot container dimensions insufficient:", 
+                    plotContainer.offsetWidth, "x", plotContainer.offsetHeight,
+                    "Setting explicit dimensions");
+                
+                plotContainer.style.height = "400px";
+                plotContainer.style.minHeight = "400px";
+                plotContainer.style.width = "100%";
+                
+                // Allow time for style changes to take effect
+                setTimeout(checkPlotContainerAndInit, 200);
+                return;
+            }
+            
+            console.log("Plot container ready with dimensions:", 
+                plotContainer.offsetWidth, "x", plotContainer.offsetHeight);
+                
             // First try a simple test plot to check if Plotly works at all
             const plotWorks = this.testPlot();
             
@@ -846,24 +875,46 @@ class EvolutionUI {
                     if (this.algorithm.population.length > 0) {
                         this.updateVisualization();
                     }
-                }, 500);
+                }, 300);
             } else {
                 console.error("Test plot failed! Not attempting 3D visualization");
-                // Try to find the plot container and display an error message
-                const plotContainer = document.getElementById('evolution-plot');
+                // Display an error message
                 if (plotContainer) {
-                    plotContainer.innerHTML = '<div style="color: white; padding: 20px; text-align: center;">' +
+                    plotContainer.innerHTML = '<div style="color: white; padding: 20px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">' +
                         '<h3>Visualization Error</h3>' +
-                        '<p>Failed to initialize the plot. Please check the console for errors.</p>' +
+                        '<p>Failed to initialize the plot. Please try refreshing the page.</p>' +
                         '</div>';
                 }
+                
+                // Try a second initialization attempt after some delay
+                setTimeout(() => {
+                    console.log("Attempting secondary visualization initialization");
+                    try {
+                        this.initVisualization();
+                    } catch (error) {
+                        console.error("Secondary init attempt failed:", error);
+                    }
+                }, 1500);
             }
-        }, 1000);
+        };
         
+        // Initial UI update
         this.updateUI();
         
-        // Initial population generation
-        document.getElementById('generate-btn').click();
+        // Start the initialization sequence with some delay to let the DOM fully load
+        console.log("Scheduling visualization initialization");
+        setTimeout(checkPlotContainerAndInit, 500);
+        
+        // Schedule initial population generation with delay
+        setTimeout(() => {
+            console.log("Auto-clicking generate button");
+            const generateBtn = document.getElementById('generate-btn');
+            if (generateBtn) {
+                generateBtn.click();
+            } else {
+                console.error("Generate button not found!");
+            }
+        }, 1200);
     }
     
     initEventListeners() {
@@ -1235,7 +1286,25 @@ class EvolutionUI {
                 return;
             }
             
+            // Ensure the container has proper dimensions
+            if (plotContainer.offsetHeight < 100) {
+                console.log("Plot container has insufficient height. Setting explicit height.");
+                plotContainer.style.height = "400px";
+                plotContainer.style.minHeight = "400px";
+                plotContainer.style.width = "100%";
+            }
+            
             console.log("Plot container dimensions:", plotContainer.offsetWidth, "x", plotContainer.offsetHeight);
+            
+            // Check if Plotly is available
+            if (typeof Plotly === 'undefined') {
+                console.error("Plotly library is not available!");
+                plotContainer.innerHTML = '<div style="display: flex; height: 100%; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px;">Visualization library failed to load. Please refresh the page.</div>';
+                return;
+            }
+            
+            // Add loading indicator
+            plotContainer.innerHTML = '<div style="display: flex; height: 100%; justify-content: center; align-items: center; color: white; text-align: center;">Initializing visualization...</div>';
             
             // Create an empty plot with proper layout
             const layout = {
@@ -1253,14 +1322,61 @@ class EvolutionUI {
                 plot_bgcolor: '#1e1e1e',
                 font: { color: '#ffffff' },
                 margin: { l: 0, r: 0, b: 0, t: 50, pad: 4 },
+                width: plotContainer.offsetWidth,
+                height: plotContainer.offsetHeight,
                 autosize: true,
-                showlegend: true
+                showlegend: true,
+                annotations: [{
+                    text: 'Generate population and run evolution to visualize Sub-SKBs',
+                    showarrow: false,
+                    x: 0.5,
+                    y: 0.5,
+                    xref: 'paper',
+                    yref: 'paper',
+                    font: {
+                        size: 14,
+                        color: '#ffffff'
+                    }
+                }]
             };
             
-            // Create an empty plot - will be filled by updateVisualization
-            Plotly.newPlot('evolution-plot', [], layout);
+            // Create an empty plot with a single marker at the origin - will be filled by updateVisualization
+            const initialData = [{
+                type: 'scatter3d',
+                x: [0],
+                y: [0],
+                z: [0],
+                mode: 'markers',
+                marker: {
+                    size: 5,
+                    color: '#65FF8F'
+                },
+                name: 'Origin',
+                hoverinfo: 'name'
+            }];
             
-            console.log("Empty visualization plot initialized");
+            // Delay creation slightly to allow DOM to be ready
+            setTimeout(function() {
+                try {
+                    Plotly.newPlot('evolution-plot', initialData, layout);
+                    console.log("Empty visualization plot initialized");
+                    
+                    // Add a resize handler
+                    window.addEventListener('resize', function() {
+                        try {
+                            Plotly.relayout('evolution-plot', {
+                                width: plotContainer.offsetWidth,
+                                height: plotContainer.offsetHeight
+                            });
+                        } catch (error) {
+                            console.error("Error resizing plot:", error);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error creating initial plot:", error);
+                    plotContainer.innerHTML = '<div style="display: flex; height: 100%; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px;">Failed to initialize visualization. Please try generating a population.</div>';
+                }
+            }, 300);
         } catch (error) {
             console.error("Error initializing 3D visualization:", error);
         }
@@ -1268,6 +1384,32 @@ class EvolutionUI {
     
     updateVisualization() {
         console.log("Updating visualization");
+        
+        // Get the plot container to verify it exists and has proper dimensions
+        const plotContainer = document.getElementById('evolution-plot');
+        if (!plotContainer) {
+            console.error("Plot container not found when updating visualization!");
+            return;
+        }
+        
+        // Ensure the container has proper dimensions
+        if (plotContainer.offsetHeight < 100) {
+            console.log("Plot container has insufficient height during update. Setting explicit height.");
+            plotContainer.style.height = "400px";
+            plotContainer.style.minHeight = "400px";
+            plotContainer.style.width = "100%";
+            
+            // Allow time for style changes to take effect before continuing
+            setTimeout(() => this.updateVisualization(), 100);
+            return;
+        }
+        
+        // Check if Plotly is available
+        if (typeof Plotly === 'undefined') {
+            console.error("Plotly library is not available when updating visualization!");
+            plotContainer.innerHTML = '<div style="display: flex; height: 100%; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px;">Visualization library failed to load. Please refresh the page.</div>';
+            return;
+        }
         
         // Get the visualization data for the top 3 highest compatibility sub-SKBs
         try {
@@ -1283,14 +1425,69 @@ class EvolutionUI {
                 const compatibilityScores = [];
                 const population = this.algorithm.population;
                 
+                // Check if we have a population
+                if (!population || population.length === 0) {
+                    console.log("No population available for visualization");
+                    // Display a message in the plot
+                    const layout = {
+                        title: 'Sub-SKB Visualization',
+                        scene: {
+                            xaxis: { title: 'X', range: [-2, 2] },
+                            yaxis: { title: 'Y', range: [-2, 2] },
+                            zaxis: { title: 'Z', range: [-2, 2] },
+                            aspectmode: 'cube'
+                        },
+                        paper_bgcolor: '#1e1e1e',
+                        plot_bgcolor: '#1e1e1e',
+                        font: { color: '#ffffff' },
+                        width: plotContainer.offsetWidth,
+                        height: plotContainer.offsetHeight,
+                        annotations: [{
+                            text: 'Generate population and run evolution to visualize Sub-SKBs',
+                            showarrow: false,
+                            x: 0.5,
+                            y: 0.5,
+                            xref: 'paper',
+                            yref: 'paper',
+                            font: {
+                                size: 14,
+                                color: '#ffffff'
+                            }
+                        }]
+                    };
+                    
+                    // Create an empty plot with a single marker
+                    const emptyData = [{
+                        type: 'scatter3d',
+                        x: [0],
+                        y: [0],
+                        z: [0],
+                        mode: 'markers',
+                        marker: {
+                            size: 5,
+                            color: '#65FF8F'
+                        },
+                        name: 'Origin',
+                        hoverinfo: 'name'
+                    }];
+                    
+                    Plotly.newPlot('evolution-plot', emptyData, layout);
+                    return;
+                }
+                
+                // Continue with compatibility calculation for pairs
                 for (let i = 0; i < population.length; i++) {
                     for (let j = i + 1; j < population.length; j++) {
-                        const compatScore = this.algorithm.calculateCompatibility(population[i], population[j]);
-                        compatibilityScores.push({
-                            skb1: population[i],
-                            skb2: population[j],
-                            score: compatScore.compatibilityScore
-                        });
+                        try {
+                            const compatScore = this.algorithm.calculateCompatibility(population[i], population[j]);
+                            compatibilityScores.push({
+                                skb1: population[i],
+                                skb2: population[j],
+                                score: compatScore.compatibilityScore
+                            });
+                        } catch (error) {
+                            console.error("Error calculating compatibility between individuals", i, j, error);
+                        }
                     }
                 }
                 

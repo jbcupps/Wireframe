@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Methodical Iterative Search - 4D Manifold Explorer</title>
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/education_features.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modular_layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/new_styles.css') }}">
+    
+    <!-- External JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="{{ url_for('static', filename='js/methodical_search_visualizations.js') }}"></script>
+    <style>
+        /* Reset and base styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .main-content {
+            padding: 20px 0;
+            min-height: calc(100vh - 120px);
+            background-color: var(--background);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .page-header h1 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto 20px;
+        }
+        
+        /* Improved methodical search layout */
+        .methodical-search-layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 350px) 1fr;
+            grid-template-rows: auto;
+            gap: 25px;
+            min-height: 800px;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar {
+            grid-column: 1;
+            grid-row: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            padding-right: 5px;
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: var(--surface-light);
+            border-radius: 10px;
+        }
+        
+        .main-content-area {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 800px;
+            width: 100%;
+        }
+        
+        /* Enhanced responsive behavior */
+        @media (max-width: 1200px) {
+            .methodical-search-layout {
+                grid-template-columns: minmax(250px, 300px) 1fr;
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .methodical-search-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .sidebar {
+                grid-column: 1;
+                grid-row: 1;
+                max-height: none;
+                position: relative;
+                top: 0;
+                overflow-y: visible;
+                padding-right: 0;
+            }
+            
+            .main-content-area {
+                grid-column: 1;
+                grid-row: 2;
+                min-height: 600px;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .methodical-search-layout {
+                gap: 15px;
+            }
+        }
+        
+        /* Cards and component styling */
+        .card {
+            background-color: var(--surface);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: box-shadow 0.2s ease-in-out;
+            border: 1px solid var(--border-color);
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--surface-light);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .card-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Improved visualization container */
+        .visualization-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .visualization-container .card-body {
+            padding: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .plotly-container {
+            width: 100%;
+            height: 500px !important;
+            min-height: 400px;
+            flex-grow: 1;
+            border-radius: 0;
+            background-color: rgba(30, 30, 30, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .results-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        /* Form controls */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(98, 0, 238, 0.1);
+            outline: none;
+        }
+        
+        /* Range inputs and values */
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .range-input {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background-color: var(--surface-light);
+            border-radius: 10px;
+        }
+        
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .range-input::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s;
+        }
+        
+        .range-input::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .range-value {
+            width: 50px;
+            text-align: center;
+            font-family: 'Inter', monospace;
+            background-color: var(--surface-light);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            border: none;
+            font-size: 0.95rem;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--surface-light);
+            border-color: var(--text-secondary);
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        /* Info cards */
+        .info-card {
+            background-color: var(--surface-light);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-card-title {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Property lists */
+        .property-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .property-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .property-item:last-child {
+            border-bottom: none;
+        }
+        
+        .property-name {
+            color: var(--text-secondary);
+        }
+        
+        .property-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        /* Equation container */
+        .equation-container {
+            background-color: var(--surface-light);
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            margin: 15px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .equation-container:hover {
+            background-color: var(--surface);
+        }
+        
+        /* Results table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .results-table th {
+            background-color: var(--surface-light);
+            color: var(--text-primary);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .results-table tr:hover {
+            background-color: var(--surface-light);
+        }
+        
+        .active-row {
+            background-color: rgba(98, 0, 238, 0.1) !important;
+            border-left: 3px solid var(--primary);
+        }
+        
+        /* Loading overlay */
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            display: none;
+            backdrop-filter: blur(3px);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Tooltips */
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: var(--surface);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-medium);
+            z-index: 100;
+            max-width: 250px;
+            font-size: 0.9rem;
+            top: 100%;
+            right: 0;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            margin-top: 8px;
+        }
+        
+        .info-icon {
+            position: relative;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+        
+        .info-icon:hover {
+            color: var(--primary);
+        }
+        
+        .info-icon:hover .tooltip {
+            display: block;
+        }
+        
+        /* Visualization controls */
+        .visualization-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        @media (max-width: 576px) {
+            .visualization-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .form-control, .btn {
+                font-size: 0.9rem;
+            }
+            
+            .results-table {
+                font-size: 0.8rem;
+            }
+            
+            .results-table th, 
+            .results-table td {
+                padding: 8px;
+            }
+            
+            .property-item, .property-name, .property-value {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Site Navigation Header -->
+    {% include 'navbar.html' %}
+
+    <div class="main-content">
+        <div class="container" style="max-width: 1400px; margin: 0 auto;">
+            <div class="page-header">
+                <h1>Methodical Iterative Search</h1>
+                <div class="subtitle">
+                    Systematically explore manifold configurations to match Standard Model particles
+                </div>
+            </div>
+            
+            <div class="methodical-search-layout">
+                <!-- Sidebar with controls and parameters -->
+                <div class="sidebar">
+                    <!-- Component 1: Particle Selection and Manifold Setup -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Particle Selection</h2>
+                            <div class="info-icon">
+                                <i class="fas fa-info-circle"></i>
+                                <div class="tooltip">Select a target particle to configure the manifold structure</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="particle-select">Target Particle:</label>
+                                <select id="particle-select" class="form-control">
+                                    {% for particle in particles %}
+                                    <option value="{{ particle.name }}">{{ particle.display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="info-card">
+                                <h3 class="info-card-title">Target Properties</h3>
+                                <ul class="property-list">
+                                    <li class="property-item">
+                                        <span class="property-name">Mass:</span>
+                                        <span class="property-value" id="target-mass">938.272 MeV</span>
+                                    </li>
+                                    <li class="property-item">
+                                        <span class="property-name">Charge:</span>
+                                        <span class="property-value" id="target-charge">+1</span>
+                                    </li>
+                                    <li class="property-item">
+                                        <span class="property-name">Structure:</span>
+                                        <span class="property-value" id="target-structure">3 Sub-SKBs</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="info-card">
+                                <h3 class="info-card-title">Manifold Structure</h3>
+                                <div id="manifold-structure">
+                                    <div><strong>Sub-SKB 1:</strong> Up Quark</div>
+                                    <div><strong>Sub-SKB 2:</strong> Up Quark</div>
+                                    <div><strong>Sub-SKB 3:</strong> Down Quark</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Component 2: Parameter Definition -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Parameter Definition</h2>
+                            <div class="info-icon">
+                                <i class="fas fa-info-circle"></i>
+                                <div class="tooltip">Define parameter ranges for the search algorithm</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3>Twist Numbers</h3>
+                            <div class="form-group">
+                                <label>Min Value:</label>
+                                <div class="range-container">
+                                    <input type="range" id="twist-min" class="form-control range-input" min="-5" max="0" step="0.5" value="-2">
+                                    <span class="range-value" id="twist-min-value">-2</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Max Value:</label>
+                                <div class="range-container">
+                                    <input type="range" id="twist-max" class="form-control range-input" min="0" max="5" step="0.5" value="2">
+                                    <span class="range-value" id="twist-max-value">2</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Step Size:</label>
+                                <div class="range-container">
+                                    <input type="range" id="twist-step" class="form-control range-input" min="0.1" max="1" step="0.1" value="0.5">
+                                    <span class="range-value" id="twist-step-value">0.5</span>
+                                </div>
+                            </div>
+                            
+                            <h3>Linking Numbers</h3>
+                            <div class="form-group">
+                                <label>Min Value:</label>
+                                <div class="range-container">
+                                    <input type="range" id="link-min" class="form-control range-input" min="-5" max="0" step="1" value="-3">
+                                    <span class="range-value" id="link-min-value">-3</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Max Value:</label>
+                                <div class="range-container">
+                                    <input type="range" id="link-max" class="form-control range-input" min="0" max="5" step="1" value="3">
+                                    <span class="range-value" id="link-max-value">3</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Step Size:</label>
+                                <div class="range-container">
+                                    <input type="range" id="link-step" class="form-control range-input" min="1" max="2" step="1" value="1">
+                                    <span class="range-value" id="link-step-value">1</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button id="generate-params" class="btn btn-primary btn-block">
+                                    <i class="fas fa-calculator"></i> Generate Parameter Space
+                                </button>
+                            </div>
+                            
+                            <div class="info-card">
+                                <div id="parameter-stats">
+                                    <div><strong>Possible Combinations:</strong> <span id="combo-count">125</span></div>
+                                    <div><strong>Estimated Computation Time:</strong> <span id="computation-time">~2 seconds</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Component 3 & 4: Property Calculation & Search Algorithm -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Property Calculation</h2>
+                            <div class="info-icon">
+                                <i class="fas fa-info-circle"></i>
+                                <div class="tooltip">Configure how topological parameters map to physical properties</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Component 3: Property Calculation -->
+                            <div class="equation-container">
+                                <div>Charge = \(\sum_{i} \text{twist}_i \times \text{charge\_scale}\)</div>
+                                <div>Mass = \(m_0 + E_0 \times \sum_{i<j} |L_{ij}|\)</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="charge-scale">Charge Scale:</label>
+                                <div class="range-container">
+                                    <input type="range" id="charge-scale" class="form-control range-input" min="0.1" max="1" step="0.1" value="0.3">
+                                    <span class="range-value" id="charge-scale-value">0.3</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="base-mass">Base Mass (m₀):</label>
+                                <div class="range-container">
+                                    <input type="range" id="base-mass" class="form-control range-input" min="0" max="100" step="1" value="0">
+                                    <span class="range-value" id="base-mass-value">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="energy-scale">Energy Scale (E₀):</label>
+                                <div class="range-container">
+                                    <input type="range" id="energy-scale" class="form-control range-input" min="10" max="500" step="10" value="100">
+                                    <span class="range-value" id="energy-scale-value">100</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Component 4: Search Algorithm -->
+                            <h3>Search Method</h3>
+                            <div class="form-group">
+                                <select id="search-method" class="form-control">
+                                    <option value="grid">Grid Search (Exhaustive)</option>
+                                    <option value="annealing" disabled>Simulated Annealing (Coming Soon)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="distance-metric">Distance Metric:</label>
+                                <select id="distance-metric" class="form-control">
+                                    <option value="relative">Relative Error</option>
+                                    <option value="absolute">Absolute Error</option>
+                                    <option value="weighted">Weighted (Prioritize Charge)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button id="run-search" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> Run Search
+                                </button>
+                            </div>
+                            
+                            <!-- Component 6: Integration with Evolutionary Algorithm -->
+                            <h3>Integration</h3>
+                            <div class="form-group" style="display: flex; gap: 10px;">
+                                <button id="import-evo" class="btn btn-outline" style="flex: 1;">
+                                    <i class="fas fa-file-import"></i> Import
+                                </button>
+                                <button id="export-evo" class="btn btn-outline" style="flex: 1;">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main content area with visualization and results -->
+                <div class="main-content-area">
+                    <!-- Component 5: Visualization with Plotly -->
+                    <div class="card visualization-container">
+                        <div id="loading-overlay">
+                            <div class="spinner"></div>
+                            <div>Computing configurations...</div>
+                        </div>
+                        <div class="card-header">
+                            <h2 class="card-title">Search Results</h2>
+                            <div class="visualization-controls">
+                                <label for="visualization-type">Display Type:</label>
+                                <select id="visualization-type" class="form-control">
+                                    <option value="scatter">Scatter Plot</option>
+                                    <option value="surface">Surface Plot</option>
+                                    <option value="parallel">Parallel Coordinates</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Plotly Visualization Area -->
+                            <div id="visualization" class="plotly-container"></div>
+                            
+                            <!-- Results Table -->
+                            <div class="results-container">
+                                <h3>Top Configurations</h3>
+                                <table class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Twist</th>
+                                            <th>Link</th>
+                                            <th>Charge</th>
+                                            <th>Mass (MeV)</th>
+                                            <th>Error</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="results-table-body">
+                                        <!-- Results will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Educational Modal for Formula Explanation -->
+    <div class="education-modal" id="formula-modal">
+        <div class="education-modal-content">
+            <div class="education-modal-header">
+                <h2 class="education-modal-title">Formula Explanation</h2>
+                <span class="education-modal-close">&times;</span>
+            </div>
+            <div class="education-modal-body">
+                <h3>Charge Calculation</h3>
+                <p>The charge is calculated as the sum of the twist numbers of each Sub-SKB, scaled by a constant:</p>
+                <div class="equation-container">
+                    \[ \text{Charge} = \sum_{i} \text{twist}_i \times \text{charge\_scale} \]
+                </div>
+                <p>For quarks, a charge scale of 1/3 is typically used, reflecting the fractional charge of individual quarks.</p>
+                
+                <h3>Mass Calculation</h3>
+                <p>The mass is calculated based on the linking numbers between Sub-SKBs:</p>
+                <div class="equation-container">
+                    \[ \text{Mass} = m_0 + E_0 \times \sum_{i<j} |L_{ij}| \]
+                </div>
+                <p>Where:</p>
+                <ul>
+                    <li>\(m_0\) is the base mass (e.g., sum of quarks' rest masses)</li>
+                    <li>\(E_0\) is the energy scale per linking unit</li>
+                    <li>\(L_{ij}\) is the linking number between Sub-SKBs i and j</li>
+                </ul>
+                <p>The absolute value of linking numbers is used because both positive and negative linking contribute to the binding energy.</p>
+            </div>
+            <div class="education-modal-footer">
+                <button class="btn btn-primary modal-close">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Include footer -->
+    {% include 'footer.html' %}
+
+    <!-- Add this before the end of the body tag -->
+    <script>
+    // Add global error handler to catch any JavaScript errors
+    window.addEventListener('error', function(event) {
+        console.error('Global error caught:', event.error);
+        // Report errors to the console
+        if (event.error && event.error.stack) {
+            console.error('Error stack:', event.error.stack);
+        }
+    });
+
+    // Initialize when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM content loaded - initializing methodical search');
+        
+        // Check if Plotly is available
+        if (typeof Plotly === 'undefined') {
+            console.error('Plotly library not loaded! Adding it dynamically...');
+            var plotlyScript = document.createElement('script');
+            plotlyScript.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+            plotlyScript.onload = function() {
+                console.log('Plotly loaded successfully');
+                initMethodicalSearch();
+            };
+            plotlyScript.onerror = function() {
+                console.error('Failed to load Plotly');
+                alert('Failed to load visualization library. Please refresh the page.');
+            };
+            document.head.appendChild(plotlyScript);
+        } else {
+            console.log('Plotly already loaded');
+            initMethodicalSearch();
+        }
+    });
+
+    // Backup initialization in case DOMContentLoaded fails
+    window.addEventListener('load', function() {
+        console.log('Window fully loaded - checking initialization');
+        
+        // Check if visualization exists
+        const visualizationElement = document.getElementById('visualization');
+        if (visualizationElement && (!visualizationElement.children.length || !visualizationState || !visualizationState.isInitialized)) {
+            console.log('Visualization not initialized, running backup initialization');
+            initMethodicalSearch();
+        }
+    });
+    </script>
+</body>
+</html> 
