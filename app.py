@@ -114,6 +114,10 @@ def maxwells():
 def double_slit():
     return render_template('double_slit.html')
 
+@app.route('/quantum_tunneling')
+def quantum_tunneling():
+    return render_template('quantum_tunneling.html')
+
 # API endpoint for evolutionary algorithm
 @app.route('/compute_evolution', methods=['POST'])
 def compute_evolution():

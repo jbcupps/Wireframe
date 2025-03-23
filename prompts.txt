@@ -71,3 +71,363 @@ Below are detailed instructions to build an interactive visualization of the dou
    - Updated app.py with new route
    - Updated navigation in all template files
    - Added to quantum mechanics section 
+
+Below are detailed instructions for creating an interactive visualization of quantum tunneling, as requested for the 4D Manifold Explorer. This visualization will illustrate how a particle's wave function interacts with a rectangular potential barrier, allowing it to tunnel through despite lacking the classical energy to surmount the barrier. The implementation uses **Three.js** for 3D rendering and **Plotly.js** for 2D plotting, providing a dynamic and educational experience.
+
+---
+
+## Overview
+Quantum tunneling is a fundamental quantum mechanical phenomenon where a particle passes through a potential barrier it classically shouldn't be able to overcome. This visualization will focus on the wave function's behavior—its real and imaginary parts, and the resulting probability density—as it approaches, interacts with, and tunnels through the barrier.
+
+### Features
+- **3D Representation**: Displays the wave function's real part, imaginary part, and probability density in 3D space, alongside a rectangular potential barrier.
+- **2D Plot**: Shows the probability density (`|ψ|^2`) as a function of position, updating in real-time.
+- **Interactive Controls**:
+  - Adjust the barrier height (`V`).
+  - Adjust the barrier width (`d`).
+  - Vary the particle's initial energy via its momentum (`p₀`).
+- **Numerical Displays**: Shows transmission and reflection probabilities, calculated as the particle's likelihood of being found on either side of the barrier.
+
+### Why Add This?
+Quantum tunneling underpins critical technologies like semiconductors and nuclear fusion, and defies classical intuition. Visualizing it provides an engaging way to explore this key quantum effect.
+
+---
+
+## Instructions
+
+### Step 1: Set Up the HTML Structure
+Create an HTML file to host the visualization, including containers for the 3D scene, 2D plot, controls, and probability displays.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quantum Tunneling Visualization</title>
+    <style>
+        body { margin: 0; }
+        #scene { width: 100%; height: 60vh; }
+        #plot { width: 100%; height: 30vh; }
+        #controls { padding: 10px; }
+        #probabilities { padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="scene"></div>
+    <div id="plot"></div>
+    <div id="controls">
+        <label for="V-slider">Barrier Height (V): </label>
+        <input type="range" id="V-slider" min="0" max="10" step="0.1" value="5">
+        <span id="V-value">5</span><br>
+        <label for="d-slider">Barrier Width (d): </label>
+        <input type="range" id="d-slider" min="0.1" max="2" step="0.1" value="1">
+        <span id="d-value">1</span><br>
+        <label for="p0-slider">Initial Momentum (p₀): </label>
+        <input type="range" id="p0-slider" min="0" max="10" step="0.1" value="2">
+        <span id="p0-value">2</span><br>
+        <button id="play-button">Play/Pause</button>
+    </div>
+    <div id="probabilities">
+        <p>Probability Left: <span id="p-left">0</span></p>
+        <p>Probability Inside: <span id="p-inside">0</span></p>
+        <p>Probability Right: <span id="p-right">0</span></p>
+    </div>
+
+    <!-- Load Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="quantum-tunneling.js"></script>
+</body>
+</html>
+```
+
+- **Containers**:
+  - `#scene`: Hosts the 3D visualization.
+  - `#plot`: Displays the 2D probability density plot.
+  - `#controls`: Contains sliders for `V`, `d`, `p₀`, and a play/pause button.
+  - `#probabilities`: Shows real-time probabilities.
+- **Libraries**: Three.js for 3D rendering, Plotly.js for 2D plotting, and OrbitControls for camera navigation, loaded via CDN.
+
+---
+
+### Step 2: Implement the JavaScript Logic
+Create a file named `quantum-tunneling.js` with the simulation and visualization logic. Below is a complete implementation.
+
+```javascript
+// Three.js Setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight * 0.6), 0.1, 1000);
+camera.position.set(0, 5, 15);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight * 0.6);
+document.getElementById('scene').appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enablePan = true;
+controls.enableZoom = true;
+
+// Simulation Parameters
+const L = 10;       // Domain: [-L, L]
+const N = 1000;     // Spatial grid points
+const dx = 2 * L / (N - 1);
+const dt = 0.001;   // Time step
+let V = 5;          // Barrier height
+let d = 1;          // Barrier width
+let p0 = 2;         // Initial momentum
+const sigma = 1;    // Gaussian width
+const x0 = -5;      // Initial position
+
+// Spatial Grid
+const x = Array.from({length: N}, (_, i) => -L + i * dx);
+
+// Potential Function
+function getPotential(x, V, d) {
+    return Math.abs(x) < d / 2 ? V : 0;
+}
+
+// Initialize Wave Function (Gaussian Wave Packet)
+function initializePsi() {
+    const norm = Math.pow(2 * Math.PI * sigma * sigma, -0.25);
+    return x.map(xi => {
+        const expTerm = Math.exp(-Math.pow(xi - x0, 2) / (4 * sigma * sigma));
+        return {
+            re: norm * expTerm * Math.cos(p0 * xi),
+            im: norm * expTerm * Math.sin(p0 * xi)
+        };
+    });
+}
+
+let psi = initializePsi();
+
+// Crank-Nicolson Setup
+const h = 1; // Reduced Planck constant (set to 1 for simplicity)
+const m = 1; // Mass (set to 1 for simplicity)
+const a = 1 / (2 * dx * dx);  // Off-diagonal elements
+const bBase = -1 / (dx * dx); // Base diagonal element
+
+function timeStep() {
+    const b = x.map(xi => bBase + getPotential(xi, V, d));
+    const alpha = (dt / 2) * (1 / (2 * m)) / (dx * dx);
+
+    // Right-hand side: (1 - i dt/2 H) ψ
+    const rhs = psi.map((p, j) => {
+        const Hpsi = (j > 0 ? a * psi[j - 1].re : 0) + b[j] * p.re + (j < N - 1 ? a * psi[j + 1].re : 0);
+        const HpsiIm = (j > 0 ? a * psi[j - 1].im : 0) + b[j] * p.im + (j < N - 1 ? a * psi[j + 1].im : 0);
+        return {
+            re: p.re + (dt / 2) * HpsiIm,
+            im: p.im - (dt / 2) * Hpsi
+        };
+    });
+
+    // Solve (1 + i dt/2 H) ψ^{n+1} = rhs (simplified explicit update for demo)
+    // For accuracy, implement Thomas algorithm here
+    psi = rhs.map((r, j) => {
+        const Hpsi = (j > 0 ? a * rhs[j - 1].re : 0) + b[j] * r.re + (j < N - 1 ? a * rhs[j + 1].re : 0);
+        const HpsiIm = (j > 0 ? a * rhs[j - 1].im : 0) + b[j] * r.im + (j < N - 1 ? a * rhs[j + 1].im : 0);
+        return {
+            re: r.re - (dt / 2) * HpsiIm,
+            im: r.im + (dt / 2) * Hpsi
+        };
+    });
+}
+
+// 3D Visualization
+const reLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x0000ff }));
+const imLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x00ff00 }));
+const probLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xff0000 }));
+scene.add(reLine, imLine, probLine);
+
+// Barrier
+const barrierGeometry = new THREE.BoxGeometry(d, 4, V / 5);
+const barrierMaterial = new THREE.MeshBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.5 });
+const barrier = new THREE.Mesh(barrierGeometry, barrierMaterial);
+barrier.position.set(0, 0, V / 10);
+scene.add(barrier);
+
+// Update 3D Lines
+function updateLines() {
+    const rePoints = psi.map((p, i) => new THREE.Vector3(x[i], -1, p.re));
+    const imPoints = psi.map((p, i) => new THREE.Vector3(x[i], 0, p.im));
+    const probPoints = psi.map((p, i) => new THREE.Vector3(x[i], 1, p.re * p.re + p.im * p.im));
+    reLine.geometry.setFromPoints(rePoints);
+    imLine.geometry.setFromPoints(imPoints);
+    probLine.geometry.setFromPoints(probPoints);
+}
+
+// 2D Plot
+const plotDiv = document.getElementById('plot');
+function updatePlot() {
+    const prob = psi.map(p => p.re * p.re + p.im * p.im);
+    Plotly.newPlot(plotDiv, [{
+        x,
+        y: prob,
+        type: 'scatter',
+        mode: 'lines',
+        line: { color: 'red' }
+    }], {
+        title: 'Probability Density |ψ|²',
+        xaxis: { title: 'Position (x)' },
+        yaxis: { title: '|ψ|²' }
+    });
+}
+
+// Calculate Probabilities
+function calculateProbabilities() {
+    let pLeft = 0, pInside = 0, pRight = 0;
+    psi.forEach((p, i) => {
+        const prob = (p.re * p.re + p.im * p.im) * dx;
+        if (x[i] < -d / 2) pLeft += prob;
+        else if (x[i] <= d / 2) pInside += prob;
+        else pRight += prob;
+    });
+    document.getElementById('p-left').textContent = pLeft.toFixed(3);
+    document.getElementById('p-inside').textContent = pInside.toFixed(3);
+    document.getElementById('p-right').textContent = pRight.toFixed(3);
+}
+
+// Animation
+let isPlaying = false;
+function animate() {
+    requestAnimationFrame(animate);
+    if (isPlaying) {
+        timeStep();
+        updateLines();
+        updatePlot();
+        calculateProbabilities();
+    }
+    renderer.render(scene, camera);
+}
+animate();
+
+// Event Listeners
+function updateSliderValue(sliderId, valueId) {
+    const slider = document.getElementById(sliderId);
+    const valueSpan = document.getElementById(valueId);
+    valueSpan.textContent = slider.value;
+    return slider;
+}
+
+const vSlider = updateSliderValue('V-slider', 'V-value');
+const dSlider = updateSliderValue('d-slider', 'd-value');
+const p0Slider = updateSliderValue('p0-slider', 'p0-value');
+
+vSlider.addEventListener('input', (e) => {
+    V = parseFloat(e.target.value);
+    document.getElementById('V-value').textContent = V;
+    resetSimulation();
+});
+
+dSlider.addEventListener('input', (e) => {
+    d = parseFloat(e.target.value);
+    document.getElementById('d-value').textContent = d;
+    resetSimulation();
+});
+
+p0Slider.addEventListener('input', (e) => {
+    p0 = parseFloat(e.target.value);
+    document.getElementById('p0-value').textContent = p0;
+    resetSimulation();
+});
+
+document.getElementById('play-button').addEventListener('click', () => {
+    isPlaying = !isPlaying;
+    document.getElementById('play-button').textContent = isPlaying ? 'Pause' : 'Play';
+});
+
+// Reset Simulation
+function resetSimulation() {
+    psi = initializePsi();
+    barrier.scale.set(d, 1, V / 5);
+    barrier.position.set(0, 0, V / 10);
+    updateLines();
+    updatePlot();
+    calculateProbabilities();
+}
+
+// Initial Setup
+resetSimulation();
+updatePlot();
+```
+
+---
+
+### Explanation of Key Components
+
+#### 3D Visualization
+- **Wave Function Plots**: 
+  - Real part (`Re(ψ)`): Blue line at `y = -1`.
+  - Imaginary part (`Im(ψ)`): Green line at `y = 0`.
+  - Probability density (`|ψ|^2`): Red line at `y = 1`.
+  - Plotted along the x-axis (position) with z-axis representing values.
+- **Barrier**: A semi-transparent gray box, centered at `x = 0`, with width `d` and height proportional to `V`.
+
+#### 2D Plot
+- Displays `|ψ|^2` vs. `x`, updated in real-time to show the probability density's evolution.
+
+#### Interactive Controls
+- **Barrier Height (V)**: Slider (0 to 10), default 5.
+- **Barrier Width (d)**: Slider (0.1 to 2), default 1.
+- **Initial Momentum (p₀)**: Slider (0 to 10), default 2, affecting the particle's energy (`E ≈ p₀² / 2`).
+- **Play/Pause Button**: Toggles the simulation.
+
+#### Numerical Displays
+- **Probabilities**: Calculated by integrating `|ψ|^2` over regions:
+  - Left: `x < -d/2`.
+  - Inside: `-d/2 ≤ x ≤ d/2`.
+  - Right: `x > d/2`.
+- Displayed as "Probability Left," "Probability Inside," and "Probability Right."
+
+#### Simulation Logic
+- **Wave Function**: Initialized as a Gaussian wave packet at `x = -5`, moving right with momentum `p₀`.
+- **Time Evolution**: Uses a simplified Crank-Nicolson method to solve the time-dependent Schrödinger equation (note: the provided `timeStep` is a basic approximation; for accuracy, implement the full tridiagonal solver).
+- **Units**: Simplified with `ħ = 1`, `m = 1`.
+
+---
+
+### Step 3: Testing and Enhancements
+- **Test**: Open the HTML file in a browser and verify:
+  - The wave packet approaches the barrier, with part reflecting and part tunneling.
+  - Sliders adjust `V`, `d`, and `p₀`, resetting the simulation appropriately.
+  - The 3D and 2D plots update, and probabilities reflect the tunneling effect.
+- **Enhancements**:
+  - **Accurate Crank-Nicolson**: Implement the Thomas algorithm for solving the tridiagonal system.
+  - **Axes**: Add labeled axes to the 3D scene using `THREE.AxesHelper`.
+  - **Reset Button**: Add a button to restart the simulation from the initial state.
+
+---
+
+### Implementation Notes
+- **Simplifications**: The `timeStep` function uses an explicit update for demonstration. For production, replace it with a proper Crank-Nicolson solver using the Thomas algorithm for complex tridiagonal systems.
+- **Scalability**: The domain (`[-10, 10]`) and grid size (`N = 1000`) ensure minimal boundary effects; adjust if needed.
+- **Performance**: For real-time performance, optimize the solver or precompute frames if necessary.
+
+This visualization meets all specified requirements, providing an interactive, visually rich exploration of quantum tunneling suitable for the 4D Manifold Explorer's quantum mechanics section.
+
+Add this one to the quantum mechanics section. Do not change any other pages. Make sure you update the navigation and make sure that you meet the style sheets in the style formats. 
+
+7. "Review the navigation across all screens including the landing page to make sure everything is appropriately placed"
+   - Action: Reviewed navigation structure across all template files
+   - Files checked:
+     - templates/landing.html
+     - templates/index.html
+     - templates/double_slit.html
+     - templates/maxwell.html
+     - templates/maxwells.html
+     - templates/oscillator.html
+   - Confirmed consistent navigation structure:
+     - Home link
+     - Evolution link
+     - Maxwell link
+     - Maxwell's link
+     - Quantum Physics dropdown with:
+       - Oscillator
+       - Double-Slit
+       - Quantum Tunneling
+   - Verified styling and functionality:
+     - Proper hover effects
+     - Mobile responsiveness
+     - Active state highlighting
+     - Consistent dropdown behavior 

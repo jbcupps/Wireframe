@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Tunneling - 4D Manifold Explorer</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --background: #121212;
+            --surface: #1e1e1e;
+            --surface-light: #2d2d2d;
+            --primary: #6200ee;
+            --primary-variant: #3700b3;
+            --secondary: #03dac6;
+            --secondary-variant: #018786;
+            --error: #cf6679;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 0 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 60px;
+        }
+        
+        .site-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .site-nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .site-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+            padding: 5px 0;
+        }
+        
+        .site-nav a:hover, .site-nav a.active {
+            color: var(--primary);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            margin: 80px auto 0;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        
+        .visualization-panel {
+            flex: 3;
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+            height: calc(100vh - 200px);
+            max-height: 800px;
+        }
+        
+        #scene {
+            width: 100%;
+            height: 60%;
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #plot {
+            width: 100%;
+            height: 40%;
+            background-color: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 300px;
+            max-width: 350px;
+            height: fit-content;
+        }
+        
+        .control-card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding-right: 35px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: var(--surface-light);
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            margin-top: 8px;
+        }
+        
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--primary-variant);
+        }
+        
+        .value-display {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--primary-variant);
+            transform: translateY(-2px);
+        }
+        
+        #probabilities {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .probability-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .probability-value {
+            color: var(--primary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-content">
+            <a href="/" class="site-logo">4D Manifold Explorer</a>
+            <nav class="site-nav">
+                <a href="/">Home</a>
+                <a href="/evolution">Evolution</a>
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Quantum Physics</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/oscillator">Oscillator</a>
+                        <a href="/double_slit">Double-Slit</a>
+                        <a href="/quantum_tunneling" class="active">Quantum Tunneling</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Electromagnetism</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/maxwell">Maxwell</a>
+                        <a href="/maxwells">Maxwell's</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="visualization-panel">
+            <div id="scene"></div>
+            <div id="plot"></div>
+        </div>
+        
+        <div class="controls-panel">
+            <div class="control-card">
+                <div class="card-header">
+                    <h3 class="card-title">Simulation Controls</h3>
+                </div>
+                <div class="slider-container">
+                    <label for="V-slider">Barrier Height (V)</label>
+                    <input type="range" id="V-slider" min="0" max="10" step="0.1" value="5">
+                    <span class="value-display" id="V-value">5</span>
+                </div>
+                <div class="slider-container">
+                    <label for="d-slider">Barrier Width (d)</label>
+                    <input type="range" id="d-slider" min="0.1" max="2" step="0.1" value="1">
+                    <span class="value-display" id="d-value">1</span>
+                </div>
+                <div class="slider-container">
+                    <label for="p0-slider">Initial Momentum (p₀)</label>
+                    <input type="range" id="p0-slider" min="0" max="10" step="0.1" value="2">
+                    <span class="value-display" id="p0-value">2</span>
+                </div>
+                <button id="play-button">Play/Pause</button>
+            </div>
+            
+            <div id="probabilities">
+                <h3 class="card-title">Probabilities</h3>
+                <div class="probability-item">
+                    <span>Left:</span>
+                    <span class="probability-value" id="p-left">0</span>
+                </div>
+                <div class="probability-item">
+                    <span>Inside:</span>
+                    <span class="probability-value" id="p-inside">0</span>
+                </div>
+                <div class="probability-item">
+                    <span>Right:</span>
+                    <span class="probability-value" id="p-right">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/quantum_tunneling.js') }}"></script>
+</body>
+</html> 
