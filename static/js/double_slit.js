@@ -102,7 +102,7 @@ function updateHistogram() {
         type: 'bar',
         width: binWidth,
         marker: {
-            color: 'rgba(255, 0, 0, 0.7)'
+            color: PlotlyDefaults.colors.realColor
         }
     }];
     
@@ -116,27 +116,11 @@ function updateHistogram() {
         mode: 'lines',
         name: 'Theoretical',
         line: {
-            color: 'rgba(0, 0, 255, 0.7)'
+            color: PlotlyDefaults.colors.imagColor
         }
     });
 
-    const layout = {
-        title: 'Detection Pattern',
-        xaxis: {
-            title: 'Position (x)',
-            range: [-X, X]
-        },
-        yaxis: {
-            title: 'Count / Intensity'
-        },
-        showlegend: true,
-        legend: {
-            x: 1,
-            y: 1
-        }
-    };
-
-    Plotly.newPlot(plotDiv, data, layout);
+    Plotly.newPlot(plotDiv, data, PlotlyDefaults.getDefaultLayout('Detection Pattern', 'Position (x)', 'Count / Intensity'));
 }
 
 function computeTheoreticalI() {
@@ -149,22 +133,11 @@ function computeTheoreticalI() {
         mode: 'lines',
         name: 'Intensity',
         line: {
-            color: 'rgba(0, 0, 255, 0.7)'
+            color: PlotlyDefaults.colors.imagColor
         }
     }];
 
-    const layout = {
-        title: 'Theoretical Intensity I(x)',
-        xaxis: {
-            title: 'Position (x)',
-            range: [-X, X]
-        },
-        yaxis: {
-            title: 'Intensity'
-        }
-    };
-
-    Plotly.newPlot(plotDiv, data, layout);
+    Plotly.newPlot(plotDiv, data, PlotlyDefaults.getDefaultLayout('Intensity Pattern', 'Position (x)', 'Intensity'));
 }
 
 function switchMode(mode) {

@@ -113,15 +113,8 @@ function updatePlot() {
         y: prob,
         type: 'scatter',
         mode: 'lines',
-        line: { color: 'red' }
-    }], {
-        title: 'Probability Density |ψ|²',
-        xaxis: { title: 'Position (x)' },
-        yaxis: { title: '|ψ|²' },
-        paper_bgcolor: 'rgba(30, 30, 30, 0.5)',
-        plot_bgcolor: 'rgba(30, 30, 30, 0.5)',
-        font: { color: '#b0b0b0' }
-    });
+        line: { color: PlotlyDefaults.colors.realColor }
+    }], PlotlyDefaults.getDefaultLayout('Probability Density |ψ|²', 'Position (x)', '|ψ|²'));
 }
 
 // Calculate Probabilities

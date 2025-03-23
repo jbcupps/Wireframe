@@ -33,22 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
         z: imags,
         line: {
             width: 4,
-            color: '#BB86FC'
+            color: PlotlyDefaults.colors.primary
         },
         name: 'Complex Path'
-    }], {
-        title: '3D Complex Path',
-        scene: {
-            xaxis: { title: 'Time' },
-            yaxis: { title: 'Real Part' },
-            zaxis: { title: 'Imaginary Part' }
-        },
-        paper_bgcolor: '#1e1e1e',
-        plot_bgcolor: '#1e1e1e',
-        font: {
-            color: '#ffffff'
-        }
-    });
+    }], PlotlyDefaults.getDefault3DLayout('3D Complex Path', 'Time', 'Real Part', 'Imaginary Part'));
 
     // Create spiral plot
     const spiralPlot = document.getElementById('spiral-plot');
@@ -59,19 +47,10 @@ document.addEventListener('DOMContentLoaded', function() {
         y: imags,
         line: {
             width: 3,
-            color: '#BB86FC'
+            color: PlotlyDefaults.colors.primary
         },
         name: 'Complex Plane'
-    }], {
-        title: 'Complex Plane Projection',
-        xaxis: { title: 'Real Part' },
-        yaxis: { title: 'Imaginary Part' },
-        paper_bgcolor: '#1e1e1e',
-        plot_bgcolor: '#1e1e1e',
-        font: {
-            color: '#ffffff'
-        }
-    });
+    }], PlotlyDefaults.getDefaultLayout('Complex Plane Projection', 'Real Part', 'Imaginary Part'));
 
     // Create real part plot
     const realPlot = document.getElementById('real-plot');
@@ -83,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
             y: reals,
             line: {
                 width: 3,
-                color: '#FF6E91'
+                color: PlotlyDefaults.colors.realColor
             },
             name: 'Real Part'
         },
@@ -94,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
             y: envelopes,
             line: {
                 width: 2,
-                color: '#65FF8F',
+                color: PlotlyDefaults.colors.envelopeColor,
                 dash: 'dash'
             },
             name: 'Envelope'
@@ -106,21 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
             y: envelopes.map(v => -v),
             line: {
                 width: 2,
-                color: '#65FF8F',
+                color: PlotlyDefaults.colors.envelopeColor,
                 dash: 'dash'
             },
             showlegend: false
         }
-    ], {
-        title: 'Real Component',
-        xaxis: { title: 'Time' },
-        yaxis: { title: 'Amplitude' },
-        paper_bgcolor: '#1e1e1e',
-        plot_bgcolor: '#1e1e1e',
-        font: {
-            color: '#ffffff'
-        }
-    });
+    ], PlotlyDefaults.getDefaultLayout('Real Component', 'Time', 'Amplitude'));
 
     // Create imaginary part plot
     const imagPlot = document.getElementById('imag-plot');
@@ -132,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             y: imags,
             line: {
                 width: 3,
-                color: '#33C4FF'
+                color: PlotlyDefaults.colors.imagColor
             },
             name: 'Imaginary Part'
         },
@@ -143,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
             y: envelopes,
             line: {
                 width: 2,
-                color: '#65FF8F',
+                color: PlotlyDefaults.colors.envelopeColor,
                 dash: 'dash'
             },
             name: 'Envelope'
@@ -155,21 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
             y: envelopes.map(v => -v),
             line: {
                 width: 2,
-                color: '#65FF8F',
+                color: PlotlyDefaults.colors.envelopeColor,
                 dash: 'dash'
             },
             showlegend: false
         }
-    ], {
-        title: 'Imaginary Component',
-        xaxis: { title: 'Time' },
-        yaxis: { title: 'Amplitude' },
-        paper_bgcolor: '#1e1e1e',
-        plot_bgcolor: '#1e1e1e',
-        font: {
-            color: '#ffffff'
-        }
-    });
+    ], PlotlyDefaults.getDefaultLayout('Imaginary Component', 'Time', 'Amplitude'));
 
     // Update parameter displays
     document.getElementById('gamma-value').textContent = gamma.toFixed(2);
@@ -234,10 +195,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateAnimation(time) {
         const current = calculateOscillator(time, gamma, t0, omega);
         
-        // Update 3D plot marker
-        Plotly.update(plot3d, {}, {
-            'scene.camera': plot3d.layout.scene.camera
-        });
+        // Update 3D plot marker position
+        // Save the camera state first
+        const cameraState = plot3d.layout.scene.camera;
+        
         Plotly.addTraces(plot3d, {
             type: 'scatter3d',
             mode: 'markers',
@@ -248,18 +209,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 size: 10,
                 color: '#FFFFFF',  // White dot for better contrast
                 line: {
-                    color: '#000000',  // Black border
+                    color: PlotlyDefaults.colors.primary,
                     width: 2
                 }
             },
             showlegend: false
         });
+        
+        // Remove old animation point, keep only the latest
         if (plot3d.data.length > 2) {
             Plotly.deleteTraces(plot3d, 1);
         }
-
+        
+        // Restore camera position
+        Plotly.relayout(plot3d, {'scene.camera': cameraState});
+        
         // Update spiral plot marker
-        Plotly.update(spiralPlot, {}, {});
         Plotly.addTraces(spiralPlot, {
             type: 'scatter',
             mode: 'markers',
@@ -267,20 +232,21 @@ document.addEventListener('DOMContentLoaded', function() {
             y: [current.imag],
             marker: {
                 size: 10,
-                color: '#FFFFFF',  // White dot for better contrast
+                color: '#FFFFFF',
                 line: {
-                    color: '#000000',  // Black border
+                    color: PlotlyDefaults.colors.primary,
                     width: 2
                 }
             },
             showlegend: false
         });
+        
+        // Remove old spiral marker, keep only the latest
         if (spiralPlot.data.length > 2) {
             Plotly.deleteTraces(spiralPlot, 1);
         }
-
-        // Update real plot marker
-        Plotly.update(realPlot, {}, {});
+        
+        // Update real part plot marker
         Plotly.addTraces(realPlot, {
             type: 'scatter',
             mode: 'markers',
@@ -288,20 +254,21 @@ document.addEventListener('DOMContentLoaded', function() {
             y: [current.real],
             marker: {
                 size: 10,
-                color: '#FFFFFF',  // White dot for better contrast
+                color: '#FFFFFF',
                 line: {
-                    color: '#000000',  // Black border
+                    color: PlotlyDefaults.colors.realColor,
                     width: 2
                 }
             },
             showlegend: false
         });
+        
+        // Remove old real part marker, keep only the latest
         if (realPlot.data.length > 4) {
             Plotly.deleteTraces(realPlot, 3);
         }
-
-        // Update imaginary plot marker
-        Plotly.update(imagPlot, {}, {});
+        
+        // Update imaginary part plot marker
         Plotly.addTraces(imagPlot, {
             type: 'scatter',
             mode: 'markers',
@@ -309,14 +276,16 @@ document.addEventListener('DOMContentLoaded', function() {
             y: [current.imag],
             marker: {
                 size: 10,
-                color: '#FFFFFF',  // White dot for better contrast
+                color: '#FFFFFF',
                 line: {
-                    color: '#000000',  // Black border
+                    color: PlotlyDefaults.colors.imagColor,
                     width: 2
                 }
             },
             showlegend: false
         });
+        
+        // Remove old imaginary part marker, keep only the latest
         if (imagPlot.data.length > 4) {
             Plotly.deleteTraces(imagPlot, 3);
         }
@@ -327,34 +296,25 @@ document.addEventListener('DOMContentLoaded', function() {
         envelopes = values.map(v => v.envelope);
         reals = values.map(v => v.real);
         imags = values.map(v => v.imag);
-
+        
         Plotly.update(plot3d, {
-            x: [t],
             y: [reals],
             z: [imags]
-        });
-
+        }, {});
+        
         Plotly.update(spiralPlot, {
             x: [reals],
             y: [imags]
-        });
-
-        Plotly.update(realPlot, {
-            'y': [reals, envelopes, envelopes.map(v => -v)]
-        });
-
-        Plotly.update(imagPlot, {
-            'y': [imags, envelopes, envelopes.map(v => -v)]
-        });
-
-        // Update period annotation
-        const period = (2 * Math.PI / omega).toFixed(2);
-        document.querySelector('.period-annotation').innerHTML = 
-            `\\(\\omega \\cdot \\text{const} = ${(omega * period).toFixed(2)}T\\), where \\(T = \\frac{2\\pi}{\\omega}\\)`;
+        }, {});
         
-        // Refresh MathJax
-        if (window.MathJax) {
-            MathJax.typesetPromise();
-        }
+        Plotly.update(realPlot, {
+            y: [reals, envelopes, envelopes.map(v => -v)]
+        }, {});
+        
+        Plotly.update(imagPlot, {
+            y: [imags, envelopes, envelopes.map(v => -v)]
+        }, {});
+        
+        updateAnimation(currentTime);
     }
 }); 
