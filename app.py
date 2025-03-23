@@ -110,6 +110,10 @@ def maxwell():
 def maxwells():
     return render_template('maxwells.html')
 
+@app.route('/double_slit')
+def double_slit():
+    return render_template('double_slit.html')
+
 # API endpoint for evolutionary algorithm
 @app.route('/compute_evolution', methods=['POST'])
 def compute_evolution():
