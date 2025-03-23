@@ -90,6 +90,10 @@ def landing():
 def visualization():
     return render_template('index.html')
 
+@app.route('/topological_diffusion')
+def topological_diffusion():
+    return render_template('topological_diffusion.html')
+
 @app.route('/evolution')
 def evolution():
     return render_template('evolution.html')

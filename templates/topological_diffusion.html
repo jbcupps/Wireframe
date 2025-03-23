@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4D Manifold Explorer - Topological Diffusion GAN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <style>
+        :root {
+            --background: #121212;
+            --surface: #1e1e1e;
+            --surface-light: #2d2d2d;
+            --primary: #6200ee;
+            --primary-variant: #3700b3;
+            --secondary: #03dac6;
+            --secondary-variant: #018786;
+            --error: #cf6679;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            
+            /* Diffusion GAN Colors */
+            --gan-real: #FF6E91;     /* Real samples */
+            --gan-generated: #33C4FF; /* Generated samples */
+            --gan-discriminator: #65FF8F; /* Discriminator boundary */
+            --gan-diffusion: #BB86FC; /* Diffusion process */
+            --gan-highlight: #FFCF33; /* Highlighted particles */
+            
+            /* Topology mapping colors */
+            --topo-twist: #FF6E91;    /* Twist areas */
+            --topo-curve: #33C4FF;    /* Curve areas */
+            --topo-dim-change: #65FF8F; /* Dimensional changes */
+            --topo-match: #BB86FC;    /* Proper matching */
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        /* Site Header Styles */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 0 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 60px;
+        }
+        
+        .site-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .site-nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .site-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+            padding: 5px 0;
+        }
+        
+        .site-nav a:hover, .site-nav a.active {
+            color: var(--primary);
+        }
+        
+        /* Main content padding for fixed header */
+        .main-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 400px;
+            gap: 20px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        header h1 {
+            color: var(--text-primary);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-top: 0;
+            color: var(--text-secondary);
+        }
+        
+        .visualization-panel {
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .plot-container {
+            width: 100%;
+            height: 60%;
+            padding: 0;
+            position: relative;
+        }
+        
+        .split-plot-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 40%;
+            width: 100%;
+        }
+        
+        .plot-half {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            min-height: 200px;
+        }
+        
+        .controls-panel {
+            height: calc(100vh - 200px);
+            min-height: 600px;
+            overflow-y: auto;
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .control-group {
+            border-radius: 8px;
+            padding: 15px;
+            background-color: var(--surface-light);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .control-group h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        
+        label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            flex: 1;
+        }
+        
+        .slider-container {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: var(--primary-variant);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        input[type="number"] {
+            width: 60px;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-variant);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .property-value {
+            font-family: monospace;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-align: right;
+            min-width: 40px;
+        }
+        
+        .toggle-switch {
+            display: inline-block;
+            position: relative;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface);
+            transition: .4s;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 2px;
+            background-color: var(--text-secondary);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-variant);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+            background-color: white;
+        }
+        
+        .properties-panel {
+            margin-top: 20px;
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+        }
+        
+        .properties-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .properties-table th, .properties-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .properties-table th {
+            color: var(--text-secondary);
+            font-weight: normal;
+            font-size: 0.9rem;
+        }
+        
+        .properties-table td {
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+        
+        .info-panel {
+            margin-top: 20px;
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+        }
+        
+        .graph-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .graph-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .footer-top {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .footer-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        
+        .footer-nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-nav a:hover {
+            color: var(--primary);
+        }
+        
+        .footer-bottom {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .visualization-panel,
+            .controls-panel {
+                height: auto;
+                min-height: 500px;
+            }
+            
+            .plot-container {
+                height: 400px;
+            }
+            
+            .split-plot-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="site-header">
+        <div class="header-content">
+            <a href="/" class="site-logo">4D Manifold Explorer</a>
+            <div class="site-nav">
+                <a href="/visualization">4D Manifold</a>
+                <a href="/topological_diffusion" class="active">Topological Diffusion</a>
+                <a href="/evolution">Evolution</a>
+                <a href="/oscillator">Oscillator</a>
+                <a href="/maxwell">Maxwell</a>
+                <a href="/maxwells">Maxwell's Equations</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Topological Diffusion GAN</h1>
+            <div class="subtitle">Generating and identifying topological maps using generative adversarial networks and diffusion models</div>
+        </header>
+        
+        <div class="main-content">
+            <div class="visualization-panel">
+                <div class="split-plot-container">
+                    <div class="plot-half" id="diffusion-plot"></div>
+                    <div class="plot-half" id="gan-plot"></div>
+                </div>
+                <div class="plot-container" id="topo-map-plot"></div>
+            </div>
+            
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>Target Particle Configuration</h3>
+                    <div class="control-row">
+                        <label for="particle-type">Particle Type</label>
+                        <select id="particle-type" style="flex: 2; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-color); padding: 5px; border-radius: 4px;">
+                            <option value="proton">Proton</option>
+                            <option value="neutron">Neutron</option>
+                            <option value="lambda">Lambda</option>
+                            <option value="sigma">Sigma</option>
+                            <option value="xi">Xi</option>
+                            <option value="omega">Omega</option>
+                        </select>
+                    </div>
+                    <div class="control-row">
+                        <label for="auto-generate">Continuous Generation</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-generate">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-row">
+                        <label for="match-count">Topological Matches</label>
+                        <span class="property-value" id="match-count">0/3</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Diffusion Parameters</h3>
+                    <div class="control-row">
+                        <label for="noise-strength">Noise Strength</label>
+                        <div class="slider-container">
+                            <input type="range" id="noise-strength" min="0" max="1" step="0.01" value="0.5">
+                            <span class="property-value" id="noise-strength-value">0.5</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="diffusion-steps">Diffusion Steps</label>
+                        <div class="slider-container">
+                            <input type="range" id="diffusion-steps" min="10" max="1000" step="10" value="100">
+                            <span class="property-value" id="diffusion-steps-value">100</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="sampling-method">Sampling Method</label>
+                        <select id="sampling-method" style="flex: 2; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-color); padding: 5px; border-radius: 4px;">
+                            <option value="ddpm">DDPM</option>
+                            <option value="ddim">DDIM</option>
+                            <option value="ancestral">Ancestral</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Topological Randomization</h3>
+                    <div class="control-row">
+                        <label for="twist-complexity">Twist Complexity</label>
+                        <div class="slider-container">
+                            <input type="range" id="twist-complexity" min="1" max="10" step="1" value="3">
+                            <span class="property-value" id="twist-complexity-value">3</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="curve-complexity">Curve Complexity</label>
+                        <div class="slider-container">
+                            <input type="range" id="curve-complexity" min="1" max="10" step="1" value="3">
+                            <span class="property-value" id="curve-complexity-value">3</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="dimension-changes">Dimensional Changes</label>
+                        <div class="slider-container">
+                            <input type="range" id="dimension-changes" min="1" max="10" step="1" value="4">
+                            <span class="property-value" id="dimension-changes-value">4</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>GAN Training</h3>
+                    <div class="control-row">
+                        <label for="learning-rate">Learning Rate</label>
+                        <div class="slider-container">
+                            <input type="range" id="learning-rate" min="0.0001" max="0.01" step="0.0001" value="0.001">
+                            <span class="property-value" id="learning-rate-value">0.001</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="batch-size">Batch Size</label>
+                        <div class="slider-container">
+                            <input type="range" id="batch-size" min="8" max="128" step="8" value="32">
+                            <span class="property-value" id="batch-size-value">32</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="gan-iterations">Training Iterations</label>
+                        <div class="slider-container">
+                            <input type="range" id="gan-iterations" min="100" max="10000" step="100" value="1000">
+                            <span class="property-value" id="gan-iterations-value">1000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Topological Mapping</h3>
+                    <div class="control-row">
+                        <label for="matching-threshold">Matching Threshold</label>
+                        <div class="slider-container">
+                            <input type="range" id="matching-threshold" min="0.1" max="0.9" step="0.05" value="0.7">
+                            <span class="property-value" id="matching-threshold-value">0.7</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="filter-strength">Filter Strength</label>
+                        <div class="slider-container">
+                            <input type="range" id="filter-strength" min="0" max="1" step="0.05" value="0.5">
+                            <span class="property-value" id="filter-strength-value">0.5</span>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label for="show-only-matches">Show Only Matches</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-only-matches">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button id="generate-btn">Generate Samples</button>
+                    <button id="identify-btn">Identify Topology</button>
+                    <button id="reset-btn">Reset</button>
+                </div>
+            </div>
+            
+            <div class="properties-panel">
+                <h2>Topological Properties</h2>
+                <table class="properties-table">
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Euler Characteristic</td>
+                        <td id="euler-characteristic">0</td>
+                        <td>Topological invariant that describes the shape's structure</td>
+                    </tr>
+                    <tr>
+                        <td>Betti Numbers</td>
+                        <td id="betti-numbers">[1, 0, 1, 0]</td>
+                        <td>Sequence that measures the number of n-dimensional holes</td>
+                    </tr>
+                    <tr>
+                        <td>Stiefel-Whitney Class</td>
+                        <td id="stiefel-whitney">[0, 0, 1, 0]</td>
+                        <td>Obstruction to existence of certain structures on manifold</td>
+                    </tr>
+                    <tr>
+                        <td>Pontryagin Numbers</td>
+                        <td id="pontryagin-numbers">[0, 0]</td>
+                        <td>Measures topological properties of differentiable manifolds</td>
+                    </tr>
+                    <tr>
+                        <td>Signature</td>
+                        <td id="signature">0</td>
+                        <td>The signature of the intersection form on middle-dimensional cohomology</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="info-panel">
+                <h2>About Topological Diffusion GAN</h2>
+                <p>This tool combines diffusion models and generative adversarial networks (GANs) to explore, generate, and identify topological structures in 4D manifolds. It focuses on creating and recognizing topological maps by:</p>
+                
+                <ul>
+                    <li><strong>Diffusion Process:</strong> Gradually adding and removing noise in the topological structure space to generate diverse samples</li>
+                    <li><strong>GAN Architecture:</strong> Using a generator to create topological patterns and a discriminator to classify them</li>
+                    <li><strong>Topological Randomization:</strong> Systematically varying twists, curves, and dimensional changes to explore the manifold space</li>
+                    <li><strong>Proper Matching:</strong> Identifying topological maps that exhibit particular properties of interest</li>
+                </ul>
+                
+                <div class="graph-info">
+                    <div class="graph-legend">
+                        <h3>Diffusion Plot Legend</h3>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gan-diffusion);"></div>
+                            <span>Diffusion Trajectory</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gan-real);"></div>
+                            <span>Initial Noise</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gan-generated);"></div>
+                            <span>Generated Sample</span>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-legend">
+                        <h3>GAN Plot Legend</h3>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gan-real);"></div>
+                            <span>Real Samples</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gan-generated);"></div>
+                            <span>Generated Samples</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--gan-discriminator);"></div>
+                            <span>Discriminator Boundary</span>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-legend">
+                        <h3>Topology Map Legend</h3>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--topo-twist);"></div>
+                            <span>Twist Areas</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--topo-curve);"></div>
+                            <span>Curve Areas</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--topo-dim-change);"></div>
+                            <span>Dimensional Changes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--topo-match);"></div>
+                            <span>Proper Matching</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Mathematical Background</h3>
+                <p>The integration of GANs with diffusion models provides a powerful approach for exploring the complex space of 4D manifolds. This method leverages:</p>
+                <ul>
+                    <li><strong>Diffusion Probabilistic Models:</strong> Based on non-equilibrium thermodynamics, these gradually add noise to data and then learn to reverse the process</li>
+                    <li><strong>Adversarial Training:</strong> A generator creates topological structures while a discriminator distinguishes between real and generated samples</li>
+                    <li><strong>Topological Data Analysis:</strong> Techniques from algebraic topology used to identify and classify structural patterns</li>
+                    <li><strong>Differential Geometry:</strong> Provides the mathematical foundation for understanding the curvature and connectivity of manifolds</li>
+                </ul>
+                
+                <p>The combination of these techniques allows us to systematically explore the vast configuration space of 4D manifolds and identify those with specific topological properties, potentially revealing connections to fundamental physics principles.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-top">
+                <div class="footer-logo">4D Manifold Explorer</div>
+                <div class="footer-nav">
+                    <a href="/visualization">4D Manifold</a>
+                    <a href="/topological_diffusion">Topological Diffusion</a>
+                    <a href="/evolution">Evolution</a>
+                    <a href="/oscillator">Oscillator</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2024 4D Manifold Explorer. All rights reserved.
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/topological_diffusion.js"></script>
+</body>
+</html> 
