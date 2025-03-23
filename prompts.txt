@@ -1,0 +1,40 @@
+# Prompts History
+
+1. "Please fix the ocilator page"
+   - Issue: Missing oscillator.js file in static/js directory
+   - Action: Created oscillator.js with visualization code using Plotly.js
+   - Components: 3D plot, spiral plot, real/imaginary components with envelopes
+   - Features: Interactive controls for gamma, t0, omega parameters and animation
+
+2. "Please fix the animation on the oscillation page"
+   - Issue: Animation not properly updating point positions on plots
+   - Action: Rewrote updateAnimation function to correctly handle moving points
+   - Changes: 
+     - Added proper trace management for animation points
+     - Preserved 3D camera position during updates
+     - Fixed point positioning on all four plots
+     - Improved animation performance with optimized updates
+
+3. "Please create a documentation folder and add documentation detailing all of the reasons for this and the use of this application"
+   - Action: Created comprehensive documentation structure
+   - Files created:
+     - docs/README.md: Project overview and structure
+     - docs/oscillator.md: Detailed quantum oscillator documentation
+     - docs/technical/architecture.md: System architecture details
+     - docs/technical/visualization.md: Visualization implementation details
+   - Content:
+     - Theoretical background and mathematics
+     - Implementation details and code examples
+     - Technical architecture and deployment
+     - Performance optimization and testing
+     - Future considerations and maintenance
+
+4. "Please review the linked documents for the academic papers on this and within the documentation section add some of the details and a description of the linked documents"
+   - Action: Enhanced academic references section in oscillator.md
+   - Added detailed descriptions for each reference:
+     - Core quantum mechanics texts (Griffiths, Cohen-Tannoudji, Shankar)
+     - Wave packet dynamics references (Schiff, Merzbacher)
+     - Visualization methods (Feynman, Zettili)
+     - Implementation references (Press, Goldstein, Thijssen, Giordano)
+   - Included key equations from primary sources
+   - Connected references to specific implementation details 
