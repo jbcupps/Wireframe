@@ -17,7 +17,7 @@ app = Flask(__name__)
 def generate_twisted_strip(twists, t, loop_factor):
     """Generate a twisted strip (sub-SKB) with multi-dimensional twists, time, and loops."""
     u = np.linspace(0, 2 * np.pi * loop_factor, 50)
-    v = np.linspace(-0.5, 0.5, 10)
+    v = np.linspace(-0.5, 0.5, 50)  # Changed from 10 to 50 points
     u, v = np.meshgrid(u, v)
     kx, ky, kz, kt = twists  # Twist components including time twist
     
@@ -400,9 +400,16 @@ def get_visualization():
                 'name': 'Merged SKB',
                 'hoverinfo': 'none',
                 'contours': {
-                    'x': {'show': True, 'width': 1, 'color': 'rgba(255,255,255,0.3)'},
-                    'y': {'show': True, 'width': 1, 'color': 'rgba(255,255,255,0.3)'},
-                    'z': {'show': True, 'width': 1, 'color': 'rgba(255,255,255,0.3)'}
+                    'x': {'show': True, 'width': 1.5, 'color': 'rgba(255,255,255,0.5)'},
+                    'y': {'show': True, 'width': 1.5, 'color': 'rgba(255,255,255,0.5)'},
+                    'z': {'show': True, 'width': 1.5, 'color': 'rgba(255,255,255,0.5)'}
+                },
+                'lighting': {
+                    'ambient': 0.6,
+                    'diffuse': 0.8,
+                    'roughness': 0.5,
+                    'specular': 0.6,
+                    'fresnel': 0.8
                 }
             }]
         else:
@@ -410,25 +417,59 @@ def get_visualization():
             # Individual sub-SKBs
             surfaces = []
             
-            # Colors from the request
+            # Colors from the request with improved contrast
             colors = data.get('colors', {
                 'skb1': '#FF6E91',  # Default pink
                 'skb2': '#33C4FF',  # Default blue
                 'skb3': '#65FF8F'   # Default green
             })
             
+            # Enhanced wireframe settings for each Sub-SKB
+            wireframe_settings = [
+                {'width': 1.5, 'color': 'rgba(255,255,255,0.7)', 'highlight': 3.0},
+                {'width': 1.5, 'color': 'rgba(255,255,255,0.7)', 'highlight': 3.0},
+                {'width': 1.5, 'color': 'rgba(255,255,255,0.7)', 'highlight': 3.0}
+            ]
+            
+            # Adjust opacities for layering effect
+            opacities = [0.7, 0.65, 0.6]
+            
             # Generate each sub-SKB
             for i, (twist, loop_val) in enumerate(zip(twists, [loop1, loop2, loop3])):
                 print(f"Generating Sub-SKB {i+1}")
                 if i == 0:
-                    # First sub-SKB: Klein bottle
+                    # First sub-SKB: Klein bottle - used as wireframe with low surface opacity
                     x, y, z, u, v = generate_klein_bottle(twist, t, loop_val)
+                    display_type = 'surface'
+                    lighting = {
+                        'ambient': 0.4,
+                        'diffuse': 0.8,
+                        'roughness': 0.6,
+                        'specular': 0.8,
+                        'fresnel': 0.7
+                    }
                 elif i == 1:
-                    # Second sub-SKB: Twisted strip
+                    # Second sub-SKB: Twisted strip - semi-transparent surface
                     x, y, z, u, v = generate_twisted_strip(twist, t, loop_val)
+                    display_type = 'surface'
+                    lighting = {
+                        'ambient': 0.5,
+                        'diffuse': 0.6,
+                        'roughness': 0.4,
+                        'specular': 0.7,
+                        'fresnel': 0.6
+                    }
                 else:
-                    # Third sub-SKB: Torus
+                    # Third sub-SKB: Torus - most transparent to show through
                     x, y, z, u, v = generate_torus(twist, t, loop_val)
+                    display_type = 'surface'
+                    lighting = {
+                        'ambient': 0.6,
+                        'diffuse': 0.5,
+                        'roughness': 0.5,
+                        'specular': 0.6,
+                        'fresnel': 0.5
+                    }
                 
                 print(f"Sub-SKB {i+1} generated, shape: {x.shape}")
                 
@@ -438,19 +479,77 @@ def get_visualization():
                     'x': x.tolist(),
                     'y': y.tolist(),
                     'z': z.tolist(),
-                    'type': 'surface',
+                    'type': display_type,
                     'colorscale': [[0, colors[color_key]], [1, colors[color_key]]],
                     'showscale': False,
-                    'opacity': 0.7,
+                    'opacity': opacities[i],
                     'name': f'Sub-SKB {i+1}',
                     'hoverinfo': 'none',
                     'contours': {
-                        'x': {'show': True, 'width': 1, 'color': 'rgba(255,255,255,0.3)'},
-                        'y': {'show': True, 'width': 1, 'color': 'rgba(255,255,255,0.3)'},
-                        'z': {'show': True, 'width': 1, 'color': 'rgba(255,255,255,0.3)'}
+                        'x': {'show': True, 'width': wireframe_settings[i]['width'], 'color': wireframe_settings[i]['color'], 'highlight': wireframe_settings[i]['highlight']},
+                        'y': {'show': True, 'width': wireframe_settings[i]['width'], 'color': wireframe_settings[i]['color'], 'highlight': wireframe_settings[i]['highlight']},
+                        'z': {'show': True, 'width': wireframe_settings[i]['width'], 'color': wireframe_settings[i]['color'], 'highlight': wireframe_settings[i]['highlight']}
+                    },
+                    'lighting': lighting,
+                    'lightposition': {
+                        'x': 1,
+                        'y': 1,
+                        'z': 1
                     }
                 })
-        
+                
+                # Add intersection markers where the surfaces meet
+                if i > 0:
+                    # Calculate potential intersection areas (a simplified approach)
+                    # This is a simplified approach - real intersection detection would be more complex
+                    intersect_points_x = []
+                    intersect_points_y = []
+                    intersect_points_z = []
+                    
+                    # Sample points from grid for potential intersections
+                    for row in range(0, x.shape[0], 5):  # Sample every 5th point
+                        for col in range(0, x.shape[1], 5):  # Sample every 5th point
+                            cur_x, cur_y, cur_z = x[row, col], y[row, col], z[row, col]
+                            
+                            # Check if this point is close to any point in the previous surface
+                            for prev_i in range(i):
+                                prev_surface = surfaces[prev_i]
+                                prev_x = np.array(prev_surface['x']).reshape(x.shape)
+                                prev_y = np.array(prev_surface['y']).reshape(y.shape)
+                                prev_z = np.array(prev_surface['z']).reshape(z.shape)
+                                
+                                for prev_row in range(0, prev_x.shape[0], 5):
+                                    for prev_col in range(0, prev_x.shape[1], 5):
+                                        px, py, pz = prev_x[prev_row, prev_col], prev_y[prev_row, prev_col], prev_z[prev_row, prev_col]
+                                        
+                                        # Calculate distance - if close, mark as intersection
+                                        dist = np.sqrt((cur_x-px)**2 + (cur_y-py)**2 + (cur_z-pz)**2)
+                                        if dist < 0.08:  # Threshold for intersection
+                                            intersect_points_x.append(cur_x)
+                                            intersect_points_y.append(cur_y)
+                                            intersect_points_z.append(cur_z)
+                    
+                    # Add intersection markers if we found any
+                    if intersect_points_x:
+                        surfaces.append({
+                            'x': intersect_points_x,
+                            'y': intersect_points_y,
+                            'z': intersect_points_z,
+                            'mode': 'markers',
+                            'type': 'scatter3d',
+                            'marker': {
+                                'size': 3,
+                                'color': 'rgba(255, 255, 255, 0.8)',
+                                'symbol': 'circle',
+                                'line': {
+                                    'width': 1,
+                                    'color': 'rgba(0, 0, 0, 0.5)'
+                                }
+                            },
+                            'name': f'Intersection {i}',
+                            'hoverinfo': 'none'
+                        })
+            
         print(f"Returning {len(surfaces)} surfaces")
         
         # Return the visualization data

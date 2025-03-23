@@ -44,6 +44,8 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         /* Nav Header Styles */
@@ -112,7 +114,13 @@
         
         /* Main content padding for fixed header */
         .main-content {
-            margin-top: 80px;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            margin: 80px auto 0;
+            padding: 0 20px;
+            box-sizing: border-box;
         }
         
         header {
@@ -141,12 +149,6 @@
             color: var(--text-secondary);
         }
         
-        .main-content {
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
-        }
-        
         .visualization-panel {
             flex: 3;
             background-color: var(--surface);
@@ -154,12 +156,14 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             position: relative;
+            min-height: 500px;
+            height: calc(100vh - 200px);
+            max-height: 800px;
         }
         
         .plot-container {
-            height: 800px;
             width: 100%;
-            min-height: 400px;
+            height: 100%;
             background-color: rgba(30, 30, 30, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
@@ -173,6 +177,7 @@
             gap: 15px;
             min-width: 300px;
             max-width: 350px;
+            height: fit-content;
         }
         
         .control-card {
@@ -619,29 +624,39 @@
         }
         
         /* Responsive design */
-        @media (max-width: 1200px) {
+        @media screen and (max-width: 1200px) {
+            .main-content {
+                padding: 0 15px;
+            }
+            
+            .visualization-panel {
+                height: calc(100vh - 180px);
+            }
+        }
+
+        @media screen and (max-width: 992px) {
             .main-content {
                 flex-direction: column;
             }
             
-            .controls-panel {
-                max-width: 100%;
+            .visualization-panel {
+                height: 60vh;
+                min-height: 400px;
             }
             
-            .plot-container {
-                height: 500px;
+            .controls-panel {
+                max-width: none;
+                min-width: 0;
             }
         }
-        
-        @media (max-width: 768px) {
-            .twist-controls {
-                flex-direction: column;
+
+        @media screen and (max-width: 576px) {
+            .main-content {
+                padding: 0 10px;
             }
             
-            .properties-panel {
-                position: static;
-                width: auto;
-                margin-top: 20px;
+            .visualization-panel {
+                height: 50vh;
             }
         }
         
@@ -1383,16 +1398,30 @@
                 console.log("Visualization data received:", data);
                 
                 try {
+                    const plotDiv = document.getElementById('plot');
+                    
+                    // Clean up existing plot if it exists
+                    if (plotDiv && plotDiv._fullLayout) {
+                        Plotly.purge(plotDiv);
+                    }
+                    
                     const layout = createLayout(params.merge);
                     console.log("Rendering plot with layout:", layout);
                     
-                    Plotly.react('plot', data.plot.data, layout);
-                    console.log("Plot updated successfully");
+                    // Create new plot with a small delay to ensure DOM is ready
+                    setTimeout(() => {
+                        Plotly.newPlot('plot', data.plot.data, layout, {
+                            responsive: true,
+                            displayModeBar: true,
+                            displaylogo: false
+                        }).then(() => {
+                            console.log("Plot updated successfully");
+                            updateTopologicalProperties();
+                        });
+                    }, 100);
                 } catch (error) {
                     console.error("Error rendering plot:", error);
                 }
-                
-                updateTopologicalProperties();
             })
             .catch(error => {
                 console.error("Error fetching visualization:", error);
@@ -1401,17 +1430,54 @@
         
         // Function to create a custom layout
         function createLayout(isMerged) {
+            // Get the plot container dimensions
+            const plotContainer = document.getElementById('plot');
+            const width = plotContainer.offsetWidth;
+            const height = plotContainer.offsetHeight;
+
             return {
                 scene: {
                     aspectmode: 'cube',
                     camera: {
-                        eye: { x: 1.7, y: 1.7, z: 1.4 }
+                        eye: { x: 1.9, y: 1.9, z: 1.5 },
+                        center: { x: 0, y: 0, z: 0 },
+                        up: { x: 0, y: 0, z: 1 }
+                    },
+                    xaxis: {
+                        showspikes: false,
+                        showgrid: true,
+                        zeroline: false,
+                        showline: false,
+                        showticklabels: true,
+                        title: '',
+                        gridcolor: 'rgba(80,80,80,0.2)',
+                    },
+                    yaxis: {
+                        showspikes: false,
+                        showgrid: true,
+                        zeroline: false,
+                        showline: false,
+                        showticklabels: true,
+                        title: '',
+                        gridcolor: 'rgba(80,80,80,0.2)',
+                    },
+                    zaxis: {
+                        showspikes: false,
+                        showgrid: true,
+                        zeroline: false,
+                        showline: false,
+                        showticklabels: true,
+                        title: '',
+                        gridcolor: 'rgba(80,80,80,0.2)',
                     },
                     bgcolor: 'rgba(0,0,0,0)'
                 },
                 paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
                 margin: { l: 0, r: 0, b: 0, t: 0, pad: 0 },
-                height: 800,
+                width: width,
+                height: height,
+                autosize: true,
                 legend: {
                     font: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') },
                     bgcolor: 'rgba(30,30,30,0.7)',
@@ -1420,7 +1486,19 @@
                     y: 0.99,
                     x: 0.01
                 },
-                hovermode: false
+                hovermode: false,
+                annotations: [{
+                    showarrow: false,
+                    text: isMerged ? 'Merged SKB' : 'Individual Sub-SKBs',
+                    font: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                        size: 12
+                    },
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: 0.98,
+                    y: 0.02
+                }]
             };
         }
         
@@ -1615,6 +1693,34 @@
                     e.preventDefault(); // Prevent page scrolling
                 }
             });
+        });
+
+        // Add a resize observer to handle container size changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const plotContainer = document.getElementById('plot');
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target === plotContainer) {
+                        Plotly.relayout('plot', {
+                            width: entry.contentRect.width,
+                            height: entry.contentRect.height
+                        });
+                    }
+                }
+            });
+            
+            resizeObserver.observe(plotContainer);
+            
+            // Rest of your DOMContentLoaded code...
+        });
+
+        // Update the window resize handler
+        window.addEventListener('resize', function() {
+            const plotContainer = document.getElementById('plot');
+            if (plotContainer) {
+                const layout = createLayout(document.getElementById('merge-toggle').checked);
+                Plotly.relayout('plot', layout);
+            }
         });
     </script>
     

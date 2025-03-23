@@ -245,8 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
             y: [current.real],
             z: [current.imag],
             marker: {
-                size: 8,
-                color: '#BB86FC'
+                size: 10,
+                color: '#FFFFFF',  // White dot for better contrast
+                line: {
+                    color: '#000000',  // Black border
+                    width: 2
+                }
             },
             showlegend: false
         });
@@ -262,8 +266,12 @@ document.addEventListener('DOMContentLoaded', function() {
             x: [current.real],
             y: [current.imag],
             marker: {
-                size: 8,
-                color: '#BB86FC'
+                size: 10,
+                color: '#FFFFFF',  // White dot for better contrast
+                line: {
+                    color: '#000000',  // Black border
+                    width: 2
+                }
             },
             showlegend: false
         });
@@ -279,8 +287,12 @@ document.addEventListener('DOMContentLoaded', function() {
             x: [time],
             y: [current.real],
             marker: {
-                size: 8,
-                color: '#FF6E91'
+                size: 10,
+                color: '#FFFFFF',  // White dot for better contrast
+                line: {
+                    color: '#000000',  // Black border
+                    width: 2
+                }
             },
             showlegend: false
         });
@@ -296,8 +308,12 @@ document.addEventListener('DOMContentLoaded', function() {
             x: [time],
             y: [current.imag],
             marker: {
-                size: 8,
-                color: '#33C4FF'
+                size: 10,
+                color: '#FFFFFF',  // White dot for better contrast
+                line: {
+                    color: '#000000',  // Black border
+                    width: 2
+                }
             },
             showlegend: false
         });
