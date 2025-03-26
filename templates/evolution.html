@@ -6,9 +6,12 @@
     <title>SKB Evolution</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
         :root {
             --background: #121212;
@@ -153,8 +156,8 @@
             height: 500px;
             width: 100%;
             min-height: 400px;
-            background-color: rgba(30, 30, 30, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: visible !important;
             display: block !important; /* Force display */
@@ -501,7 +504,7 @@
             position: absolute;
             top: 100%;
             left: 0;
-            background-color: var(--bg-primary);
+            background-color: var(--surface);
             min-width: 180px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
@@ -535,7 +538,7 @@
         }
         
         .dropdown-menu a:hover {
-            background-color: var(--bg-secondary);
+            background-color: var(--surface-light);
         }
         
         /* Mobile styles for dropdown */
@@ -639,33 +642,47 @@
 <body>
     <!-- Site Header -->
     <header class="site-header">
-        <div class="header-content">
-            <a href="/" class="site-logo">4D Manifold Explorer</a>
-            <nav class="site-nav">
-                <a href="/">Home</a>
-                <a href="/evolution" class="active">Evolution</a>
-                <div class="nav-dropdown">
-                    <div class="dropdown-toggle">
-                        <span>Quantum Physics</span>
-                        <i class="fas fa-chevron-down"></i>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization">Visualization</a>
+                    <a href="/evolution" class="active">Evolution</a>
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Quantum Physics</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/oscillator">Oscillator</a>
+                            <a href="/double_slit">Double-Slit</a>
+                            <a href="/quantum_tunneling">Quantum Tunneling</a>
+                        </div>
                     </div>
-                    <div class="dropdown-menu">
-                        <a href="/oscillator">Oscillator</a>
-                        <a href="/double_slit">Double-Slit</a>
-                        <a href="/quantum_tunneling">Quantum Tunneling</a>
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Electromagnetism</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/maxwell">Maxwell</a>
+                            <a href="/maxwells">Maxwell's</a>
+                        </div>
                     </div>
-                </div>
-                <div class="nav-dropdown">
-                    <div class="dropdown-toggle">
-                        <span>Electromagnetism</span>
-                        <i class="fas fa-chevron-down"></i>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
                     </div>
-                    <div class="dropdown-menu">
-                        <a href="/maxwell">Maxwell</a>
-                        <a href="/maxwells">Maxwell's</a>
-                    </div>
-                </div>
-            </nav>
+                </nav>
+            </div>
         </div>
     </header>
 

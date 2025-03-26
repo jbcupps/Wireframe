@@ -1,7 +1,7 @@
 /* 4D Manifold Explorer - Main Stylesheet */
 
 :root {
-    /* Core color palette */
+    /* Dark theme (default) */
     --dark-bg: #121212;
     --surface: #1e1e1e;
     --surface-light: #2d2d2d;
@@ -12,6 +12,7 @@
     --text-primary: rgba(255, 255, 255, 0.87);
     --text-secondary: rgba(255, 255, 255, 0.6);
     --border-color: rgba(255, 255, 255, 0.12);
+    --header-bg: rgba(18, 18, 18, 0.9);
     
     /* Specific visualization colors */
     --real-color: #FF6E91;  /* Vivid pink */
@@ -21,6 +22,23 @@
     --skb2-color: #33C4FF;  /* Bright blue */
     --skb3-color: #65FF8F;  /* Bright green */
     --skb-merged: #BB86FC;  /* Purple */
+}
+
+/* Light theme */
+[data-theme="light"] {
+    --dark-bg: #f5f5f5;
+    --surface: #ffffff;
+    --surface-light: #e0e0e0;
+    --primary: #6200EE;
+    --primary-variant: #3700B3;
+    --secondary: #03DAC6;
+    --accent: #CF6679;
+    --text-primary: rgba(0, 0, 0, 0.87);
+    --text-secondary: rgba(0, 0, 0, 0.6);
+    --border-color: rgba(0, 0, 0, 0.12);
+    --header-bg: rgba(245, 245, 245, 0.95);
+    
+    /* We'll keep visualization colors the same for consistency */
 }
 
 /* Base Elements */
@@ -35,7 +53,7 @@ body {
     background-color: var(--dark-bg);
     color: var(--text-primary);
     line-height: 1.6;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -50,7 +68,7 @@ body {
     width: 100%;
     top: 0;
     z-index: 1000;
-    background-color: rgba(18, 18, 18, 0.9);
+    background-color: var(--header-bg);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     transition: all 0.3s ease;
@@ -81,6 +99,7 @@ body {
 .nav-links {
     display: flex;
     gap: 30px;
+    align-items: center;
 }
 
 .nav-links a {
@@ -111,6 +130,70 @@ body {
     width: 100%;
 }
 
+/* Theme Toggle */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-left: 15px;
+}
+
+.theme-toggle-icon {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+    color: var(--primary);
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    margin: 0 8px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--surface-light);
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--primary);
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--surface-light);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
 /* Dropdown Menus */
 .nav-dropdown {
     position: relative;
@@ -120,12 +203,25 @@ body {
 .dropdown-toggle {
     display: flex;
     align-items: center;
+    gap: 5px;
     cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+    padding: 5px 0;
+}
+
+.dropdown-toggle span {
+    font-size: 1rem;
 }
 
 .dropdown-toggle i {
-    margin-left: 5px;
+    margin-left: 3px;
+    font-size: 0.8rem;
     transition: transform 0.3s ease;
+}
+
+.dropdown-toggle:hover, .dropdown-toggle.active {
+    color: var(--primary);
 }
 
 .dropdown-menu {
@@ -134,7 +230,7 @@ body {
     left: 0;
     background-color: var(--surface);
     min-width: 180px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 10px 0;
     z-index: 1000;
@@ -142,6 +238,7 @@ body {
     visibility: hidden;
     transform: translateY(10px);
     transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .nav-dropdown:hover .dropdown-menu {
@@ -150,17 +247,62 @@ body {
     transform: translateY(0);
 }
 
+.nav-dropdown:hover .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
 .dropdown-menu a {
     display: block;
-    padding: 8px 20px;
+    padding: 8px 15px;
     color: var(--text-secondary);
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
-.dropdown-menu a:hover {
+.dropdown-menu a::after {
+    display: none;
+}
+
+.dropdown-menu a:hover, .dropdown-menu a.active {
     background-color: var(--surface-light);
     color: var(--primary);
+}
+
+/* Mobile dropdown handling */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        padding-left: 15px;
+        border-left: 2px solid var(--primary);
+        border-radius: 0;
+        margin-top: 10px;
+        min-width: auto;
+        width: 100%;
+        background-color: transparent;
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+        overflow: hidden;
+        transform: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    .dropdown-menu.show {
+        opacity: 1;
+        visibility: visible;
+        height: auto;
+        overflow: visible;
+    }
+
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .nav-dropdown {
+        width: 100%;
+    }
 }
 
 /* Buttons */
@@ -191,6 +333,9 @@ input[type="range"] {
     height: 8px;
     border-radius: 4px;
     -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
     margin: 10px 0;
 }
 
@@ -201,6 +346,75 @@ input[type="range"]::-webkit-slider-thumb {
     border-radius: 50%;
     background: var(--primary);
     cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    -moz-appearance: none;
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: none;
+}
+
+input[type="range"]::-ms-thumb {
+    -ms-appearance: none;
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+}
+
+/* Standard appearance property for all form elements */
+select, input, button, textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+}
+
+/* Reset to browser defaults for checkboxes and radios */
+input[type="checkbox"], 
+input[type="radio"] {
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    -ms-appearance: auto;
+    appearance: auto;
+    padding: initial;
+    border: initial;
+    background-color: initial;
+}
+
+/* Style for select elements */
+select {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 16px;
+    padding-right: 2.5rem;
+}
+
+[data-theme="light"] select {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Focus states */
+select:focus, input:focus, button:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.3);
 }
 
 /* Plotly plot standardization */

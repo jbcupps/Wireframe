@@ -13,6 +13,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
         :root {
             /* Modern color palette - same as main app */
@@ -137,7 +140,7 @@
             position: absolute;
             top: 100%;
             left: 0;
-            background-color: var(--bg-primary);
+            background-color: var(--surface);
             min-width: 180px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
@@ -171,7 +174,7 @@
         }
         
         .dropdown-menu a:hover {
-            background-color: var(--bg-secondary);
+            background-color: var(--surface-light);
         }
         
         .content {
@@ -483,6 +486,14 @@
                             <a href="/double_slit">Double-Slit</a>
                             <a href="/quantum_tunneling">Quantum Tunneling</a>
                         </div>
+                    </div>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
                     </div>
                 </nav>
             </div>

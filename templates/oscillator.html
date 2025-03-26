@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
         /* Page-specific styles */
         .content-wrapper {
@@ -119,6 +120,14 @@
                             <a href="/double_slit">Double-Slit</a>
                             <a href="/quantum_tunneling">Quantum Tunneling</a>
                         </div>
+                    </div>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
                     </div>
                 </nav>
             </div>

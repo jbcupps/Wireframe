@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
     <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
         :root {
             /* Modern color palette - same as main app */
@@ -322,8 +323,6 @@
                 <nav class="nav-links">
                     <a href="/">Home</a>
                     <a href="/evolution">Evolution</a>
-                    <a href="/maxwell">Maxwell</a>
-                    <a href="/maxwells">Maxwell's</a>
                     <div class="nav-dropdown">
                         <div class="dropdown-toggle">
                             <span>Quantum Physics</span>
@@ -334,6 +333,24 @@
                             <a href="/double_slit" class="active">Double-Slit</a>
                             <a href="/quantum_tunneling">Quantum Tunneling</a>
                         </div>
+                    </div>
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Electromagnetism</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/maxwell">Maxwell</a>
+                            <a href="/maxwells">Maxwell's</a>
+                        </div>
+                    </div>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
                     </div>
                 </nav>
             </div>

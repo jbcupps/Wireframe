@@ -6,114 +6,10 @@
     <title>4D Manifold Explorer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
-        :root {
-            /* Modern color palette */
-            --dark-bg: #121212;
-            --surface: #1e1e1e;
-            --surface-light: #2d2d2d;
-            --primary: #BB86FC;
-            --primary-variant: #3700B3;
-            --secondary: #03DAC6;
-            --accent: #CF6679;
-            --text-primary: rgba(255, 255, 255, 0.87);
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --border-color: rgba(255, 255, 255, 0.12);
-            
-            /* SKB Colors */
-            --skb1-color: #FF6E91;  /* Vivid pink */
-            --skb2-color: #33C4FF;  /* Bright blue */
-            --skb3-color: #65FF8F;  /* Bright green */
-            --skb-merged: #BB86FC;  /* Purple */
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--dark-bg);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header */
-        header {
-            padding: 20px 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            font-size: 1.5rem;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-        
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-        
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-        }
-        
-        .cta-button {
-            background-color: var(--primary);
-            color: #000;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        
-        .cta-button:hover {
-            background-color: var(--primary-variant);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        
-        /* Hero Section */
+        /* Landing page specific styles */
         .hero {
             height: 100vh;
             display: flex;
@@ -336,47 +232,7 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
         
-        /* Footer */
-        footer {
-            padding: 60px 0;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .footer-logo {
-            font-size: 1.5rem;
-            font-weight: 300;
-            color: var(--primary);
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-        
-        .copyright {
-            margin-top: 20px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            text-align: center;
-        }
-        
-        /* Responsive Design */
+        /* Responsive adjustments */
         @media (max-width: 1024px) {
             .hero h1 {
                 font-size: 3rem;
@@ -403,130 +259,16 @@
                 right: -50%;
             }
             
-            .header-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .nav-links {
-                gap: 15px;
-            }
-            
             .footer-content {
                 flex-direction: column;
                 gap: 20px;
-            }
-        }
-        
-        /* Dropdown Menu Styles */
-        .nav-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .dropdown-toggle {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            padding: 5px 0;
-            position: relative;
-        }
-        
-        .dropdown-toggle:hover, .dropdown-toggle.active {
-            color: var(--primary);
-        }
-        
-        .dropdown-toggle i {
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: var(--surface);
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-dropdown:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .nav-dropdown:hover .dropdown-toggle i {
-            transform: rotate(180deg);
-        }
-        
-        .dropdown-menu a {
-            display: block;
-            padding: 8px 15px;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .dropdown-menu a::after {
-            display: none;
-        }
-        
-        .dropdown-menu a:hover {
-            background-color: var(--surface-light);
-        }
-        
-        /* Mobile styles for dropdown */
-        @media (max-width: 768px) {
-            .nav-links {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .dropdown-menu {
-                position: static;
-                opacity: 0;
-                visibility: hidden;
-                height: 0;
-                transform: none;
-                box-shadow: none;
-                padding: 0;
-                transition: opacity 0.3s ease;
-            }
-            
-            .dropdown-menu.show {
-                opacity: 1;
-                visibility: visible;
-                height: auto;
-                padding: 10px 0;
-                margin-top: 10px;
-                margin-left: 15px;
-                border-left: 2px solid var(--primary);
-            }
-            
-            .dropdown-toggle {
-                justify-content: space-between;
-            }
-            
-            .nav-dropdown {
-                width: 100%;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header>
+    <header class="site-header">
         <div class="container">
             <div class="header-content">
                 <a href="/" class="logo">
@@ -534,21 +276,9 @@
                     <span>4D Manifold Explorer</span>
                 </a>
                 <nav class="nav-links">
-                    <a href="#features" class="active">Features</a>
-                    <a href="#research">Research</a>
-                    
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Manifold Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/visualization">4D Manifold</a>
-                            <a href="/topological_diffusion">Topological Diffusion</a>
-                            <a href="/evolution">Evolution</a>
-                        </div>
-                    </div>
-                    
+                    <a href="/" class="active">Home</a>
+                    <a href="/visualization">Visualization</a>
+                    <a href="/evolution">Evolution</a>
                     <div class="nav-dropdown">
                         <div class="dropdown-toggle">
                             <span>Quantum Physics</span>
@@ -560,19 +290,25 @@
                             <a href="/quantum_tunneling">Quantum Tunneling</a>
                         </div>
                     </div>
-                    
                     <div class="nav-dropdown">
                         <div class="dropdown-toggle">
                             <span>Electromagnetism</span>
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell-Boltzmann</a>
-                            <a href="/maxwells">Maxwell's Equations</a>
+                            <a href="/maxwell">Maxwell</a>
+                            <a href="/maxwells">Maxwell's</a>
                         </div>
                     </div>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
+                    </div>
                 </nav>
-                <a href="/visualization" class="cta-button">Launch Explorer</a>
             </div>
         </div>
     </header>
@@ -694,8 +430,12 @@
             const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
             activeLinks.forEach(link => {
                 const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
+                if (parentDropdown) {
+                    const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+                    if (dropdownToggle) {
+                        dropdownToggle.classList.add('active');
+                    }
+                }
             });
             
             // Handle click on dropdown toggle (for mobile)

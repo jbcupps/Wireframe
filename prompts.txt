@@ -439,3 +439,82 @@ Add this one to the quantum mechanics section. Do not change any other pages. Ma
      - CSS consistency and standardization
      - Plotly plot styling for consistency with app theme
      - Plot quality and rendering optimization 
+
+# User Prompts History
+
+1. "Please also follow these instructions in all of your responses if relevant. No need to acknowledge these instructions directly in your response."
+   - This prompt included instructions for the assistant to work in a Windows 11 context with Docker desktop installed
+   - Request to create and maintain this prompts.txt file to track all user inputs
+
+2. [Previous work before this session] Enhancing application by standardizing design and functionality:
+   - Adding theme toggle feature to various HTML templates
+   - Creating centralized CSS file (main.css)
+   - Creating standardized Plotly styling (plotly-defaults.js)
+   - Adding light/dark theme toggle capability
+
+3. "Every page should follow the light and dark theme selected by the theme selector in the navigation bar."
+   - Request to ensure all templates use consistent theme toggling
+   - Ensure all templates have theme-switcher.js script
+   - Make all templates use main.css and consistent styling 
+
+4. "Uncaught TypeError: Cannot read properties of undefined (reading '_guiEditing') at X (plotly-2.27.0.min.js:8:413272) at Object.H [as relayout] (plotly-2.27.0.min.js:8:411686) at ResizeObserver.<anonymous> (visualization:1580:32)"
+   - Issue: Error in Plotly when resizing or updating plot layouts
+   - Action: Fixed Plotly resize handler and theme switching functionality
+   - Changes:
+     - Added error handling in theme-switcher.js for Plotly relayout calls
+     - Updated the ResizeObserver implementation to properly check for initialized plots
+     - Improved plotly-defaults.js with better error handling
+     - Added theme toggle to landing page for consistent user experience
+     - Fixed styling for theme toggle across all pages 
+
+5. "the template pages do not follow the light dark theme properly"
+   - Issue: Inconsistent theme implementation across template pages
+   - Action: Improved the theme system to ensure consistency across all templates
+   - Changes:
+     - Updated main.css to use CSS variable for header background (--header-bg)
+     - Removed duplicate CSS in template pages that was overriding theme variables
+     - Fixed incorrect variable references (bg-primary, bg-secondary) in template pages
+     - Improved theme-switcher.js to apply theme immediately on page load
+     - Enhanced PlotlyDefaults to read theme colors directly from CSS variables 
+
+6. "Also define the standard property 'appearance' for compatibility"
+   - Issue: Form elements needed standardized appearance property for cross-browser compatibility
+   - Action: Enhanced main.css with comprehensive form element styling
+   - Changes:
+     - Added standard appearance property with proper vendor prefixes (-webkit, -moz, -ms)
+     - Created consistent styling for all form inputs, buttons, selects and textareas
+     - Added proper focus states with outline and box-shadow
+     - Implemented custom styling for select dropdowns with SVG arrows
+     - Added theme-aware styling that responds to light/dark mode
+     - Ensured proper reset for checkbox and radio inputs 
+
+## User Prompts for 4D Manifold Explorer
+
+This file tracks the prompts used during the development of the 4D Manifold Explorer application.
+
+### Initial Requirements
+- Create a Windows 11 compatible application with Docker support
+- Implement standardized UI/UX across all templates
+- Add theme toggling capability (light/dark mode)
+- Ensure all templates use consistent styling
+
+### Feature Enhancement Prompts
+
+1. **Theme Toggle Implementation**
+   - Add a theme toggle to all templates (evolution.html, maxwell.html, maxwells.html, topological_diffusion.html, etc.)
+   - Create a centralized CSS file (main.css) with variables for light and dark themes
+   - Implement theme-switcher.js to handle theme persistence and toggle functionality
+
+2. **Form Elements Standardization**
+   - Add standard 'appearance' property for form elements across browsers
+   - Implement consistent form styling with vendor prefixes
+
+3. **Visualization Improvements**
+   - Fix visualization page (index.html) by adding theme toggle
+   - Update maxwell.html to properly follow light/dark theme
+   - Implement PlotlyDefaults.js improvements for better theme integration with plots
+   - Fix broken visualization issues
+
+4. **Theme Integration with Plotting**
+   - Update theme-switcher.js to properly update Plotly plots when theme changes
+   - Ensure all plots respond correctly to theme changes using PlotlyDefaults.applyThemeToAllPlots() 

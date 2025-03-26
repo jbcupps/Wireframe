@@ -8,111 +8,12 @@
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
-        :root {
-            /* Modern color palette */
-            --background: #121212;
-            --surface: #1e1e1e;
-            --surface-light: #2d2d2d;
-            --primary: #6200ee;
-            --primary-variant: #3700b3;
-            --secondary: #03dac6;
-            --secondary-variant: #018786;
-            --error: #cf6679;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border-color: #333333;
-            
-            /* SKB Colors - now with better contrast for dark mode */
-            --skb1-color: #FF6E91;  /* Vivid pink */
-            --skb2-color: #33C4FF;  /* Bright blue */
-            --skb3-color: #65FF8F;  /* Bright green */
-            --skb-merged: #BB86FC;  /* Purple */
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            transition: all 0.3s ease;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        /* Nav Header Styles */
-        .site-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            padding: 0 20px;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            height: 60px;
-        }
-        
-        .site-logo {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--text-primary);
-            text-decoration: none;
-        }
-        
-        .site-nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .site-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
-            padding: 5px 0;
-        }
-        
-        .site-nav a:hover, .site-nav a.active {
-            color: var(--primary);
-        }
-        
-        .cta-button {
-            background-color: var(--primary);
-            color: #000;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        
-        .cta-button:hover {
-            background-color: var(--primary-variant);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        
-        /* Main content padding for fixed header */
+        /* Page-specific styles */
         .main-content {
             display: flex;
             flex-direction: row;
@@ -121,32 +22,6 @@
             margin: 80px auto 0;
             padding: 0 20px;
             box-sizing: border-box;
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
-        
-        header .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            color: var(--text-secondary);
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin-top: 0;
-            color: var(--text-secondary);
         }
         
         .visualization-panel {
@@ -164,8 +39,8 @@
         .plot-container {
             width: 100%;
             height: 100%;
-            background-color: rgba(30, 30, 30, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
         }
@@ -200,698 +75,254 @@
             margin: 0;
         }
         
-        .slider-container {
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            padding-right: 35px; /* Make room for the value display */
-        }
-        
-        /* Standard appearance property for all form elements */
-        input, select, button, textarea {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            -ms-appearance: none;
-            appearance: none;
-            border-radius: 0;
-            font-family: inherit;
-        }
-        
-        /* Reset to browser defaults where needed */
-        input[type="checkbox"], 
-        input[type="radio"] {
-            -webkit-appearance: auto;
-            -moz-appearance: auto;
-            -ms-appearance: auto;
-            appearance: auto;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            background: var(--surface-light);
-            border-radius: 5px;
-            outline: none;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-            margin-top: 8px;
-        }
-        
-        input[type="range"]:hover {
-            opacity: 1;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--primary);
-            cursor: pointer;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: var(--primary);
-            cursor: pointer;
-            border-radius: 50%;
-            border: none;
-            transition: all 0.2s;
-        }
-        
-        input[type="range"]::-ms-thumb {
-            width: 18px;
-            height: 18px;
-            background: var(--primary);
-            cursor: pointer;
-            border-radius: 50%;
-            border: none;
-            transition: all 0.2s;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: var(--primary-variant);
-            transform: scale(1.1);
-        }
-        
-        input[type="range"]::-moz-range-thumb:hover {
-            background: var(--primary-variant);
-            transform: scale(1.1);
-        }
-        
-        input[type="range"]::-ms-thumb:hover {
-            background: var(--primary-variant);
-            transform: scale(1.1);
-        }
-        
-        .value-display {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 30px;
-            text-align: right;
-            color: var(--primary);
-            font-weight: 500;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-        
-        button {
-            background-color: var(--primary);
-            color: #000;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        button:hover {
-            background-color: var(--primary-variant);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 26px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-            margin: 0;
-            padding: 0;
-            position: absolute;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--surface-light);
-            -webkit-transition: .4s;
-            -moz-transition: .4s;
-            -ms-transition: .4s;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            -webkit-transition: .3s;
-            -moz-transition: .3s;
-            -ms-transition: .3s;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .toggle-slider {
-            background-color: var(--primary);
-        }
-        
-        input:checked + .toggle-slider:before {
-            -webkit-transform: translateX(26px);
-            -moz-transform: translateX(26px);
-            -ms-transform: translateX(26px);
-            transform: translateX(26px);
-        }
-        
-        .toggle-label {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        .twist-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        
-        .twist-axis {
-            flex: 1;
-            min-width: 70px;
-        }
-        
-        .sub-skb-section {
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-            margin-top: 15px;
-        }
-        
-        .skb1 {
-            border-left: 3px solid var(--skb1-color);
-            padding-left: 12px;
-        }
-        
-        .skb2 {
-            border-left: 3px solid var(--skb2-color);
-            padding-left: 12px;
-        }
-        
-        .skb3 {
-            border-left: 3px solid var(--skb3-color);
-            padding-left: 12px;
-        }
-        
-        .sub-skb-title {
-            font-weight: 500;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .color-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .color-skb1 {
-            background-color: var(--skb1-color);
-        }
-        
-        .color-skb2 {
-            background-color: var(--skb2-color);
-        }
-        
-        .color-skb3 {
-            background-color: var(--skb3-color);
-        }
-        
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-        
-        .tooltip .tooltip-icon {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-        
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background-color: var(--surface-light);
-            color: var(--text-primary);
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-        
-        .properties-panel {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background-color: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(5px);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            width: 250px;
-            z-index: 100;
-            font-size: 0.9rem;
-        }
-        
-        .properties-title {
-            font-weight: 500;
-            margin-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 5px;
-        }
-        
-        .property-item {
-            margin-bottom: 8px;
-        }
-        
-        .property-name {
-            color: var(--text-secondary);
-            margin-right: 10px;
-        }
-        
-        .property-value {
-            color: var(--primary);
-            font-family: monospace;
-        }
-        
-        .help-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        
-        .help-button:hover {
-            transform: scale(1.1);
-            background-color: var(--primary-variant);
-            color: white;
-        }
-        
-        .help-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 1001;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .help-content {
-            background-color: var(--surface);
-            width: 80%;
-            max-width: 800px;
-            max-height: 80vh;
-            border-radius: 12px;
-            padding: 30px;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        
-        .help-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-        
-        .close-help {
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: color 0.3s ease;
-        }
-        
-        .close-help:hover {
-            color: var(--primary);
-        }
-        
-        .help-section {
-            margin-bottom: 20px;
-        }
-        
-        .help-subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-        
-        /* Animation for property changes */
-        @keyframes highlight {
-            0% { background-color: rgba(187, 134, 252, 0.2); }
-            100% { background-color: transparent; }
-        }
-        
-        .highlight {
-            animation: highlight 2s ease-out;
-        }
-        
-        /* Responsive design */
-        @media screen and (max-width: 1200px) {
-            .main-content {
-                padding: 0 15px;
-            }
-            
-            .visualization-panel {
-                height: calc(100vh - 180px);
-            }
-        }
-
-        @media screen and (max-width: 992px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .visualization-panel {
-                height: 60vh;
-                min-height: 400px;
-            }
-            
-            .controls-panel {
-                max-width: none;
-                min-width: 0;
-            }
-        }
-
-        @media screen and (max-width: 576px) {
-            .main-content {
-                padding: 0 10px;
-            }
-            
-            .visualization-panel {
-                height: 50vh;
-            }
-        }
-        
-        .research-links {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        .research-links a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        
-        .research-links a:hover {
-            color: var(--secondary);
-            text-decoration: underline;
-        }
-        
-        /* Adjust tooltip positioning for control headers */
-        .sub-skb-title .tooltip {
-            margin-left: 8px;
-        }
-        
-        /* Adjust tooltip positioning for twist controls */
-        .twist-axis .tooltip {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        
-        .twist-axis {
-            position: relative;
-        }
-        
-        .research-links p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        /* Navigation links styles to match other pages */
-        .site-nav {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            padding: 10px 0;
-            margin: 15px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .site-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-            padding: 5px 0;
-        }
-        
-        .site-nav a:hover, .site-nav a.active {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        /* End of navigation styles */
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Footer styles */
-        footer {
-            padding: 40px 0;
-            margin-top: 50px;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .footer-logo {
-            font-size: 1.5rem;
-            font-weight: 300;
-            color: var(--primary);
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-        
-        .copyright {
-            margin-top: 20px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            text-align: center;
-        }
-        
-        .compatibility-status .property-value {
-            font-weight: bold;
-        }
-        
-        .compatible-status {
-            color: var(--evo-compatible) !important;
-        }
-        
-        .incompatible-status {
-            color: var(--evo-incompatible) !important;
-        }
-        
-        .neutral-status {
-            color: var(--evo-neutral) !important;
-        }
-        
-        /* Dropdown Menu Styles */
-        .nav-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .dropdown-toggle {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            padding: 5px 0;
-            position: relative;
-        }
-        
-        .dropdown-toggle:hover, .dropdown-toggle.active {
-            color: var(--primary);
-        }
-        
-        .dropdown-toggle i {
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: var(--surface);
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-dropdown:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .nav-dropdown:hover .dropdown-toggle i {
-            transform: rotate(180deg);
-        }
-        
-        .dropdown-menu a {
-            display: block;
-            padding: 8px 15px;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .dropdown-menu a::after {
-            display: none;
-        }
-        
-        .dropdown-menu a:hover {
-            background-color: var(--surface-light);
-        }
-        
-        /* Mobile styles for dropdown */
-        @media (max-width: 768px) {
-            .site-nav {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .dropdown-menu {
-                position: static;
-                opacity: 0;
-                visibility: hidden;
-                height: 0;
-                transform: none;
-                box-shadow: none;
-                padding: 0;
-                transition: opacity 0.3s ease;
-            }
-            
-            .dropdown-menu.show {
-                opacity: 1;
-                visibility: visible;
-                height: auto;
-                padding: 10px 0;
-                margin-top: 10px;
-                margin-left: 15px;
-                border-left: 2px solid var(--primary);
-            }
-            
-            .dropdown-toggle {
-                justify-content: space-between;
-            }
-            
-            .nav-dropdown {
-                width: 100%;
-            }
-        }
+        /* Existing styles continue... */
     </style>
 </head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization" class="active">Visualization</a>
+                    <a href="/evolution">Evolution</a>
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Quantum Physics</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/oscillator">Oscillator</a>
+                            <a href="/double_slit">Double-Slit</a>
+                            <a href="/quantum_tunneling">Quantum Tunneling</a>
+                        </div>
+                    </div>
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Electromagnetism</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/maxwell">Maxwell</a>
+                            <a href="/maxwells">Maxwell's</a>
+                        </div>
+                    </div>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="visualization-panel">
+            <div id="plot-container" class="plot-container"></div>
+        </div>
+        <div class="controls-panel">
+            <div class="control-card">
+                <div class="card-header">
+                    <h2 class="card-title">Controls</h2>
+                </div>
+                <div class="card-content">
+                    <div class="slider-container">
+                        <label for="slider1">Slider 1</label>
+                        <input type="range" id="slider1" min="0" max="100" value="50">
+                        <span class="value-display" id="slider1-value">50</span>
+                    </div>
+                    <div class="slider-container">
+                        <label for="slider2">Slider 2</label>
+                        <input type="range" id="slider2" min="0" max="100" value="50">
+                        <span class="value-display" id="slider2-value">50</span>
+                    </div>
+                    <div class="button-group">
+                        <button id="reset-button">Reset</button>
+                        <button id="update-button">Update</button>
+                    </div>
+                </div>
+            </div>
+            <div class="control-card">
+                <div class="card-header">
+                    <h2 class="card-title">Toggle</h2>
+                </div>
+                <div class="card-content">
+                    <div class="toggle-container">
+                        <label class="toggle-label">Toggle 1</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle1">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle-label">Toggle 2</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle2">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="control-card">
+                <div class="card-header">
+                    <h2 class="card-title">Twist</h2>
+                </div>
+                <div class="card-content">
+                    <div class="twist-controls">
+                        <div class="twist-axis">
+                            <label for="twist1">Twist 1</label>
+                            <input type="range" id="twist1" min="0" max="100" value="50">
+                            <span class="value-display" id="twist1-value">50</span>
+                        </div>
+                        <div class="twist-axis">
+                            <label for="twist2">Twist 2</label>
+                            <input type="range" id="twist2" min="0" max="100" value="50">
+                            <span class="value-display" id="twist2-value">50</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="control-card">
+                <div class="card-header">
+                    <h2 class="card-title">Sub-SKB</h2>
+                </div>
+                <div class="card-content">
+                    <div class="sub-skb-section">
+                        <div class="sub-skb-title skb1">
+                            <span>SKB 1</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Tooltip text for SKB 1</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <label for="skb1-slider1">Slider 1</label>
+                            <input type="range" id="skb1-slider1" min="0" max="100" value="50">
+                            <span class="value-display" id="skb1-slider1-value">50</span>
+                        </div>
+                        <div class="slider-container">
+                            <label for="skb1-slider2">Slider 2</label>
+                            <input type="range" id="skb1-slider2" min="0" max="100" value="50">
+                            <span class="value-display" id="skb1-slider2-value">50</span>
+                        </div>
+                    </div>
+                    <div class="sub-skb-section">
+                        <div class="sub-skb-title skb2">
+                            <span>SKB 2</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Tooltip text for SKB 2</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <label for="skb2-slider1">Slider 1</label>
+                            <input type="range" id="skb2-slider1" min="0" max="100" value="50">
+                            <span class="value-display" id="skb2-slider1-value">50</span>
+                        </div>
+                        <div class="slider-container">
+                            <label for="skb2-slider2">Slider 2</label>
+                            <input type="range" id="skb2-slider2" min="0" max="100" value="50">
+                            <span class="value-display" id="skb2-slider2-value">50</span>
+                        </div>
+                    </div>
+                    <div class="sub-skb-section">
+                        <div class="sub-skb-title skb3">
+                            <span>SKB 3</span>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Tooltip text for SKB 3</span>
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <label for="skb3-slider1">Slider 1</label>
+                            <input type="range" id="skb3-slider1" min="0" max="100" value="50">
+                            <span class="value-display" id="skb3-slider1-value">50</span>
+                        </div>
+                        <div class="slider-container">
+                            <label for="skb3-slider2">Slider 2</label>
+                            <input type="range" id="skb3-slider2" min="0" max="100" value="50">
+                            <span class="value-display" id="skb3-slider2-value">50</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Properties Panel -->
+    <div class="properties-panel">
+        <div class="properties-title">Properties</div>
+        <div class="property-item">
+            <span class="property-name">Property 1:</span>
+            <span class="property-value">Value 1</span>
+        </div>
+        <div class="property-item">
+            <span class="property-name">Property 2:</span>
+            <span class="property-value">Value 2</span>
+        </div>
+        <div class="property-item">
+            <span class="property-name">Property 3:</span>
+            <span class="property-value">Value 3</span>
+        </div>
+    </div>
+    <!-- Help Button -->
+    <div class="help-button">
+        <i class="fas fa-question"></i>
+    </div>
+    <!-- Help Modal -->
+    <div class="help-modal">
+        <div class="help-content">
+            <div class="help-header">
+                <h2>Help</h2>
+                <span class="close-help">&times;</span>
+            </div>
+            <div class="help-section">
+                <h3 class="help-subtitle">Section 1</h3>
+                <p>Help text for section 1</p>
+            </div>
+            <div class="help-section">
+                <h3 class="help-subtitle">Section 2</h3>
+                <p>Help text for section 2</p>
+            </div>
+            <div class="help-section">
+                <h3 class="help-subtitle">Section 3</h3>
+                <p>Help text for section 3</p>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/visualization">Visualization</a>
+                    <a href="/evolution">Evolution</a>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 4D Manifold Explorer. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    <!-- Scripts -->
+    <script>
+        // JavaScript code for the page
+    </script>
+</body>
+</html>
 <body>
     <!-- Site Navigation Header -->
     <header class="site-header">
@@ -903,9 +334,8 @@
                 </a>
                 <nav class="site-nav">
                     <a href="/">Home</a>
+                    <a href="/visualization" class="active">Visualization</a>
                     <a href="/evolution">Evolution</a>
-                    <a href="/maxwell">Maxwell</a>
-                    <a href="/maxwells">Maxwell's</a>
                     <div class="nav-dropdown">
                         <div class="dropdown-toggle">
                             <span>Quantum Physics</span>
@@ -916,6 +346,24 @@
                             <a href="/double_slit">Double-Slit</a>
                             <a href="/quantum_tunneling">Quantum Tunneling</a>
                         </div>
+                    </div>
+                    <div class="nav-dropdown">
+                        <div class="dropdown-toggle">
+                            <span>Electromagnetism</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/maxwell">Maxwell</a>
+                            <a href="/maxwells">Maxwell's</a>
+                        </div>
+                    </div>
+                    <div class="theme-toggle">
+                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
                     </div>
                 </nav>
             </div>
@@ -967,7 +415,7 @@
                             <span class="property-value" id="kirby-siebenmann">0</span>
                             <div class="tooltip">
                                 <i class="fas fa-info-circle tooltip-icon"></i>
-                                <span class="tooltip-text">The Kirby-Siebenmann invariant is an obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may relate to quantum effects in the SKB model.</span>
+                                <span class="tooltip-text">The Kirby-Siebenmann invariant is an obstruction to smoothing a 4-manifold. When non-zero, it indicates exotic smooth structures that may relate to quantum-gravitational effects in the SKB model.</span>
                             </div>
                         </div>
                         <div class="property-item">
@@ -1682,16 +1130,22 @@
             const plotContainer = document.getElementById('plot');
             const resizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
-                    if (entry.target === plotContainer) {
-                        Plotly.relayout('plot', {
-                            width: entry.contentRect.width,
-                            height: entry.contentRect.height
-                        });
+                    if (entry.target === plotContainer && Plotly.hasPlot('plot')) {
+                        try {
+                            Plotly.relayout('plot', {
+                                width: entry.contentRect.width,
+                                height: entry.contentRect.height
+                            });
+                        } catch (error) {
+                            console.warn('Error in Plotly relayout during resize:', error);
+                        }
                     }
                 }
             });
             
-            resizeObserver.observe(plotContainer);
+            if (plotContainer) {
+                resizeObserver.observe(plotContainer);
+            }
             
             // Rest of your DOMContentLoaded code...
         });
@@ -1699,9 +1153,13 @@
         // Update the window resize handler
         window.addEventListener('resize', function() {
             const plotContainer = document.getElementById('plot');
-            if (plotContainer) {
-                const layout = createLayout(document.getElementById('merge-toggle').checked);
-                Plotly.relayout('plot', layout);
+            if (plotContainer && Plotly.hasPlot('plot')) {
+                try {
+                    const layout = createLayout(document.getElementById('merge-toggle').checked);
+                    Plotly.relayout('plot', layout);
+                } catch (error) {
+                    console.warn('Error in Plotly relayout during window resize:', error);
+                }
             }
         });
     </script>
