@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKB Evolution</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
-    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
+{% extends "base.html" %}
+{% block title %}SKB Evolution{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <style>
         
         body {
@@ -52,19 +45,19 @@
             height: 60px;
         }
         
-        .site-logo {
+        .logo {
             font-size: 1.2rem;
             font-weight: bold;
             color: var(--text-primary);
             text-decoration: none;
         }
         
-        .site-nav {
+        .nav-links {
             display: flex;
             gap: 20px;
         }
         
-        .site-nav a {
+        .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.9rem;
@@ -72,7 +65,7 @@
             padding: 5px 0;
         }
         
-        .site-nav a:hover, .site-nav a.active {
+        .nav-links a:hover, .nav-links a.active {
             color: var(--primary);
         }
         
@@ -614,53 +607,6 @@
         }
     </style>
 </head>
-<body>
-    <!-- Site Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/visualization">Visualization</a>
-                    <a href="/evolution" class="active">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
-
     <div class="container" style="padding-top: 80px;">
         <header>
             <h1>Evolutionary Algorithm for 4D Manifolds</h1>
@@ -721,7 +667,6 @@
                 </div>
             </div>
         </header>
-        
         <div class="main-content">
             <!-- Top Matched Triplets Panel -->
             <div class="controls-panel" style="flex: 1; min-width: 250px;">
@@ -1149,67 +1094,52 @@
         </div>
     </div>
     
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">4D Manifold Explorer</div>
-                <div class="footer-links">
-                    <a href="/">Home</a>
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/oscillator">Oscillator</a>
-                </div>
-            </div>
-            <div class="copyright">
-                &copy; 2024 4D Manifold Explorer. All rights reserved.
-            </div>
-        </div>
-    </footer>
-    
-    <!-- Navigation Dropdown JS -->
+{% endblock %}
+{% block scripts %}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
+        // Basic UI functionality
+        function updateSliderValue(id) {
+            const slider = document.getElementById(id);
+            if (!slider) {
+                console.error(`Could not update slider value: ${id} - Slider not found`);
+                return;
+            }
             
-            // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const dropdown = this.closest('.nav-dropdown');
-                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                        
-                        // Close all other menus
-                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                            if (menu !== dropdownMenu) {
-                                menu.classList.remove('show');
-                            }
-                        });
-                        
-                        // Toggle this menu
-                        dropdownMenu.classList.toggle('show');
-                    }
-                });
-            });
+            // Try finding the display element with the ID format: id + '-value'
+            const display = document.getElementById(id + '-value');
+            if (display) {
+                display.textContent = slider.value;
+                console.log(`Updated ${id} to value: ${slider.value}`);
+                return;
+            }
             
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.nav-dropdown')) {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                        menu.classList.remove('show');
-                    });
+            // If that fails, look for a sibling span with class 'slider-value' or 'value-display'
+            const nextSibling = slider.nextElementSibling;
+            if (nextSibling && (nextSibling.classList.contains('slider-value') || 
+                                nextSibling.classList.contains('value-display'))) {
+                nextSibling.textContent = slider.value;
+                console.log(`Updated ${id} to value: ${slider.value} (sibling format)`);
+                return;
+            }
+            
+            // If neither works, look within the same container for a span with either class
+            const container = slider.closest('.slider-container');
+            if (container) {
+                const valueSpan = container.querySelector('.slider-value, .value-display');
+                if (valueSpan) {
+                    valueSpan.textContent = slider.value;
+                    console.log(`Updated ${id} to value: ${slider.value} (container format)`);
+                    return;
                 }
-            });
+            }
+            
+            console.error(`Could not update slider value: ${id} - Value display not found in any format`);
+        }
+        
+        // Initialize sliders
+        document.addEventListener('DOMContentLoaded', function() {
+            // page specific scripts...
         });
     </script>
-</body>
-</html> 
+{% endblock %}
+
