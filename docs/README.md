@@ -23,6 +23,8 @@ The 4D Manifold Explorer is a comprehensive web application for visualizing and 
 │   ├── oscillator.md
 │   ├── evolution.md
 │   ├── maxwell.md
+│   ├── maxwells.md
+│   ├── skb_hypothesis.md
 │   └── technical/
 │       ├── architecture.md
 │       └── visualization.md
@@ -51,6 +53,11 @@ The 4D Manifold Explorer is a comprehensive web application for visualizing and 
 - Electromagnetic field visualization
 - Wave propagation simulation
 - [Detailed Documentation](./maxwells.md)
+
+### 5. SKB Hypothesis Overview
+- Theoretical basis for modeling particles as spacetime Klein bottles
+- Relation between topological invariants and particle properties
+- [Detailed Documentation](./skb_hypothesis.md)
 
 ## Getting Started
 1. Clone the repository
