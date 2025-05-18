@@ -418,19 +418,7 @@
         }
     </style>
 </head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                {% include 'nav.html' %}
-            </div>
-        </div>
-    </header>
-
+{% block content %}
     <div class="container">
         <header>
             <h1>Topological Diffusion GAN</h1>
@@ -709,8 +697,7 @@
             </div>
         </div>
     </div>
-
-    <script src="/static/js/topological_diffusion.js"></script>
-    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
-</body>
-</html>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/topological_diffusion.js"></script>
+{% endblock %}

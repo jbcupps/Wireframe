@@ -607,20 +607,6 @@
         }
     </style>
 </head>
-<body>
-    <!-- Site Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                {% include 'nav.html' %}
-            </div>
-        </div>
-    </header>
-
     <div class="container" style="padding-top: 80px;">
         <header>
             <h1>Evolutionary Algorithm for 4D Manifolds</h1>
@@ -1155,7 +1141,6 @@
             // page specific scripts...
         });
     </script>
-    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
-</body>
-</html> 
+{% endblock %}
+
 
