@@ -1,20 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Harmonic Oscillator</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
+{% extends "base.html" %}
+{% block title %}Quantum Harmonic Oscillator{% endblock %}
+{% block head_extra %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <style>
         /* Page-specific styles */
         .content-wrapper {
@@ -95,44 +88,8 @@
             padding: 10px 0;
         }
     </style>
-</head>
-<body>
-    <!-- Site Navigation Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/maxwell">Maxwell</a>
-                    <a href="/maxwells">Maxwell's</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator" class="active">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
+{% endblock %}
+{% block content %}
 
     <div class="main-content">
         <div class="container">
@@ -235,25 +192,8 @@
     </div>
     
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">4D Manifold Explorer</div>
-                <div class="footer-links">
-                    <a href="/">Home</a>
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/oscillator">Oscillator</a>
-                </div>
-            </div>
-            <div class="copyright">
-                &copy; 2024 4D Manifold Explorer. All rights reserved.
-            </div>
-        </div>
-    </footer>
-    </div> <!-- Close main-content div -->
-    
-    <!-- Main JS -->
+{% endblock %}
+{% block scripts %}
     <script src="/static/js/oscillator.js"></script>
     
     <!-- Navigation Dropdown JS -->
@@ -300,5 +240,4 @@
             });
         });
     </script>
-</body>
-</html> 
+{% endblock %}

@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4D Manifold Explorer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
+{% extends "base.html" %}
+{% block title %}4D Manifold Explorer{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
         /* Landing page specific styles */
         .hero {
@@ -265,53 +261,8 @@
             }
         }
     </style>
-</head>
-<body>
-    <!-- Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="/" class="active">Home</a>
-                    <a href="/visualization">Visualization</a>
-                    <a href="/evolution">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
+{% endblock %}
+{% block content %}
     
     <!-- Hero Section -->
     <section class="hero">
@@ -404,23 +355,8 @@
     </section>
     
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">4D Manifold Explorer</div>
-                <div class="footer-links">
-                    <a href="#features">Features</a>
-                    <a href="#research">Research</a>
-                    <a href="/visualization">Launch Explorer</a>
-                </div>
-            </div>
-            <div class="copyright">
-                &copy; 2024 4D Manifold Explorer. All rights reserved.
-            </div>
-        </div>
-    </footer>
-    
-    <!-- Main JS -->
+{% endblock %}
+{% block scripts %}
     <script src="/static/js/landing.js"></script>
     
     <!-- Navigation Dropdown JS -->
@@ -494,5 +430,4 @@
             });
         });
     </script>
-</body>
-</html> 
+{% endblock %}

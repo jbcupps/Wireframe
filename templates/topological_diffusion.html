@@ -13,32 +13,6 @@
     <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     <style>
-        :root {
-            --background: #121212;
-            --surface: #1e1e1e;
-            --surface-light: #2d2d2d;
-            --primary: #6200ee;
-            --primary-variant: #3700b3;
-            --secondary: #03dac6;
-            --secondary-variant: #018786;
-            --error: #cf6679;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border-color: #333333;
-            
-            /* Diffusion GAN Colors */
-            --gan-real: #FF6E91;     /* Real samples */
-            --gan-generated: #33C4FF; /* Generated samples */
-            --gan-discriminator: #65FF8F; /* Discriminator boundary */
-            --gan-diffusion: #BB86FC; /* Diffusion process */
-            --gan-highlight: #FFCF33; /* Highlighted particles */
-            
-            /* Topology mapping colors */
-            --topo-twist: #FF6E91;    /* Twist areas */
-            --topo-curve: #33C4FF;    /* Curve areas */
-            --topo-dim-change: #65FF8F; /* Dimensional changes */
-            --topo-match: #BB86FC;    /* Proper matching */
-        }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
