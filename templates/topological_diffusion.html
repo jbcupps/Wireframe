@@ -31,51 +31,6 @@
             box-sizing: border-box;
         }
         
-        /* Site Header Styles */
-        .site-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            padding: 0 20px;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            height: 60px;
-        }
-        
-        .site-logo {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--text-primary);
-            text-decoration: none;
-        }
-        
-        .site-nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .site-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
-            padding: 5px 0;
-        }
-        
-        .site-nav a:hover, .site-nav a.active {
-            color: var(--primary);
-        }
         
         /* Main content padding for fixed header */
         .main-content {
@@ -433,41 +388,7 @@
                     <i class="fas fa-cube"></i>
                     <span>4D Manifold Explorer</span>
                 </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/topological_diffusion" class="active">Topological Diffusion</a>
-                    <a href="/evolution">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
+                {% include 'nav.html' %}
             </div>
         </div>
     </header>
@@ -753,5 +674,6 @@
     </div>
 
     <script src="/static/js/topological_diffusion.js"></script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
-</html> 
+</html>

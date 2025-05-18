@@ -29,130 +29,6 @@
             padding: 20px;
         }
         
-        /* Site Header Styles */
-        .site-header {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            font-size: 1.5rem;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-        
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            padding: 5px 0;
-            position: relative;
-        }
-        
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-        }
-        
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0%;
-            height: 2px;
-            background-color: var(--primary);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-links a:hover::after, .nav-links a.active::after {
-            width: 100%;
-        }
-        
-        /* Dropdown Menu Styles */
-        .nav-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .dropdown-toggle {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .dropdown-toggle i {
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: var(--surface);
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-dropdown:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .nav-dropdown:hover .dropdown-toggle i {
-            transform: rotate(180deg);
-        }
-        
-        .dropdown-menu a {
-            display: block;
-            padding: 8px 15px;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .dropdown-menu a::after {
-            display: none;
-        }
-        
-        .dropdown-menu a:hover {
-            background-color: var(--surface-light);
-        }
-        
         /* Main content padding for fixed header */
         .main-content {
             margin-top: 80px;
@@ -252,50 +128,6 @@
             font-family: monospace;
         }
         
-        /* Mobile styles */
-        @media (max-width: 768px) {
-            .nav-links {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .dropdown-menu {
-                position: static;
-                opacity: 0;
-                visibility: hidden;
-                height: 0;
-                transform: none;
-                box-shadow: none;
-                padding: 0;
-                transition: opacity 0.3s ease;
-            }
-            
-            .dropdown-menu.show {
-                opacity: 1;
-                visibility: visible;
-                height: auto;
-                padding: 10px 0;
-                margin-top: 10px;
-                margin-left: 15px;
-                border-left: 2px solid var(--primary);
-            }
-            
-            .dropdown-toggle {
-                justify-content: space-between;
-            }
-            
-            .nav-dropdown {
-                width: 100%;
-            }
-            
-            #scene {
-                height: 50vh;
-            }
-            
-            #plot {
-                height: 25vh;
-            }
-        }
     </style>
 </head>
 <body>
@@ -307,39 +139,7 @@
                     <i class="fas fa-cube"></i>
                     <span>4D Manifold Explorer</span>
                 </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/evolution">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit" class="active">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
+                {% include 'nav.html' %}
             </div>
         </div>
     </header>
@@ -435,25 +235,6 @@
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/double_slit.js') }}"></script>
     
-    <!-- Navigation Dropdown JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
-            
-            // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                });
-            });
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html> 

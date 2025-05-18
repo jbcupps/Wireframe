@@ -34,129 +34,6 @@
             padding: 20px;
         }
         
-        /* Site Header Styles */
-        .site-header {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            font-size: 1.5rem;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-        
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            padding: 5px 0;
-            position: relative;
-        }
-        
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-        }
-        
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: var(--primary);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-links a:hover::after, .nav-links a.active::after {
-            width: 100%;
-        }
-        
-        /* Dropdown Menu Styles */
-        .nav-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .dropdown-toggle {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .dropdown-toggle i {
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: var(--surface);
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-dropdown:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .nav-dropdown:hover .dropdown-toggle i {
-            transform: rotate(180deg);
-        }
-        
-        .dropdown-menu a {
-            display: block;
-            padding: 8px 15px;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .dropdown-menu a::after {
-            display: none;
-        }
-        
-        .dropdown-menu a:hover {
-            background-color: var(--surface-light);
-        }
         
         .content {
             margin-top: 80px;
@@ -396,51 +273,6 @@
             border-radius: 3px;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .nav-links {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            .dropdown-menu {
-                position: static;
-                opacity: 0;
-                visibility: hidden;
-                height: 0;
-                transform: none;
-                box-shadow: none;
-                padding: 0;
-                transition: opacity 0.3s ease;
-            }
-            
-            .dropdown-menu.show {
-                opacity: 1;
-                visibility: visible;
-                height: auto;
-                padding: 10px 0;
-                margin-top: 10px;
-                margin-left: 15px;
-                border-left: 2px solid var(--primary);
-            }
-            
-            .dropdown-toggle {
-                justify-content: space-between;
-            }
-            
-            .nav-dropdown {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
@@ -452,31 +284,7 @@
                     <i class="fas fa-bolt"></i>
                     4D Manifold Explorer
                 </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/maxwell">Maxwell</a>
-                    <a href="/maxwells" class="active">Maxwell's</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
+                {% include 'nav.html' %}
             </div>
         </div>
     </header>
@@ -543,51 +351,6 @@
                     <p>
                         Here, \(\mathbf{B}\) is the magnetic field. This equation tells us that isolated magnetic poles (like a lone north or south pole) 
                         don't exist in classical electromagnetism.
-                    </p>
-                </div>
-                
-                <!-- Faraday's Law -->
-                <div class="equation-card" style="border-left: 5px solid var(--electric-color); border-right: 5px solid var(--magnetic-color);">
-                    <div class="equation-title">
-                        <i class="fas fa-sync"></i>
-                        <h3>Faraday's Law of Electromagnetic Induction</h3>
-                    </div>
-                    <p>
-                        Faraday's Law describes how a time-varying magnetic field induces an electric field. This is the principle behind 
-                        electric generators and transformers.
-                    </p>
-                    <div class="equation-math">
-                        <div>Differential form:</div>
-                        \[ \nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t} \]
-                        <div>Integral form:</div>
-                        \[ \oint_{\partial S} \mathbf{E} \cdot d\mathbf{l} = -\frac{d}{dt} \int_S \mathbf{B} \cdot d\mathbf{A} \]
-                    </div>
-                    <p>
-                        The curl of \(\mathbf{E}\) (a measure of its rotation) is proportional to the negative rate of change of \(\mathbf{B}\).
-                        This equation shows how time-varying magnetic fields generate electric fields.
-                    </p>
-                </div>
-                
-                <!-- Ampère's Law -->
-                <div class="equation-card" style="border-left: 5px solid var(--magnetic-color); border-right: 5px solid var(--electric-color);">
-                    <div class="equation-title">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h3>Ampère's Law with Maxwell's Correction</h3>
-                    </div>
-                    <p>
-                        Ampère's Law (with Maxwell's displacement current correction) describes how magnetic fields are generated by electric currents 
-                        and time-varying electric fields.
-                    </p>
-                    <div class="equation-math">
-                        <div>Differential form:</div>
-                        \[ \nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \epsilon_0 \frac{\partial \mathbf{E}}{\partial t} \]
-                        <div>Integral form:</div>
-                        \[ \oint_{\partial S} \mathbf{B} \cdot d\mathbf{l} = \mu_0 \int_S \mathbf{J} \cdot d\mathbf{A} + \mu_0 \epsilon_0 \frac{d}{dt} \int_S \mathbf{E} \cdot d\mathbf{A} \]
-                    </div>
-                    <p>
-                        Here, \(\mathbf{B}\) is the magnetic field, \(\mathbf{J}\) is the electric current density, \(\mu_0\) is the vacuum permeability, 
-                        and \(\frac{\partial \mathbf{E}}{\partial t}\) is the rate of change of the electric field.
-                        Maxwell's correction added the displacement current term, which is crucial for explaining electromagnetic waves.
                     </p>
                 </div>
             </div>
@@ -852,37 +615,9 @@
             });
             
             // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const dropdown = this.closest('.nav-dropdown');
-                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                        
-                        // Close all other menus
-                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                            if (menu !== dropdownMenu) {
-                                menu.classList.remove('show');
-                            }
-                        });
-                        
-                        // Toggle this menu
-                        dropdownMenu.classList.toggle('show');
-                    }
-                });
-            });
-            
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.nav-dropdown')) {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                        menu.classList.remove('show');
-                    });
-                }
-            });
+            // page specific scripts...
         });
     </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html> 

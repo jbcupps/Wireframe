@@ -134,26 +134,7 @@
         <div class="container">
             <div class="header-content">
                 <a href="/" class="logo">4D Manifold</a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/topological_diffusion">Topological Diffusion</a></li>
-                        <li class="active"><a href="/maxwell">Maxwell-Boltzmann</a></li>
-                        <li><a href="/maxwells">Maxwell's Equations</a></li>
-                        <li><a href="/evolution">Evolution</a></li>
-                        <li><a href="/oscillator">Quantum Oscillator</a></li>
-                        <li><a href="/quantum_tunneling">Quantum Tunneling</a></li>
-                        <li><a href="/double_slit">Double Slit</a></li>
-                    </ul>
-                </nav>
-                <div class="theme-toggle">
-                    <span id="theme-icon-light">☀️</span>
-                    <label for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle">
-                        <span class="slider"></span>
-                    </label>
-                    <span id="theme-icon-dark">🌙</span>
-                </div>
+                {% include 'nav.html' %}
             </div>
         </div>
     </header>
@@ -498,5 +479,6 @@
         // Initialize when the page loads
         document.addEventListener('DOMContentLoaded', initializePlots);
     </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
-</html> 
+</html>
