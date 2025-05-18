@@ -1152,35 +1152,6 @@
         
         // Initialize sliders
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("Initializing sliders for evolutionary programming interface");
-            
-            // Check if Plotly is loaded
-            if (typeof Plotly === 'undefined') {
-                console.error("Plotly library is not loaded! This will prevent visualizations from working.");
-                alert("Visualization library (Plotly) failed to load. Please try refreshing the page.");
-            } else {
-                console.log("Plotly visualization library loaded successfully: v" + Plotly.version);
-            }
-            
-            // Initialize all slider values
-            document.querySelectorAll('input[type="range"]').forEach(slider => {
-                updateSliderValue(slider.id);
-                
-                // Add event listeners to each slider to update values when moved
-                slider.addEventListener('input', function() {
-                    updateSliderValue(this.id);
-                });
-            });
-            
-            console.log("Evolutionary Programming interface loaded successfully");
-            
-            // Display the compatibility legend explanation
-            console.log("Compatibility appearance standards loaded: compatible (green), incompatible (red), neutral (blue), highlighted (yellow)");
-        });
-    </script>
-<script src="/static/js/evolution.js"></script>
-{% endblock %}
-=======
             // page specific scripts...
         });
     </script>

@@ -5,7 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
 <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <style>
+<style>
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -289,21 +289,9 @@
                 height: 25vh;
             }
         }
-    </style>
-</head>
-<body>
-    <!-- Site Navigation Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                {% include 'nav.html' %}
-            </div>
-        </div>
-    </header>
+</style>
+{% endblock %}
+{% block content %}
     <div class="main-content">
         <div class="container">
             <header>
@@ -396,4 +384,3 @@
     <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html> 
-

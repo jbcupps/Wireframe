@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Maxwell-Boltzmann Distribution Visualization{% endblock %}
 {% block head_extra %}
+<link rel="stylesheet" href="/static/css/main.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <style>
@@ -122,18 +123,8 @@
         .tab-content.active {
             display: block;
         }
-    </style>
-
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">4D Manifold</a>
-                {% include 'nav.html' %}
-            </div>
-        </div>
-    </header>
+</style>
+{% endblock %}
     <main class="container">
         <h1>Maxwell-Boltzmann Distribution Visualization</h1>
         
@@ -469,7 +460,5 @@
         // Initialize when the page loads
         document.addEventListener('DOMContentLoaded', initializePlots);
     </script>
-    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
-</body>
-</html>
+{% endblock %}
 
