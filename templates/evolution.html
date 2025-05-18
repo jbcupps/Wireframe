@@ -52,19 +52,19 @@
             height: 60px;
         }
         
-        .site-logo {
+        .logo {
             font-size: 1.2rem;
             font-weight: bold;
             color: var(--text-primary);
             text-decoration: none;
         }
         
-        .site-nav {
+        .nav-links {
             display: flex;
             gap: 20px;
         }
         
-        .site-nav a {
+        .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.9rem;
@@ -72,7 +72,7 @@
             padding: 5px 0;
         }
         
-        .site-nav a:hover, .site-nav a.active {
+        .nav-links a:hover, .nav-links a.active {
             color: var(--primary);
         }
         
@@ -623,40 +623,7 @@
                     <i class="fas fa-cube"></i>
                     <span>4D Manifold Explorer</span>
                 </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/visualization">Visualization</a>
-                    <a href="/evolution" class="active">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
+                {% include 'nav.html' %}
             </div>
         </div>
     </header>
@@ -1170,46 +1137,9 @@
     <!-- Navigation Dropdown JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
-            
-            // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const dropdown = this.closest('.nav-dropdown');
-                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                        
-                        // Close all other menus
-                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                            if (menu !== dropdownMenu) {
-                                menu.classList.remove('show');
-                            }
-                        });
-                        
-                        // Toggle this menu
-                        dropdownMenu.classList.toggle('show');
-                    }
-                });
-            });
-            
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.nav-dropdown')) {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                        menu.classList.remove('show');
-                    });
-                }
-            });
+            // page specific scripts...
         });
     </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html> 

@@ -1,0 +1,34 @@
+<nav class="nav-links">
+    <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+    <a href="/visualization" class="{% if request.path == '/visualization' %}active{% endif %}">Visualization</a>
+    <a href="/evolution" class="{% if request.path == '/evolution' %}active{% endif %}">Evolution</a>
+    <div class="nav-dropdown">
+        <div class="dropdown-toggle">
+            <span>Quantum Physics</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="dropdown-menu">
+            <a href="/oscillator">Oscillator</a>
+            <a href="/double_slit">Double-Slit</a>
+            <a href="/quantum_tunneling">Quantum Tunneling</a>
+        </div>
+    </div>
+    <div class="nav-dropdown">
+        <div class="dropdown-toggle">
+            <span>Electromagnetism</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="dropdown-menu">
+            <a href="/maxwell">Maxwell</a>
+            <a href="/maxwells">Maxwell's</a>
+        </div>
+    </div>
+    <div class="theme-toggle">
+        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
+        <label class="theme-switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
+    </div>
+</nav>
