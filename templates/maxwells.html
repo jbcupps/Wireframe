@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Maxwell's Equations{% endblock %}
+{% block title %}Maxwell's Equations Visualization{% endblock %}
 {% block head_extra %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
 <style>
-        
+  
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
