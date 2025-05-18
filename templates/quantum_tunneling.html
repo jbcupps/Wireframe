@@ -273,8 +273,14 @@
             margin-bottom: 5px;
         }
     </style>
-{% endblock %}
-{% block content %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-content">
+            <a href="/" class="logo">4D Manifold Explorer</a>
+            {% include 'nav.html' %}
+        </div>
+    </header>
     <div class="main-content">
         <div class="visualization-panel">
             <div id="scene"></div>
@@ -321,7 +327,8 @@
             </div>
         </div>
     </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/quantum_tunneling.js') }}"></script>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/quantum_tunneling.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</body>
+</html> 
+

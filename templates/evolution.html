@@ -606,8 +606,81 @@
             text-align: center;
         }
     </style>
-{% endblock %}
-{% block content %}
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                {% include 'nav.html' %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container" style="padding-top: 80px;">
+        <header>
+            <h1>Evolutionary Algorithm for 4D Manifolds</h1>
+            <p class="subtitle">Evolving Topological Structures for Compatibility</p>
+            
+            <div class="nav-links">
+                <a href="/">Home</a>
+                
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Manifold Physics</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/visualization">4D Manifold</a>
+                        <a href="/topological_diffusion">Topological Diffusion</a>
+                        <a href="/evolution" class="active">Evolution</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Quantum Physics</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/oscillator">Oscillator</a>
+                        <a href="/double_slit">Double-Slit</a>
+                        <a href="/quantum_tunneling">Quantum Tunneling</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <div class="dropdown-toggle">
+                        <span>Electromagnetism</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="/maxwell">Maxwell-Boltzmann</a>
+                        <a href="/maxwells">Maxwell's Equations</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stable Hadrons Section -->
+            <div class="control-card" id="stable-hadrons-section" style="display: none; margin-bottom: 20px;">
+                <div class="card-header">
+                    <h3 class="card-title">Stable Hadrons Found</h3>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle tooltip-icon"></i>
+                        <span class="tooltip-text">Sets of three Sub-SKBs that can form stable hadrons. These have been removed from the evolutionary process.</span>
+                    </div>
+                </div>
+                
+                <div id="stable-hadrons-container">
+                    <!-- Stable hadrons will be listed here -->
+                    <p id="no-stable-hadrons-message">No stable hadrons found yet. Continue evolving to find compatible triplets.</p>
+                </div>
+            </div>
+        </header>
         <div class="main-content">
             <!-- Top Matched Triplets Panel -->
             <div class="controls-panel" style="flex: 1; min-width: 250px;">
@@ -1107,3 +1180,11 @@
     </script>
 <script src="/static/js/evolution.js"></script>
 {% endblock %}
+=======
+            // page specific scripts...
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</body>
+</html> 
+

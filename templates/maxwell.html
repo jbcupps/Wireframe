@@ -123,8 +123,17 @@
             display: block;
         }
     </style>
-{% endblock %}
-{% block content %}
+
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">4D Manifold</a>
+                {% include 'nav.html' %}
+            </div>
+        </div>
+    </header>
     <main class="container">
         <h1>Maxwell-Boltzmann Distribution Visualization</h1>
         
@@ -460,4 +469,7 @@
         // Initialize when the page loads
         document.addEventListener('DOMContentLoaded', initializePlots);
     </script>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</body>
+</html>
+

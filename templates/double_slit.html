@@ -290,8 +290,20 @@
             }
         }
     </style>
-{% endblock %}
-{% block content %}
+</head>
+<body>
+    <!-- Site Navigation Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                {% include 'nav.html' %}
+            </div>
+        </div>
+    </header>
     <div class="main-content">
         <div class="container">
             <header>
@@ -381,5 +393,7 @@
     </div>
 {% endblock %}
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/double_slit.js') }}"></script>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</body>
+</html> 
+

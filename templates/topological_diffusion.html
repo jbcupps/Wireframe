@@ -417,8 +417,25 @@
             }
         }
     </style>
-{% endblock %}
-{% block content %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>4D Manifold Explorer</span>
+                </a>
+                {% include 'nav.html' %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <header>
+            <h1>Topological Diffusion GAN</h1>
+            <div class="subtitle">Generating and identifying topological maps using generative adversarial networks and diffusion models</div>
+        </header>
         <div class="main-content">
             <div class="visualization-panel">
                 <div class="split-plot-container">
@@ -674,7 +691,26 @@
                 </ul>
                 
                 <p>The combination of these techniques allows us to systematically explore the vast configuration space of 4D manifolds and identify those with specific topological properties, potentially revealing connections to fundamental physics principles.</p>
-{% endblock %}
-{% block scripts %}
-<script src="/static/js/topological_diffusion.js"></script>
-{% endblock %}
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-top">
+                <div class="footer-logo">4D Manifold Explorer</div>
+                <div class="footer-nav">
+                    <a href="/visualization">4D Manifold</a>
+                    <a href="/topological_diffusion">Topological Diffusion</a>
+                    <a href="/evolution">Evolution</a>
+                    <a href="/oscillator">Oscillator</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2024 4D Manifold Explorer. All rights reserved.
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/topological_diffusion.js"></script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</body>
+</html>

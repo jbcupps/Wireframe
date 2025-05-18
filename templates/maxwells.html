@@ -434,8 +434,22 @@
             }
         }
     </style>
-{% endblock %}
-{% block content %}
+</head>
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-bolt"></i>
+                    4D Manifold Explorer
+                </a>
+                {% include 'nav.html' %}
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
     <div class="content">
         <div class="container">
             <h1>Maxwell's Equations Visualization</h1>
@@ -790,8 +804,24 @@
             </div>
         </div>
     </div>
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/maxwells.js') }}"></script>
     
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/maxwells.js') }}"></script>
-{% endblock %}
+    <!-- Navigation Dropdown JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add active class to parent dropdown if child link is active
+            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
+            activeLinks.forEach(link => {
+                const parentDropdown = link.closest('.nav-dropdown');
+                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+                dropdownToggle.classList.add('active');
+            });
+            
+            // Handle click on dropdown toggle (for mobile)
+            // page specific scripts...
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</body>
+</html> 
