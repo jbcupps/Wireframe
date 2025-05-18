@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Double Slit Experiment</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
+{% extends "base.html" %}
+{% block title %}Double Slit Experiment{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <style>
         
         body {
@@ -297,53 +290,8 @@
             }
         }
     </style>
-</head>
-<body>
-    <!-- Site Navigation Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/evolution">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit" class="active">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
-
+{% endblock %}
+{% block content %}
     <div class="main-content">
         <div class="container">
             <header>
@@ -431,29 +379,7 @@
             </div>
         </div>
     </div>
-
-    <!-- JavaScript -->
+{% endblock %}
+{% block scripts %}
     <script src="{{ url_for('static', filename='js/double_slit.js') }}"></script>
-    
-    <!-- Navigation Dropdown JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
-            
-            // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                });
-            });
-        });
-    </script>
-</body>
-</html> 
+{% endblock %}

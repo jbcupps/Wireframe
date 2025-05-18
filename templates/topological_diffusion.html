@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4D Manifold Explorer - Topological Diffusion GAN</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
-    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
+{% extends "base.html" %}
+{% block title %}4D Manifold Explorer - Topological Diffusion GAN{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <style>
         
         body {
@@ -53,19 +46,19 @@
             height: 60px;
         }
         
-        .site-logo {
+        .logo {
             font-size: 1.2rem;
             font-weight: bold;
             color: var(--text-primary);
             text-decoration: none;
         }
         
-        .site-nav {
+        .nav-links {
             display: flex;
             gap: 20px;
         }
         
-        .site-nav a {
+        .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.9rem;
@@ -73,7 +66,7 @@
             padding: 5px 0;
         }
         
-        .site-nav a:hover, .site-nav a.active {
+        .nav-links a:hover, .nav-links a.active {
             color: var(--primary);
         }
         
@@ -424,60 +417,8 @@
             }
         }
     </style>
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-cube"></i>
-                    <span>4D Manifold Explorer</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/topological_diffusion" class="active">Topological Diffusion</a>
-                    <a href="/evolution">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <header>
-            <h1>Topological Diffusion GAN</h1>
-            <div class="subtitle">Generating and identifying topological maps using generative adversarial networks and diffusion models</div>
-        </header>
-        
+{% endblock %}
+{% block content %}
         <div class="main-content">
             <div class="visualization-panel">
                 <div class="split-plot-container">
@@ -733,25 +674,7 @@
                 </ul>
                 
                 <p>The combination of these techniques allows us to systematically explore the vast configuration space of 4D manifolds and identify those with specific topological properties, potentially revealing connections to fundamental physics principles.</p>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <div class="footer-top">
-                <div class="footer-logo">4D Manifold Explorer</div>
-                <div class="footer-nav">
-                    <a href="/visualization">4D Manifold</a>
-                    <a href="/topological_diffusion">Topological Diffusion</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/oscillator">Oscillator</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                &copy; 2024 4D Manifold Explorer. All rights reserved.
-            </div>
-        </div>
-    </div>
-
-    <script src="/static/js/topological_diffusion.js"></script>
-</body>
-</html> 
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/topological_diffusion.js"></script>
+{% endblock %}
