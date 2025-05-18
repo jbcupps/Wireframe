@@ -29,6 +29,11 @@ This visualization is based on the following research papers:
 - [A Categorical Framework for Topological Features of Spacetime Klein Bottles in Particle Physics](https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969)
 - [4D Spacetime Klein Bottles as Fundamental Particle Models](https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963)
 
+## Documentation
+Detailed documentation for each module is available in the [`docs`](./docs) directory.
+Key references and an overview of the SKB hypothesis can be found in
+[`docs/skb_hypothesis.md`](docs/skb_hypothesis.md).
+
 ## Security Updates
 
 This repository has been updated to address the following security vulnerabilities:
