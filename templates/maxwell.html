@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maxwell-Boltzmann Distribution Visualization</title>
-    <link rel="stylesheet" href="/static/css/main.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="/static/js/plotly-defaults.js"></script>
-    <script src="/static/js/theme-switcher.js"></script>
+{% extends "base.html" %}
+{% block title %}Maxwell-Boltzmann Distribution Visualization{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
     <style>
         
         .panel {
@@ -128,6 +123,7 @@
             display: block;
         }
     </style>
+
 </head>
 <body>
     <header class="site-header">
@@ -138,7 +134,6 @@
             </div>
         </div>
     </header>
-
     <main class="container">
         <h1>Maxwell-Boltzmann Distribution Visualization</h1>
         
@@ -226,13 +221,8 @@
             </div>
         </div>
     </main>
-    
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2023 4D Manifold Explorer. All rights reserved.</p>
-        </div>
-    </footer>
-
+{% endblock %}
+{% block scripts %}
     <script>
         // Constants
         const BOLTZMANN = 1.380649e-23; // Boltzmann constant in J/K
@@ -482,3 +472,4 @@
     <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html>
+
