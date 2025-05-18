@@ -307,39 +307,7 @@
                     <i class="fas fa-cube"></i>
                     <span>4D Manifold Explorer</span>
                 </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/evolution">Evolution</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit" class="active">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Electromagnetism</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/maxwell">Maxwell</a>
-                            <a href="/maxwells">Maxwell's</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
+                {% include 'nav.html' %}
             </div>
         </div>
     </header>
@@ -435,25 +403,6 @@
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/double_slit.js') }}"></script>
     
-    <!-- Navigation Dropdown JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
-            
-            // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                });
-            });
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html> 
