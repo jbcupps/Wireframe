@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
@@ -15,6 +15,7 @@ COPY app.py .
 COPY skb_visualization.py .
 COPY templates templates/
 COPY static static/
+COPY Procfile Procfile
 
 # Expose the port the app runs on
 EXPOSE 5000
@@ -24,4 +25,4 @@ ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=app.py
 
 # Run the application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-5000}", "--workers", "2", "--timeout", "120", "app:app"]

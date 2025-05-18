@@ -5,6 +5,7 @@ import json
 import traceback
 import logging
 import random
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, 
@@ -12,6 +13,11 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+
+def create_app():
+    """Application factory used for Codex deployment."""
+    return app
 
 # Function to generate data for a twisted strip (sub-SKB) with multi-dimensional twists, time, and loops
 def generate_twisted_strip(twists, t, loop_factor):
@@ -580,4 +586,6 @@ def get_visualization():
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host='0.0.0.0', port=port, debug=debug)
