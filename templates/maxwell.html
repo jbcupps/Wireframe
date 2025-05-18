@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maxwell-Boltzmann Distribution Visualization</title>
-    <link rel="stylesheet" href="/static/css/main.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="/static/js/plotly-defaults.js"></script>
-    <script src="/static/js/theme-switcher.js"></script>
-    <style>
+{% extends "base.html" %}
+{% block title %}Maxwell-Boltzmann Distribution Visualization{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/main.css">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="/static/js/plotly-defaults.js"></script>
+<style>
         
         .panel {
             background-color: var(--card-bg);
@@ -127,37 +123,9 @@
         .tab-content.active {
             display: block;
         }
-    </style>
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">4D Manifold</a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/topological_diffusion">Topological Diffusion</a></li>
-                        <li class="active"><a href="/maxwell">Maxwell-Boltzmann</a></li>
-                        <li><a href="/maxwells">Maxwell's Equations</a></li>
-                        <li><a href="/evolution">Evolution</a></li>
-                        <li><a href="/oscillator">Quantum Oscillator</a></li>
-                        <li><a href="/quantum_tunneling">Quantum Tunneling</a></li>
-                        <li><a href="/double_slit">Double Slit</a></li>
-                    </ul>
-                </nav>
-                <div class="theme-toggle">
-                    <span id="theme-icon-light">☀️</span>
-                    <label for="theme-toggle">
-                        <input type="checkbox" id="theme-toggle">
-                        <span class="slider"></span>
-                    </label>
-                    <span id="theme-icon-dark">🌙</span>
-                </div>
-            </div>
-        </div>
-    </header>
-
+</style>
+{% endblock %}
+{% block content %}
     <main class="container">
         <h1>Maxwell-Boltzmann Distribution Visualization</h1>
         
@@ -498,5 +466,4 @@
         // Initialize when the page loads
         document.addEventListener('DOMContentLoaded', initializePlots);
     </script>
-</body>
-</html> 
+{% endblock %}

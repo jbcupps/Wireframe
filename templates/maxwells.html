@@ -1,22 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maxwell's Equations - 4D Manifold Explorer</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
-    <style>
+{% extends "base.html" %}
+{% block title %}Maxwell's Equations{% endblock %}
+{% block head_extra %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+<style>
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -441,47 +437,9 @@
                 width: 100%;
             }
         }
-    </style>
-</head>
-<body>
-    <!-- Site Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-bolt"></i>
-                    4D Manifold Explorer
-                </a>
-                <nav class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/evolution">Evolution</a>
-                    <a href="/maxwell">Maxwell</a>
-                    <a href="/maxwells" class="active">Maxwell's</a>
-                    <div class="nav-dropdown">
-                        <div class="dropdown-toggle">
-                            <span>Quantum Physics</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="/oscillator">Oscillator</a>
-                            <a href="/double_slit">Double-Slit</a>
-                            <a href="/quantum_tunneling">Quantum Tunneling</a>
-                        </div>
-                    </div>
-                    <div class="theme-toggle">
-                        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-                        <label class="theme-switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </header>
-    
-    <!-- Main Content -->
+</style>
+{% endblock %}
+{% block content %}
     <div class="content">
         <div class="container">
             <h1>Maxwell's Equations Visualization</h1>
@@ -836,53 +794,7 @@
             </div>
         </div>
     </div>
-    
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/maxwells.js') }}"></script>
-    
-    <!-- Navigation Dropdown JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
-            
-            // Handle click on dropdown toggle (for mobile)
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const dropdown = this.closest('.nav-dropdown');
-                        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                        
-                        // Close all other menus
-                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                            if (menu !== dropdownMenu) {
-                                menu.classList.remove('show');
-                            }
-                        });
-                        
-                        // Toggle this menu
-                        dropdownMenu.classList.toggle('show');
-                    }
-                });
-            });
-            
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.nav-dropdown')) {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                        menu.classList.remove('show');
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html> 
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/maxwells.js') }}"></script>
+{% endblock %}
