@@ -1970,4 +1970,12 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error("Error initializing Evolution UI:", error);
     }
-}); 
+
+    // Resize the main plot when the window size changes
+    window.addEventListener('resize', function() {
+        const plot = document.getElementById('evolution-plot');
+        if (plot) {
+            Plotly.Plots.resize(plot);
+        }
+    });
+});

@@ -314,7 +314,16 @@ document.addEventListener('DOMContentLoaded', function() {
         Plotly.update(imagPlot, {
             y: [imags, envelopes, envelopes.map(v => -v)]
         }, {});
-        
+
         updateAnimation(currentTime);
     }
-}); 
+
+    // Resize plots when the window size changes
+    window.addEventListener('resize', function() {
+        [plot3d, spiralPlot, realPlot, imagPlot].forEach(div => {
+            if (div) {
+                Plotly.Plots.resize(div);
+            }
+        });
+    });
+});
