@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# Node modules (if Node environment is used)
+node_modules/
+
+# IDE and OS
+.DS_Store
+.vscode/
