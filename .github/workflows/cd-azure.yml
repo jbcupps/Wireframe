@@ -1,0 +1,69 @@
+# Azure one-time prep:
+# 1. Create an Entra ID App Registration.
+# 2. Add a federated credential scoped to this repo.
+# 3. Assign AcrPush and Website Contributor roles on the resource group or web app.
+# GitHub Docs / Microsoft Learn
+name: cd-azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      AZURE_RESOURCE_GROUP:
+        required: true
+        type: string
+      ACR_NAME:
+        required: true
+        type: string
+      WEBAPP_NAME:
+        required: true
+        type: string
+      IMAGE_TAG:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Node modules
+        if: ${{ hashFiles('**/package-lock.json') != '' }}
+        uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: ACR login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ inputs.ACR_NAME }}.azurecr.io
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ inputs.ACR_NAME }}.azurecr.io/${{ inputs.WEBAPP_NAME }}:${{ inputs.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ inputs.WEBAPP_NAME }}
+          images: ${{ inputs.ACR_NAME }}.azurecr.io/${{ inputs.WEBAPP_NAME }}:${{ inputs.IMAGE_TAG }}

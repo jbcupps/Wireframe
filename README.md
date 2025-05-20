@@ -158,3 +158,19 @@ docker rm skb-visualization
   - Configurable evolutionary parameters (population size, mutation rate, etc.)
   - Real-time display of topological properties (Stiefel-Whitney class, Euler characteristic, etc.)
   - Population grid showing fitness and compatibility metrics
+
+## Deploy with Azure Web Apps
+
+This repository contains a GitHub Actions workflow that builds a Docker image
+and deploys it to an Azure Web App for Containers. Before running the workflow,
+create an Entra ID app registration with a federated credential for this
+repository and grant the `AcrPush` and `Website Contributor` roles.
+
+```bash
+az ad app federated-credential create \
+  --id $APP_ID \
+  --parameters repository=<org>/<repo>,subject=repo:<org>/<repo>:ref:refs/heads/main
+```
+
+Trigger the **cd-azure** workflow from the Actions tab to publish the latest
+image.
