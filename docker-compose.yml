@@ -47,6 +47,7 @@ services:
       - SKB_LOG_FILE_PATH=/app/logs/development.log
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
+      - FLASK_APP=src.app:app
     volumes:
       - .:/app
       - ./logs:/app/logs

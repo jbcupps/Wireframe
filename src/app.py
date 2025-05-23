@@ -27,6 +27,16 @@ def create_app():
     """Application factory used for Codex deployment."""
     return app
 
+# Health check endpoint for Docker
+@app.route('/health')
+def health_check():
+    """Health check endpoint for container monitoring."""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'SKB Visualization',
+        'version': '1.0.0'
+    }), 200
+
 # Enhanced mathematical functions for better Klein bottle modeling
 def klein_bottle_parametric(u, v, a=2.0, b=1.0):
     """

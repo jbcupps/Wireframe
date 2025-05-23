@@ -99,7 +99,23 @@ RUN mkdir -p /var/log/skb && \
 # Copy only necessary files for production
 COPY --chown=skb:skb src/ /app/src/
 COPY --chown=skb:skb Procfile /app/
-COPY --chown=skb:skb .env.example /app/.env
+
+# Create default .env file if .env.example doesn't exist
+RUN echo "# SKB Visualization Environment Configuration\n\
+SKB_ENVIRONMENT=production\n\
+SKB_DEBUG=false\n\
+SKB_SECRET_KEY=change-this-in-production\n\
+SKB_HOST=0.0.0.0\n\
+SKB_PORT=5000\n\
+SKB_ENABLE_CACHING=true\n\
+SKB_CACHE_BACKEND=redis\n\
+SKB_REDIS_URL=redis://redis:6379/0\n\
+SKB_LOG_LEVEL=INFO\n\
+SKB_ENABLE_FILE_LOGGING=true\n\
+SKB_LOG_FILE_PATH=/var/log/skb/application.log\n\
+SKB_MAX_SURFACE_RESOLUTION=100\n\
+SKB_COMPUTATION_TIMEOUT=30\n\
+SKB_NUMERICAL_PRECISION=8" > /app/.env
 
 # Create optimized Python cache
 RUN python -m compileall src/

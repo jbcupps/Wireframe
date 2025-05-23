@@ -6,72 +6,539 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
-    <style>
-        /* Page-specific styles */
+<style>
+    /* Enhanced Visualization Specific Styles */
+    .main-content {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        width: 100%;
+        margin: 80px auto 0;
+        padding: 0 20px;
+        box-sizing: border-box;
+        min-height: calc(100vh - 100px);
+    }
+    
+    .visualization-panel {
+        flex: 3;
+        background: var(--surface-elevated);
+        border-radius: var(--border-radius-elegant);
+        box-shadow: var(--shadow-elegant);
+        overflow: hidden;
+        position: relative;
+        min-height: 600px;
+        height: calc(100vh - 200px);
+        max-height: 800px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .plot-container {
+        width: 100%;
+        height: calc(100% - 60px);
+        background: radial-gradient(ellipse at center, rgba(15, 20, 25, 0.95), rgba(15, 20, 25, 1));
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .controls-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        min-width: 320px;
+        max-width: 380px;
+        height: fit-content;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--surface);
+    }
+    
+    .controls-panel::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .controls-panel::-webkit-scrollbar-track {
+        background: var(--surface);
+        border-radius: 3px;
+    }
+    
+    .controls-panel::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+    }
+    
+    .control-card {
+        background: var(--surface-elevated);
+        border-radius: var(--border-radius-elegant);
+        padding: 20px;
+        box-shadow: var(--shadow-elegant);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: var(--transition-smooth);
+    }
+    
+    .control-card:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    }
+    
+    .card-header {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 12px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .sub-skb-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .sub-skb-title.skb1 { border-left: 3px solid var(--skb1-color); padding-left: 12px; }
+    .sub-skb-title.skb2 { border-left: 3px solid var(--skb2-color); padding-left: 12px; }
+    .sub-skb-title.skb3 { border-left: 3px solid var(--skb3-color); padding-left: 12px; }
+    
+    /* Enhanced Slider Styles */
+    .slider-container {
+        margin-bottom: 18px;
+        position: relative;
+    }
+    
+    .slider-container label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .value-display {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--primary);
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 0.85rem;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        transition: var(--transition-smooth);
+    }
+    
+    .value-display.highlight {
+        background: rgba(99, 102, 241, 0.3);
+        color: #8b5cf6;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        transform: scale(1.05);
+    }
+    
+    /* Enhanced Toggle Styles */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 20px 0;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .toggle-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* Enhanced Button Styles */
+    .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .button-group button {
+        flex: 1;
+        min-width: 120px;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: var(--transition-bounce);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #reset-btn {
+        background: linear-gradient(135deg, #64748b, #475569);
+        color: white;
+        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+    }
+    
+    #reset-btn:hover {
+        background: linear-gradient(135deg, #475569, #334155);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+    }
+    
+    #animate-btn {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    
+    #animate-btn:hover {
+        background: linear-gradient(135deg, #8b5cf6, #a855f7);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+    
+    #animate-btn.active {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    #animate-btn.active:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Properties Panel Enhancements */
+    .properties-panel {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(45, 55, 72, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px 20px;
+        border-radius: 0 0 var(--border-radius-elegant) var(--border-radius-elegant);
+    }
+    
+    .properties-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .property-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        position: relative;
+    }
+    
+    .property-name {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .property-value {
+        color: var(--primary);
+        font-weight: 600;
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        transition: var(--transition-smooth);
+    }
+    
+    .property-value.highlight {
+        color: #8b5cf6;
+        text-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+        transform: scale(1.05);
+    }
+    
+    /* Compatibility Status Styling */
+    .compatible-status { color: #4ade80; }
+    .incompatible-status { color: #f87171; }
+    .neutral-status { color: #fbbf24; }
+    
+    /* Help Modal Enhancements */
+    .help-button {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 56px;
+        height: 56px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        transition: var(--transition-bounce);
+        z-index: 1000;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .help-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 30px rgba(99, 102, 241, 0.6);
+    }
+    
+    .help-button i {
+        color: white;
+        font-size: 1.4rem;
+    }
+    
+    .help-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
+    }
+    
+    .help-content {
+        background: var(--surface-elevated);
+        border-radius: var(--border-radius-elegant);
+        padding: 30px;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow-y: auto;
+        margin: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-elegant);
+    }
+    
+    .help-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .help-header h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+    }
+    
+    .close-help {
+        font-size: 2rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.3s ease;
+    }
+    
+    .close-help:hover {
+        color: var(--primary);
+    }
+    
+    .help-section {
+        margin-bottom: 25px;
+    }
+    
+    .help-subtitle {
+        color: var(--primary);
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+    
+    .help-section p {
+        line-height: 1.6;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+    }
+    
+    .help-section ul {
+        margin-left: 20px;
+        color: var(--text-secondary);
+    }
+    
+    .help-section li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+    
+    .help-section a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .help-section a:hover {
+        color: #8b5cf6;
+        text-decoration: underline;
+    }
+    
+    /* Research Links Enhancement */
+    .research-links {
+        text-align: center;
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .research-links p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .research-links a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    
+    .research-links a:hover {
+        color: #8b5cf6;
+        text-decoration: underline;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
         .main-content {
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
-            width: 100%;
-            margin: 80px auto 0;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-        
-        .visualization-panel {
-            flex: 3;
-            background-color: var(--surface);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            position: relative;
-            min-height: 500px;
-            height: calc(100vh - 200px);
-            max-height: 800px;
-        }
-        
-        .plot-container {
-            width: 100%;
-            height: 100%;
-            background-color: var(--surface);
-            border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .controls-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            min-width: 300px;
-            max-width: 350px;
-            height: fit-content;
+            max-width: none;
+            min-width: auto;
+            max-height: none;
+            overflow-y: visible;
+        }
+        
+        .visualization-panel {
+            height: 500px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .main-content {
+            margin: 60px auto 0;
+            padding: 0 10px;
         }
         
         .control-card {
-            background-color: var(--surface);
-            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .button-group {
+            flex-direction: column;
+        }
+        
+        .button-group button {
+            min-width: auto;
+        }
+        
+        .help-content {
             padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin: 10px;
         }
         
-        .card-header {
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .properties-panel {
+            padding: 8px 15px;
         }
         
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin: 0;
+        .property-item {
+            font-size: 0.75rem;
         }
-        
-        /* Existing styles continue... */
-    </style>
+    }
+    
+    /* Loading and Error States */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 20, 25, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        border-radius: 12px;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(99, 102, 241, 0.3);
+        border-top: 3px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .error-message i {
+        color: #ef4444;
+    }
+</style>
 {% endblock %}
+
 {% block content %}
     <div class="main-content">
         <div class="container">
@@ -82,13 +549,17 @@
             </header>
     
             <div class="research-links">
-                <p>Research: <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">Categorical Framework</a> | <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">SKB Particle Models</a></p>
+                <p>Research: <a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank" rel="noopener">Categorical Framework</a> | <a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank" rel="noopener">SKB Particle Models</a></p>
             </div>
     
             <div class="main-content">
                 <!-- Visualization panel with the plot and properties -->
                 <div class="visualization-panel">
-                    <div id="plot" class="plot-container"></div>
+                    <div id="plot" class="plot-container">
+                        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
                     
                     <!-- Topological properties panel -->
                     <div class="properties-panel">
@@ -153,7 +624,10 @@
                     <!-- Global controls card -->
                     <div class="control-card">
                         <div class="card-header">
-                            <h3 class="card-title">Global Controls</h3>
+                            <h3 class="card-title">
+                                <i class="fas fa-globe"></i>
+                                Global Controls
+                            </h3>
                         </div>
                         
                         <div class="toggle-container">
@@ -171,7 +645,7 @@
                         
                         <div class="slider-container">
                             <label for="time">Time Evolution <span id="time-value" class="value-display">0</span></label>
-                            <input type="range" id="time" min="0" max="6.28" value="0" step="0.1" oninput="updateSliderValue('time'); updateVisualization();">
+                            <input type="range" id="time" min="0" max="6.28" value="0" step="0.1" class="slider" oninput="updateSliderValue('time'); updateVisualization();">
                             <div class="tooltip">
                                 <i class="fas fa-info-circle tooltip-icon"></i>
                                 <span class="tooltip-text">Controls the time parameter, simulating evolution through closed timelike curves (CTCs). In 4D SKB theory, this represents how particles evolve through spacetime while maintaining their topological identity.</span>
@@ -180,7 +654,7 @@
                         
                         <div class="slider-container">
                             <label for="loop-factor">Global Loop Factor <span id="loop-factor-value" class="value-display">1</span></label>
-                            <input type="range" id="loop-factor" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop-factor'); updateVisualization();">
+                            <input type="range" id="loop-factor" min="1" max="5" value="1" step="1" class="slider" oninput="updateSliderValue('loop-factor'); updateVisualization();">
                             <div class="tooltip">
                                 <i class="fas fa-info-circle tooltip-icon"></i>
                                 <span class="tooltip-text">Controls the number of loops in the merged structure. Higher values create more complex structures. In SKB theory, loop factors correspond to energy levels and may relate to particle mass through topological complexity.</span>
@@ -200,7 +674,7 @@
                         
                         <div class="slider-container">
                             <label for="loop1">Loop Factor <span id="loop1-value" class="value-display">1</span></label>
-                            <input type="range" id="loop1" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop1'); updateVisualization();">
+                            <input type="range" id="loop1" min="1" max="5" value="1" step="1" class="slider" oninput="updateSliderValue('loop1'); updateVisualization();">
                             <div class="tooltip">
                                 <i class="fas fa-info-circle tooltip-icon"></i>
                                 <span class="tooltip-text">Controls the number of loops in this sub-SKB. In the categorical framework, this is related to the first homology group generators and may correspond to a particle's internal energy configurations.</span>
@@ -211,7 +685,7 @@
                             <div class="twist-controls">
                                 <div class="twist-axis">
                                     <label for="t1x">X-Twist <span id="t1x-value" class="value-display">0</span></label>
-                                    <input type="range" id="t1x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1x'); updateVisualization();">
+                                    <input type="range" id="t1x" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t1x'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">X-axis twist parameter for sub-SKB 1. In the 4D model, this relates to spatial twisting in the first dimension and may correspond to specific quantum numbers.</span>
@@ -219,7 +693,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t1y">Y-Twist <span id="t1y-value" class="value-display">0</span></label>
-                                    <input type="range" id="t1y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1y'); updateVisualization();">
+                                    <input type="range" id="t1y" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t1y'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Y-axis twist parameter for sub-SKB 1. This represents torsion in the second spatial dimension and may relate to particle spin properties.</span>
@@ -227,7 +701,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t1z">Z-Twist <span id="t1z-value" class="value-display">0</span></label>
-                                    <input type="range" id="t1z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t1z'); updateVisualization();">
+                                    <input type="range" id="t1z" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t1z'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Z-axis twist parameter for sub-SKB 1. Controls vertical torsion and may relate to charge properties in the SKB particle model.</span>
@@ -235,7 +709,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t1t">Time-Twist <span id="t1t-value" class="value-display">0</span></label>
-                                    <input type="range" id="t1t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t1t'); updateVisualization();">
+                                    <input type="range" id="t1t" min="-1" max="1" value="0" step="0.1" class="slider" oninput="updateSliderValue('t1t'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 1, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
@@ -257,7 +731,7 @@
                         
                         <div class="slider-container">
                             <label for="loop2">Loop Factor <span id="loop2-value" class="value-display">1</span></label>
-                            <input type="range" id="loop2" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop2'); updateVisualization();">
+                            <input type="range" id="loop2" min="1" max="5" value="1" step="1" class="slider" oninput="updateSliderValue('loop2'); updateVisualization();">
                             <div class="tooltip">
                                 <i class="fas fa-info-circle tooltip-icon"></i>
                                 <span class="tooltip-text">Controls the number of loops in the second sub-SKB. In the categorical model, different loop configurations may represent different energy states or quantum excitations.</span>
@@ -268,7 +742,7 @@
                             <div class="twist-controls">
                                 <div class="twist-axis">
                                     <label for="t2x">X-Twist <span id="t2x-value" class="value-display">0</span></label>
-                                    <input type="range" id="t2x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2x'); updateVisualization();">
+                                    <input type="range" id="t2x" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t2x'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">X-axis twist for the second sub-SKB. Combinations of twists between different sub-SKBs may represent particle interactions in the categorical model.</span>
@@ -276,7 +750,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t2y">Y-Twist <span id="t2y-value" class="value-display">0</span></label>
-                                    <input type="range" id="t2y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2y'); updateVisualization();">
+                                    <input type="range" id="t2y" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t2y'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Y-axis twist for sub-SKB 2. The relative Y-twist values between sub-SKBs may correspond to binding energies in the composite structure.</span>
@@ -284,7 +758,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t2z">Z-Twist <span id="t2z-value" class="value-display">0</span></label>
-                                    <input type="range" id="t2z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t2z'); updateVisualization();">
+                                    <input type="range" id="t2z" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t2z'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Z-axis twist for sub-SKB 2. In the 4D spacetime model, this represents how this component interacts with the vertical dimension and may relate to strong force carrier interactions.</span>
@@ -292,7 +766,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t2t">Time-Twist <span id="t2t-value" class="value-display">0</span></label>
-                                    <input type="range" id="t2t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t2t'); updateVisualization();">
+                                    <input type="range" id="t2t" min="-1" max="1" value="0" step="0.1" class="slider" oninput="updateSliderValue('t2t'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 2, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
@@ -314,7 +788,7 @@
                         
                         <div class="slider-container">
                             <label for="loop3">Loop Factor <span id="loop3-value" class="value-display">1</span></label>
-                            <input type="range" id="loop3" min="1" max="5" value="1" step="1" oninput="updateSliderValue('loop3'); updateVisualization();">
+                            <input type="range" id="loop3" min="1" max="5" value="1" step="1" class="slider" oninput="updateSliderValue('loop3'); updateVisualization();">
                             <div class="tooltip">
                                 <i class="fas fa-info-circle tooltip-icon"></i>
                                 <span class="tooltip-text">Controls the number of loops in the third sub-SKB. In topological terms, this may represent how many times this component wraps around itself, affecting its contribution to the overall particle mass.</span>
@@ -325,7 +799,7 @@
                             <div class="twist-controls">
                                 <div class="twist-axis">
                                     <label for="t3x">X-Twist <span id="t3x-value" class="value-display">0</span></label>
-                                    <input type="range" id="t3x" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3x'); updateVisualization();">
+                                    <input type="range" id="t3x" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t3x'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">X-axis twist for sub-SKB 3. In the categorical framework, this corresponds to a specific morphism that alters the topology in ways that may relate to flavor quantum numbers.</span>
@@ -333,7 +807,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t3y">Y-Twist <span id="t3y-value" class="value-display">0</span></label>
-                                    <input type="range" id="t3y" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3y'); updateVisualization();">
+                                    <input type="range" id="t3y" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t3y'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Y-axis twist for sub-SKB 3. Different twist configurations across all sub-SKBs may correspond to different particle states or resonances in the SKB model.</span>
@@ -341,7 +815,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t3z">Z-Twist <span id="t3z-value" class="value-display">0</span></label>
-                                    <input type="range" id="t3z" min="-5" max="5" value="0" step="1" oninput="updateSliderValue('t3z'); updateVisualization();">
+                                    <input type="range" id="t3z" min="-5" max="5" value="0" step="1" class="slider" oninput="updateSliderValue('t3z'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Z-axis twist for sub-SKB 3. In the spacetime model with closed timelike curves, this parameter may influence how this component interacts with the time dimension.</span>
@@ -349,7 +823,7 @@
                                 </div>
                                 <div class="twist-axis">
                                     <label for="t3t">Time-Twist <span id="t3t-value" class="value-display">0</span></label>
-                                    <input type="range" id="t3t" min="-1" max="1" value="0" step="0.1" oninput="updateSliderValue('t3t'); updateVisualization();">
+                                    <input type="range" id="t3t" min="-1" max="1" value="0" step="0.1" class="slider" oninput="updateSliderValue('t3t'); updateVisualization();">
                                     <div class="tooltip">
                                         <i class="fas fa-info-circle tooltip-icon"></i>
                                         <span class="tooltip-text">Controls the time-like twist parameter for Sub-SKB 3, affecting the formation of closed timelike curves (CTCs). Balancing time twists across Sub-SKBs is essential for CTC stability.</span>
@@ -390,8 +864,8 @@
                 <p>A Spacetime Klein Bottle (SKB) is a non-orientable topological surface with no boundary embedded in 4D spacetime with closed timelike curves. In this model, fundamental particles are represented as SKBs, with intrinsic properties like mass and charge emerging from their topology.</p>
                 <p>This visualization is based on research papers exploring a novel hypothesis where quarks and baryons can be modeled using topological structures:</p>
                 <ul>
-                    <li><a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank">A Categorical Framework for Topological Features of Spacetime Klein Bottles in Particle Physics</a></li>
-                    <li><a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank">4D Spacetime Klein Bottles as Fundamental Particle Models</a></li>
+                    <li><a href="https://figshare.com/articles/preprint/A_Categorical_Framework_for_Topological_Features_of_Spacetime_Klein_Bottles_in_Particle_Physics/28466279?file=52550969" target="_blank" rel="noopener">A Categorical Framework for Topological Features of Spacetime Klein Bottles in Particle Physics</a></li>
+                    <li><a href="https://figshare.com/articles/preprint/4D_Spacetime_Klein_Bottles_as_Fundamental_Particle_Models_pdf/28466276?file=52550963" target="_blank" rel="noopener">4D Spacetime Klein Bottles as Fundamental Particle Models</a></li>
                 </ul>
             </div>
             
@@ -459,32 +933,130 @@
     </div>
     
 {% endblock %}
+
 {% block scripts %}
     <script>
+        // Enhanced Animation System with Pre-recorded Loops
         let animationId = null;
         let isAnimating = false;
+        let animationFrameCache = new Map();
+        let smoothAnimationEnabled = true;
+        let lastUpdateTime = 0;
+        const UPDATE_THROTTLE = 100; // Minimum time between updates in ms
         
-        // Function to update slider value display
+        // Pre-computed animation frames for smooth playback
+        const precomputedFrames = [];
+        let frameIndex = 0;
+        const totalFrames = 63; // For smooth 2π animation
+        
+        // Enhanced function to update slider value display
         function updateSliderValue(id) {
             const slider = document.getElementById(id);
             const display = document.getElementById(id + '-value');
-            display.textContent = slider.value;
+            if (!slider || !display) return;
             
-            // Highlight the value with animation
+            let value = slider.value;
+            
+            // Format display value
+            if (id.includes('t') && !id.includes('time')) {
+                value = parseFloat(value).toFixed(1);
+            } else if (id === 'time') {
+                value = parseFloat(value).toFixed(2);
+            } else {
+                value = parseInt(value);
+            }
+            
+            display.textContent = value;
+            
+            // Enhanced highlight animation
             display.classList.remove('highlight');
-            void display.offsetWidth; // Trigger reflow to restart animation
+            void display.offsetWidth; // Trigger reflow
             display.classList.add('highlight');
+            
+            // Update CSS custom property for slider progress
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.setProperty('--slider-progress', `${percentage}%`);
             
             // Update topological properties
             updateTopologicalProperties();
         }
         
-        // Function to update the visualization based on current parameters
+        // Enhanced visualization update with throttling and error handling
         function updateVisualization() {
+            const now = Date.now();
+            if (now - lastUpdateTime < UPDATE_THROTTLE && !isAnimating) {
+                return;
+            }
+            lastUpdateTime = now;
+            
             console.log("Updating visualization...");
             
-            // Get parameters from controls
-            const params = {
+            // Show loading overlay
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'flex';
+            }
+            
+            // Clear any existing error messages
+            const existingErrors = document.querySelectorAll('.error-message');
+            existingErrors.forEach(error => error.remove());
+            
+            try {
+                // Get parameters from controls
+                const params = getVisualizationParameters();
+                
+                console.log("Fetching visualization with params:", params);
+                
+                fetch('/get_visualization', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    console.log("Visualization data received:", data);
+                    
+                    try {
+                        renderVisualization(data, params);
+                    } catch (renderError) {
+                        console.error("Error rendering visualization:", renderError);
+                        showErrorMessage("Failed to render visualization: " + renderError.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching visualization:", error);
+                    showErrorMessage("Failed to load visualization: " + error.message);
+                })
+                .finally(() => {
+                    // Hide loading overlay
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Error in updateVisualization:", error);
+                showErrorMessage("Visualization error: " + error.message);
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+        }
+        
+        // Extract parameters function for better organization
+        function getVisualizationParameters() {
+            return {
                 t: parseFloat(document.getElementById('time').value),
                 loop_factor: parseInt(document.getElementById('loop-factor').value),
                 loop1: parseInt(document.getElementById('loop1').value),
@@ -502,133 +1074,149 @@
                 t3y: parseInt(document.getElementById('t3y').value),
                 t3z: parseInt(document.getElementById('t3z').value),
                 t3t: parseFloat(document.getElementById('t3t').value),
-                merge: document.getElementById('merge-toggle').checked ? 1 : 0,
+                merge: document.getElementById('merge-toggle').checked,
                 colors: {
-                    skb1: getComputedStyle(document.documentElement).getPropertyValue('--skb1-color').trim(),
-                    skb2: getComputedStyle(document.documentElement).getPropertyValue('--skb2-color').trim(),
-                    skb3: getComputedStyle(document.documentElement).getPropertyValue('--skb3-color').trim()
+                    skb1: getComputedStyle(document.documentElement).getPropertyValue('--skb1-color').trim() || '#ff6b9d',
+                    skb2: getComputedStyle(document.documentElement).getPropertyValue('--skb2-color').trim() || '#4fc3f7',
+                    skb3: getComputedStyle(document.documentElement).getPropertyValue('--skb3-color').trim() || '#81c784'
                 }
             };
+        }
+        
+        // Enhanced render function with better error handling
+        function renderVisualization(data, params) {
+            const plotDiv = document.getElementById('plot');
             
-            console.log("Fetching visualization with params:", params);
-            console.log("Plot container:", document.getElementById('plot'));
+            if (!plotDiv) {
+                throw new Error("Plot container not found");
+            }
             
-            fetch('/get_visualization', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(params)
-            })
-            .then(response => {
-                console.log("Received response from server:", response.status);
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    console.error("Server returned error:", data.error);
-                    return;
+            // Clean up existing plot if it exists
+            if (plotDiv && plotDiv._fullLayout) {
+                Plotly.purge(plotDiv);
+            }
+            
+            const layout = createEnhancedLayout(params.merge);
+            console.log("Rendering plot with layout:", layout);
+            
+            // Create new plot with enhanced configuration
+            return Plotly.newPlot('plot', data.plot.data, layout, {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: [
+                    'pan2d', 'select2d', 'lasso2d', 'autoScale2d', 
+                    'hoverClosestCartesian', 'hoverCompareCartesian', 
+                    'toggleSpikelines', 'resetScale2d'
+                ],
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'skb_visualization',
+                    height: 800,
+                    width: 1200,
+                    scale: 2
+                }
+            }).then(() => {
+                console.log("Plot updated successfully");
+                
+                // Apply enhanced defaults and optimizations
+                if (window.PlotlyDefaults && window.PlotlyDefaults.updatePlotWithDefaults) {
+                    PlotlyDefaults.updatePlotWithDefaults(plotDiv, layout);
                 }
                 
-                console.log("Visualization data received:", data);
+                // Update topological properties
+                updateTopologicalProperties();
                 
-                try {
-                    const plotDiv = document.getElementById('plot');
-                    
-                    // Clean up existing plot if it exists
-                    if (plotDiv && plotDiv._fullLayout) {
-                        Plotly.purge(plotDiv);
-                    }
-                    
-                    const layout = createLayout(params.merge);
-                    console.log("Rendering plot with layout:", layout);
-                    
-                    // Create new plot with a small delay to ensure DOM is ready
-                    setTimeout(() => {
-                        Plotly.newPlot('plot', data.plot.data, layout, {
-                            responsive: true,
-                            displayModeBar: true,
-                            displaylogo: false
-                        }).then(() => {
-                            console.log("Plot updated successfully");
-                            PlotlyDefaults.updatePlotWithDefaults(plotDiv, layout);
-                            updateTopologicalProperties();
-                        });
-                    }, 100);
-                } catch (error) {
-                    console.error("Error rendering plot:", error);
+                // Cache frame if animating
+                if (isAnimating && smoothAnimationEnabled) {
+                    cacheAnimationFrame(params);
                 }
-            })
-            .catch(error => {
-                console.error("Error fetching visualization:", error);
             });
         }
         
-        // Function to create a custom layout
-        function createLayout(isMerged) {
-            // Get the plot container dimensions
+        // Enhanced layout creation with scientific precision
+        function createEnhancedLayout(isMerged) {
             const plotContainer = document.getElementById('plot');
-            const width = plotContainer.offsetWidth;
-            const height = plotContainer.offsetHeight;
+            const width = plotContainer ? plotContainer.offsetWidth : 800;
+            const height = plotContainer ? plotContainer.offsetHeight : 600;
 
             return {
                 scene: {
                     aspectmode: 'cube',
                     camera: {
-                        eye: { x: 1.9, y: 1.9, z: 1.5 },
+                        eye: { x: 2.1, y: 2.1, z: 1.8 },
                         center: { x: 0, y: 0, z: 0 },
-                        up: { x: 0, y: 0, z: 1 }
+                        up: { x: 0, y: 0, z: 1 },
+                        projection: { type: 'perspective' }
                     },
                     xaxis: {
+                        title: { text: 'X', font: { color: '#e2e8f0', size: 12 } },
                         showspikes: false,
                         showgrid: true,
-                        zeroline: false,
+                        zeroline: true,
                         showline: false,
                         showticklabels: true,
-                        title: '',
-                        gridcolor: 'rgba(80,80,80,0.2)',
+                        gridcolor: 'rgba(226, 232, 240, 0.15)',
+                        zerolinecolor: 'rgba(226, 232, 240, 0.3)',
+                        tickfont: { color: '#a0aec0', size: 10 },
+                        range: [-4, 4]
                     },
                     yaxis: {
+                        title: { text: 'Y', font: { color: '#e2e8f0', size: 12 } },
                         showspikes: false,
                         showgrid: true,
-                        zeroline: false,
+                        zeroline: true,
                         showline: false,
                         showticklabels: true,
-                        title: '',
-                        gridcolor: 'rgba(80,80,80,0.2)',
+                        gridcolor: 'rgba(226, 232, 240, 0.15)',
+                        zerolinecolor: 'rgba(226, 232, 240, 0.3)',
+                        tickfont: { color: '#a0aec0', size: 10 },
+                        range: [-4, 4]
                     },
                     zaxis: {
+                        title: { text: 'Z', font: { color: '#e2e8f0', size: 12 } },
                         showspikes: false,
                         showgrid: true,
-                        zeroline: false,
+                        zeroline: true,
                         showline: false,
                         showticklabels: true,
-                        title: '',
-                        gridcolor: 'rgba(80,80,80,0.2)',
+                        gridcolor: 'rgba(226, 232, 240, 0.15)',
+                        zerolinecolor: 'rgba(226, 232, 240, 0.3)',
+                        tickfont: { color: '#a0aec0', size: 10 },
+                        range: [-3, 3]
                     },
-                    bgcolor: 'rgba(0,0,0,0)'
+                    bgcolor: 'rgba(15, 20, 25, 0.95)',
+                    dragmode: 'orbit'
                 },
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                margin: { l: 0, r: 0, b: 0, t: 0, pad: 0 },
+                paper_bgcolor: 'rgba(15, 20, 25, 0.98)',
+                plot_bgcolor: 'rgba(15, 20, 25, 0.95)',
+                margin: { l: 0, r: 0, b: 0, t: 30, pad: 0 },
                 width: width,
                 height: height,
                 autosize: true,
                 legend: {
-                    font: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') },
-                    bgcolor: 'rgba(30,30,30,0.7)',
-                    bordercolor: getComputedStyle(document.documentElement).getPropertyValue('--border-color'),
+                    font: { color: '#e2e8f0', size: 11 },
+                    bgcolor: 'rgba(45, 55, 72, 0.9)',
+                    bordercolor: 'rgba(255, 255, 255, 0.1)',
                     borderwidth: 1,
-                    y: 0.99,
-                    x: 0.01
+                    y: 0.98,
+                    x: 0.02,
+                    orientation: 'v'
                 },
-                hovermode: false,
+                hovermode: 'closest',
+                showlegend: true,
+                title: {
+                    text: isMerged ? 'Merged SKB: Stable Hadron Configuration' : 'Individual Sub-SKBs: Quark-like Components',
+                    font: { color: '#e2e8f0', size: 14 },
+                    x: 0.5,
+                    y: 0.97
+                },
                 annotations: [{
                     showarrow: false,
-                    text: isMerged ? 'Merged SKB' : 'Individual Sub-SKBs',
+                    text: isMerged ? 'Topological Stability Analysis' : 'Component Interaction Visualization',
                     font: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
-                        size: 12
+                        color: isMerged ? '#bb86fc' : '#4fc3f7',
+                        size: 10
                     },
                     xref: 'paper',
                     yref: 'paper',
@@ -638,209 +1226,342 @@
             };
         }
         
-        // Function to update topological properties based on current state
+        // Enhanced topological properties calculation
         function updateTopologicalProperties() {
-            const isMerged = document.getElementById('merge-toggle').checked;
-            const eulerChar = document.getElementById('euler-characteristic');
-            const genus = document.getElementById('genus');
-            const homologyGroups = document.getElementById('homology-groups');
-            const stiefelWhitney = document.getElementById('stiefel-whitney');
-            const intersectionForm = document.getElementById('intersection-form');
-            const kirbySiebenmann = document.getElementById('kirby-siebenmann');
-            const compatibilityStatus = document.getElementById('compatibility-status');
-            
-            // Calculate topological properties based on parameters
-            const t1x = parseInt(document.getElementById('t1x').value);
-            const t1y = parseInt(document.getElementById('t1y').value);
-            const t1z = parseInt(document.getElementById('t1z').value);
-            const t1t = parseFloat(document.getElementById('t1t').value);
-            const t2x = parseInt(document.getElementById('t2x').value);
-            const t2y = parseInt(document.getElementById('t2y').value);
-            const t2z = parseInt(document.getElementById('t2z').value);
-            const t2t = parseFloat(document.getElementById('t2t').value);
-            const t3x = parseInt(document.getElementById('t3x').value);
-            const t3y = parseInt(document.getElementById('t3y').value);
-            const t3z = parseInt(document.getElementById('t3z').value);
-            const t3t = parseFloat(document.getElementById('t3t').value);
-            const loop1 = parseInt(document.getElementById('loop1').value);
-            const loop2 = parseInt(document.getElementById('loop2').value);
-            const loop3 = parseInt(document.getElementById('loop3').value);
-            
-            if (isMerged) {
-                // Merged Klein bottle properties
-                eulerChar.textContent = "0";
-                genus.textContent = "2";
-                homologyGroups.textContent = "H₁ = Z ⊕ Z₂";
+            try {
+                const isMerged = document.getElementById('merge-toggle').checked;
+                const eulerChar = document.getElementById('euler-characteristic');
+                const genus = document.getElementById('genus');
+                const homologyGroups = document.getElementById('homology-groups');
+                const stiefelWhitney = document.getElementById('stiefel-whitney');
+                const intersectionForm = document.getElementById('intersection-form');
+                const kirbySiebenmann = document.getElementById('kirby-siebenmann');
+                const compatibilityStatus = document.getElementById('compatibility-status');
+                const ctcStability = document.getElementById('ctc-stability');
                 
-                // 4D manifold topology for merged SKB rendered as wireframe
-                const orientable = (t1x + t2y + t3z) % 2 === 0;
-                stiefelWhitney.textContent = orientable ? "w₁ = 0, w₂ = 0" : "w₁ = 1, w₂ = " + ((t1y*t2z - t1z*t2y) % 2);
+                // Get current parameter values
+                const params = getVisualizationParameters();
                 
-                // Intersection form depends on various parameters
-                let formType = "";
-                const sumTwists = Math.abs(t1x + t2x + t3x) + Math.abs(t1y + t2y + t3y) + Math.abs(t1z + t2z + t3z);
-                if (sumTwists < 3) formType = "[ ]"; // Trivial
-                else if (sumTwists % 2 === 0) formType = "[ 1 0; 0 -1 ]"; // Indefinite
-                else formType = "[ 1 0; 0 1 ]"; // Positive definite
-                intersectionForm.textContent = "Q = " + formType;
-                
-                // Kirby-Siebenmann invariant
-                const ks = ((loop1 * loop2 * loop3) % 2);
-                kirbySiebenmann.textContent = ks.toString();
-                
-                // Check for CTC stability - time twists should be complementary (sum near zero)
-                const timeSum = Math.abs(t1t + t2t + t3t);
-                const stableCTC = timeSum < 0.2; // Sum of time twists should be near zero for stable CTCs
-                
-                // Determine compatibility based on topological constraints including CTC stability
-                const compatible = orientable && sumTwists >= 3 && ks === 0 && stableCTC;
-                compatibilityStatus.textContent = compatible ? "Compatible" : "Incompatible";
-                
-                // Add specific message about CTC stability if that's the issue
-                if (!compatible && !stableCTC && orientable && sumTwists >= 3 && ks === 0) {
-                    compatibilityStatus.textContent = "Incompatible - Unstable CTCs";
+                if (isMerged) {
+                    // Merged Klein bottle properties
+                    eulerChar.textContent = "0";
+                    genus.textContent = "2";
+                    homologyGroups.textContent = "H₁ = Z ⊕ Z₂";
+                    
+                    // Enhanced topological calculations
+                    const orientable = (params.t1x + params.t2y + params.t3z) % 2 === 0;
+                    stiefelWhitney.textContent = orientable ? "w₁ = 0, w₂ = 0" : `w₁ = 1, w₂ = ${(params.t1y * params.t2z - params.t1z * params.t2y) % 2}`;
+                    
+                    // Enhanced intersection form calculation
+                    const sumTwists = Math.abs(params.t1x + params.t2x + params.t3x) + 
+                                     Math.abs(params.t1y + params.t2y + params.t3y) + 
+                                     Math.abs(params.t1z + params.t2z + params.t3z);
+                    
+                    let formType = "";
+                    if (sumTwists < 3) formType = "[ ]"; // Trivial
+                    else if (sumTwists % 2 === 0) formType = "[ 1 0; 0 -1 ]"; // Indefinite
+                    else formType = "[ 1 0; 0 1 ]"; // Positive definite
+                    intersectionForm.textContent = "Q = " + formType;
+                    
+                    // Kirby-Siebenmann invariant
+                    const ks = ((params.loop1 * params.loop2 * params.loop3) % 2);
+                    kirbySiebenmann.textContent = ks.toString();
+                    
+                    // Enhanced CTC stability analysis
+                    const timeSum = Math.abs(params.t1t + params.t2t + params.t3t);
+                    const stableCTC = timeSum < 0.3;
+                    ctcStability.textContent = stableCTC ? "Stable" : "Unstable";
+                    ctcStability.className = stableCTC ? "property-value compatible-status" : "property-value incompatible-status";
+                    
+                    // Enhanced compatibility determination
+                    const compatible = orientable && sumTwists >= 3 && ks === 0 && stableCTC;
+                    compatibilityStatus.textContent = compatible ? "Compatible" : 
+                        (!stableCTC ? "Incompatible - Unstable CTCs" : "Incompatible");
+                    
+                    compatibilityStatus.className = compatible ? "property-value compatible-status" : "property-value incompatible-status";
+                    
+                } else {
+                    // Individual sub-SKB properties
+                    eulerChar.textContent = "0";
+                    genus.textContent = "1";
+                    homologyGroups.textContent = "H₁ = Z";
+                    stiefelWhitney.textContent = "w₁ = 1, w₂ = 0";
+                    intersectionForm.textContent = "Q = [ ]";
+                    kirbySiebenmann.textContent = "0";
+                    ctcStability.textContent = "N/A";
+                    ctcStability.className = "property-value neutral-status";
+                    compatibilityStatus.textContent = "Requires Merging";
+                    compatibilityStatus.className = "property-value neutral-status";
                 }
                 
-                compatibilityStatus.classList.remove("compatible-status", "incompatible-status");
-                compatibilityStatus.classList.add(compatible ? "compatible-status" : "incompatible-status");
-            } else {
-                // Individual sub-SKB properties
-                eulerChar.textContent = "0";
-                genus.textContent = "1";
-                homologyGroups.textContent = "H₁ = Z";
+                // Animate property changes
+                document.querySelectorAll('.property-value').forEach(el => {
+                    el.classList.remove('highlight');
+                    void el.offsetWidth;
+                    el.classList.add('highlight');
+                });
                 
-                // Individual SKBs have simpler topology
-                const orientable = false; // Sub-SKBs are non-orientable (like Möbius strips)
-                stiefelWhitney.textContent = "w₁ = 1, w₂ = 0";
-                intersectionForm.textContent = "Q = [ ]"; // Trivial for individual components
-                kirbySiebenmann.textContent = "0";
-                
-                // Individual sub-SKBs are not compatible by themselves
-                compatibilityStatus.textContent = "Requires Merging";
-                compatibilityStatus.classList.remove("compatible-status", "incompatible-status");
-                compatibilityStatus.classList.add("neutral-status");
+            } catch (error) {
+                console.warn("Error updating topological properties:", error);
             }
-            
-            // Animate the property changes
-            document.querySelectorAll('.property-value').forEach(el => {
-                el.classList.remove('highlight');
-                void el.offsetWidth; // Trigger reflow
-                el.classList.add('highlight');
-            });
         }
         
-        // Function to reset all controls
+        // Enhanced reset function
         function resetControls() {
+            console.log("Resetting all controls...");
+            
             // Stop animation if running
             if (isAnimating) {
                 toggleAnimation();
             }
             
-            // Reset all sliders to their default values
-            document.getElementById('time').value = 0;
-            document.getElementById('loop-factor').value = 1;
-            document.getElementById('loop1').value = 1;
-            document.getElementById('loop2').value = 1;
-            document.getElementById('loop3').value = 1;
-            document.getElementById('t1x').value = 0;
-            document.getElementById('t1y').value = 0;
-            document.getElementById('t1z').value = 0;
-            document.getElementById('t1t').value = 0;
-            document.getElementById('t2x').value = 0;
-            document.getElementById('t2y').value = 0;
-            document.getElementById('t2z').value = 0;
-            document.getElementById('t2t').value = 0;
-            document.getElementById('t3x').value = 0;
-            document.getElementById('t3y').value = 0;
-            document.getElementById('t3z').value = 0;
-            document.getElementById('t3t').value = 0;
-            document.getElementById('merge-toggle').checked = false;
+            // Reset all sliders to default values
+            const sliderDefaults = {
+                'time': 0,
+                'loop-factor': 1,
+                'loop1': 1, 'loop2': 1, 'loop3': 1,
+                't1x': 0, 't1y': 0, 't1z': 0, 't1t': 0,
+                't2x': 0, 't2y': 0, 't2z': 0, 't2t': 0,
+                't3x': 0, 't3y': 0, 't3z': 0, 't3t': 0
+            };
             
-            // Update all value displays
-            document.querySelectorAll('input[type="range"]').forEach(slider => {
-                updateSliderValue(slider.id);
+            Object.entries(sliderDefaults).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = value;
+                    updateSliderValue(id);
+                }
             });
             
+            // Reset toggle
+            const mergeToggle = document.getElementById('merge-toggle');
+            if (mergeToggle) {
+                mergeToggle.checked = false;
+            }
+            
+            // Clear animation cache
+            animationFrameCache.clear();
+            frameIndex = 0;
+            
             // Update visualization
-            updateVisualization();
+            setTimeout(() => {
+                updateVisualization();
+            }, 100);
         }
         
-        // Function to toggle animation
+        // Enhanced animation with pre-recorded smooth playback
         function toggleAnimation() {
             const animateBtn = document.getElementById('animate-btn');
             const animateIcon = document.getElementById('animate-icon');
             const animateText = document.getElementById('animate-text');
             const timeSlider = document.getElementById('time');
             
+            if (!animateBtn || !animateIcon || !animateText || !timeSlider) {
+                console.error("Animation control elements not found");
+                return;
+            }
+            
             isAnimating = !isAnimating;
             
             if (isAnimating) {
+                console.log("Starting animation...");
                 animateIcon.className = 'fas fa-pause';
                 animateText.textContent = 'Pause';
+                animateBtn.classList.add('active');
                 
-                // Animation function
+                // Enhanced smooth animation function
                 const animate = () => {
+                    if (!isAnimating) return;
+                    
                     let currentTime = parseFloat(timeSlider.value);
-                    currentTime = (currentTime + 0.05) % 6.28;
+                    currentTime = (currentTime + 0.04) % 6.28; // Smaller steps for smoother animation
+                    
                     timeSlider.value = currentTime.toFixed(2);
                     updateSliderValue('time');
-                    updateVisualization();
+                    
+                    // Use cached frame if available for smoother playback
+                    if (smoothAnimationEnabled && shouldUseCachedFrame(currentTime)) {
+                        const cachedData = getCachedFrame(currentTime);
+                        if (cachedData) {
+                            try {
+                                renderVisualization(cachedData.data, cachedData.params);
+                            } catch (error) {
+                                console.warn("Error rendering cached frame:", error);
+                                updateVisualization();
+                            }
+                        } else {
+                            updateVisualization();
+                        }
+                    } else {
+                        updateVisualization();
+                    }
+                    
                     animationId = requestAnimationFrame(animate);
                 };
                 
                 animationId = requestAnimationFrame(animate);
+                
             } else {
+                console.log("Stopping animation...");
                 animateIcon.className = 'fas fa-play';
                 animateText.textContent = 'Animate';
-                cancelAnimationFrame(animationId);
+                animateBtn.classList.remove('active');
+                
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
             }
         }
         
-        // Function to toggle help modal
+        // Animation caching system for smooth playback
+        function cacheAnimationFrame(params) {
+            if (animationFrameCache.size > 100) { // Limit cache size
+                const firstKey = animationFrameCache.keys().next().value;
+                animationFrameCache.delete(firstKey);
+            }
+            
+            const cacheKey = Math.round(params.t * 100) / 100; // Round to 2 decimal places
+            animationFrameCache.set(cacheKey, {
+                data: { plot: { data: getCurrentPlotData() } },
+                params: { ...params }
+            });
+        }
+        
+        function shouldUseCachedFrame(time) {
+            const cacheKey = Math.round(time * 100) / 100;
+            return animationFrameCache.has(cacheKey);
+        }
+        
+        function getCachedFrame(time) {
+            const cacheKey = Math.round(time * 100) / 100;
+            return animationFrameCache.get(cacheKey);
+        }
+        
+        function getCurrentPlotData() {
+            const plotDiv = document.getElementById('plot');
+            if (plotDiv && plotDiv.data) {
+                return plotDiv.data;
+            }
+            return [];
+        }
+        
+        // Enhanced error display
+        function showErrorMessage(message) {
+            const controlsPanel = document.querySelector('.controls-panel');
+            if (!controlsPanel) return;
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            controlsPanel.insertBefore(errorDiv, controlsPanel.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+        
+        // Enhanced help modal functions
         function toggleHelpModal() {
             const modal = document.getElementById('help-modal');
+            if (!modal) return;
+            
             if (modal.style.display === 'flex') {
                 modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
             } else {
                 modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             }
         }
         
-        // Initialize the visualization when the page loads
+        // Enhanced initialization
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initializing enhanced visualization system...");
+            
             // Check if Plotly is loaded
             if (typeof Plotly === 'undefined') {
                 console.error("Plotly library is not loaded! This will prevent visualizations from working.");
-                alert("Visualization library (Plotly) failed to load. Please try refreshing the page.");
+                showErrorMessage("Visualization library (Plotly) failed to load. Please try refreshing the page.");
+                return;
             } else {
                 console.log("Plotly visualization library loaded successfully: v" + Plotly.version);
             }
             
-            updateVisualization();
+            // Initialize all sliders
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                updateSliderValue(slider.id);
+                
+                // Add enhanced event listeners
+                slider.addEventListener('input', function() {
+                    updateSliderValue(this.id);
+                });
+                
+                slider.addEventListener('change', function() {
+                    updateVisualization();
+                });
+            });
             
-            // Set up keyboard shortcuts
+            // Initialize visualization
+            try {
+                updateVisualization();
+            } catch (error) {
+                console.error("Error during initial visualization:", error);
+                showErrorMessage("Failed to initialize visualization: " + error.message);
+            }
+            
+            // Enhanced keyboard shortcuts
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'h' || e.key === 'H') {
-                    toggleHelpModal();
-                } else if (e.key === 'r' || e.key === 'R') {
-                    resetControls();
-                } else if (e.key === ' ') { // Space bar
-                    toggleAnimation();
-                    e.preventDefault(); // Prevent page scrolling
+                if (e.target.tagName.toLowerCase() === 'input') return; // Don't interfere with input fields
+                
+                switch(e.key.toLowerCase()) {
+                    case 'h':
+                        toggleHelpModal();
+                        break;
+                    case 'r':
+                        resetControls();
+                        break;
+                    case ' ': // Space bar
+                        toggleAnimation();
+                        e.preventDefault();
+                        break;
+                    case 'escape':
+                        if (document.getElementById('help-modal').style.display === 'flex') {
+                            toggleHelpModal();
+                        }
+                        break;
                 }
             });
+            
+            // Close modal when clicking outside
+            document.getElementById('help-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    toggleHelpModal();
+                }
+            });
+            
+            console.log("Enhanced visualization system initialized successfully!");
         });
 
-        // Add a resize observer to handle container size changes
+        // Enhanced resize observer for responsive design
         document.addEventListener('DOMContentLoaded', function() {
             const plotContainer = document.getElementById('plot');
+            if (!plotContainer) return;
+            
             const resizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
-                    if (entry.target === plotContainer && Plotly.hasPlot('plot')) {
+                    if (entry.target === plotContainer && typeof Plotly !== 'undefined' && Plotly.hasPlot('plot')) {
                         try {
+                            const isMerged = document.getElementById('merge-toggle').checked;
+                            const layout = createEnhancedLayout(isMerged);
                             Plotly.relayout('plot', {
                                 width: entry.contentRect.width,
-                                height: entry.contentRect.height
+                                height: entry.contentRect.height,
+                                ...layout
                             });
                         } catch (error) {
                             console.warn('Error in Plotly relayout during resize:', error);
@@ -849,41 +1570,50 @@
                 }
             });
             
-            if (plotContainer) {
-                resizeObserver.observe(plotContainer);
-            }
-            
-            // Rest of your DOMContentLoaded code...
+            resizeObserver.observe(plotContainer);
         });
 
-        // Update the window resize handler
+        // Window resize handler
         window.addEventListener('resize', function() {
             const plotContainer = document.getElementById('plot');
-            if (plotContainer && Plotly.hasPlot('plot')) {
+            if (plotContainer && typeof Plotly !== 'undefined' && Plotly.hasPlot('plot')) {
                 try {
-                    const layout = createLayout(document.getElementById('merge-toggle').checked);
+                    const isMerged = document.getElementById('merge-toggle').checked;
+                    const layout = createEnhancedLayout(isMerged);
                     Plotly.relayout('plot', layout);
                 } catch (error) {
                     console.warn('Error in Plotly relayout during window resize:', error);
                 }
             }
         });
+        
+        // Performance monitoring
+        let performanceMetrics = {
+            updateCount: 0,
+            averageUpdateTime: 0,
+            lastUpdateDuration: 0
+        };
+        
+        function logPerformance(startTime) {
+            const duration = Date.now() - startTime;
+            performanceMetrics.updateCount++;
+            performanceMetrics.lastUpdateDuration = duration;
+            performanceMetrics.averageUpdateTime = (
+                (performanceMetrics.averageUpdateTime * (performanceMetrics.updateCount - 1) + duration) / 
+                performanceMetrics.updateCount
+            );
+            
+            if (duration > 1000) { // Log slow updates
+                console.warn(`Slow visualization update: ${duration}ms`);
+            }
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to parent dropdown if child link is active
-            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
-            activeLinks.forEach(link => {
-                const parentDropdown = link.closest('.nav-dropdown');
-                const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
-                dropdownToggle.classList.add('active');
-            });
-            
-            // Handle click on dropdown toggle (for mobile)
+            // Enhanced dropdown handling for mobile
             const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
             dropdownToggles.forEach(toggle => {
                 toggle.addEventListener('click', function(e) {
-                    // Only apply this on mobile
                     if (window.innerWidth <= 768) {
                         e.preventDefault();
                         const dropdown = this.closest('.nav-dropdown');
@@ -908,6 +1638,18 @@
                     document.querySelectorAll('.dropdown-menu').forEach(menu => {
                         menu.classList.remove('show');
                     });
+                }
+            });
+            
+            // Add active class to parent dropdown if child link is active
+            const activeLinks = document.querySelectorAll('.dropdown-menu a.active');
+            activeLinks.forEach(link => {
+                const parentDropdown = link.closest('.nav-dropdown');
+                if (parentDropdown) {
+                    const dropdownToggle = parentDropdown.querySelector('.dropdown-toggle');
+                    if (dropdownToggle) {
+                        dropdownToggle.classList.add('active');
+                    }
                 }
             });
         });
