@@ -1,0 +1,203 @@
+version: '3.8'
+
+services:
+  # Main web application
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - SKB_ENVIRONMENT=production
+      - SKB_DEBUG=false
+      - SKB_ENABLE_CACHING=true
+      - SKB_CACHE_BACKEND=redis
+      - SKB_REDIS_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./logs:/var/log/skb
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - skb-network
+
+  # Development service with hot reloading
+  web-dev:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "${DEV_PORT:-5000}:5000"
+      - "${DEBUG_PORT:-5678}:5678"  # Debug port
+    environment:
+      - SKB_ENVIRONMENT=development
+      - SKB_DEBUG=true
+      - SKB_LOG_LEVEL=DEBUG
+      - SKB_ENABLE_CACHING=false
+      - SKB_ENABLE_FILE_LOGGING=true
+      - SKB_LOG_FILE_PATH=/app/logs/development.log
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - /app/.venv
+      - /app/__pycache__
+      - /app/.pytest_cache
+    command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--debug"]
+    depends_on:
+      - redis-dev
+    networks:
+      - skb-network
+    profiles:
+      - development
+
+  # Redis cache for production
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - skb-network
+
+  # Redis for development (no persistence)
+  redis-dev:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    command: redis-server --save "" --appendonly no --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - skb-network
+    profiles:
+      - development
+
+  # Background task worker (future implementation)
+  worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      - SKB_ENVIRONMENT=production
+      - SKB_REDIS_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+    command: ["celery", "-A", "src.tasks.celery_app", "worker", "--loglevel=info"]
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/skb
+    networks:
+      - skb-network
+    profiles:
+      - worker
+
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infrastructure/nginx/ssl:/etc/nginx/ssl
+      - ./static:/var/www/static
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - skb-network
+    profiles:
+      - production
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - skb-network
+    profiles:
+      - monitoring
+
+  # Grafana for visualization (optional)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - skb-network
+    profiles:
+      - monitoring
+
+  # Testing service
+  test:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+    environment:
+      - SKB_ENVIRONMENT=testing
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+      - ./test-results:/app/test-results
+    command: ["python", "-m", "pytest", "-v", "--cov=src", "--cov-report=html", "--cov-report=xml"]
+    networks:
+      - skb-network
+    profiles:
+      - testing
+
+volumes:
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  skb-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 

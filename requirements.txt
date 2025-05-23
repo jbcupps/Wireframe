@@ -1,6 +1,26 @@
-numpy==1.26.4
-plotly==5.14.1
+# Core Framework
 flask==2.3.2
 gunicorn==22.0.0
+
+# Scientific Computing
+numpy==1.26.4
+scipy==1.11.4
+
+# Data Visualization
+plotly==5.14.1
+
+# Data Validation & Serialization
+pydantic==2.5.0
+
+# HTTP Client
+requests==2.31.0
+
+# Environment Management
+python-dotenv==1.0.0
+
+# Performance Optimization
+numba==0.58.1
+
+# Development Tools
 setuptools>=70.0.0
 

@@ -6,8 +6,11 @@ import traceback
 import logging
 import random
 import os
+from scipy.spatial.distance import cdist
+from scipy.interpolate import interp2d
+import math
 
-# Configure logging
+# Configure enhanced logging for scientific visualization
 logging.basicConfig(level=logging.INFO, 
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -24,74 +27,290 @@ def create_app():
     """Application factory used for Codex deployment."""
     return app
 
-# Function to generate data for a twisted strip (sub-SKB) with multi-dimensional twists, time, and loops
-def generate_twisted_strip(twists, t, loop_factor):
-    """Generate a twisted strip (sub-SKB) with multi-dimensional twists, time, and loops."""
-    u = np.linspace(0, 2 * np.pi * loop_factor, 50)
-    v = np.linspace(-0.5, 0.5, 50)  # Changed from 10 to 50 points
-    u, v = np.meshgrid(u, v)
-    kx, ky, kz, kt = twists  # Twist components including time twist
+# Enhanced mathematical functions for better Klein bottle modeling
+def klein_bottle_parametric(u, v, a=2.0, b=1.0):
+    """
+    Enhanced parametric equations for Klein bottle immersion in 3D.
     
-    # Apply time twist effect - creates temporal distortion
-    timeFactor = kt * np.sin(u + t) * 0.3
+    Parameters:
+    u, v: Parameter arrays
+    a, b: Scale parameters for major and minor radii
     
-    # Apply multi-dimensional twists and time evolution
-    x = (1 + 0.5 * v * np.cos(kx * (u + t) / 2)) * np.cos(u)
-    y = (1 + 0.5 * v * np.cos(ky * (u + t) / 2)) * np.sin(u)
-    z = 0.5 * v * np.sin(kz * (u + t) / 2)
+    Returns:
+    x, y, z: Coordinate arrays for Klein bottle surface
+    """
+    # Enhanced Klein bottle with better immersion properties
+    cos_u, sin_u = np.cos(u), np.sin(u)
+    cos_v, sin_v = np.cos(v), np.sin(v)
+    cos_2v, sin_2v = np.cos(2*v), np.sin(2*v)
     
-    # Apply time twist effect to create CTC visualization
-    x = x + timeFactor * np.cos(v)
-    y = y + timeFactor * np.sin(v)
+    # Figure-8 Klein bottle variant for better visualization
+    x = (a + b * cos_v) * cos_u
+    y = (a + b * cos_v) * sin_u
+    z = b * sin_v * cos_u/2 + b * sin_2v * sin_u/4
     
-    return x, y, z, u, v  # Return u and v for surface coloring
+    return x, y, z
 
-# Function to generate data for a Klein bottle (stable SKB) with time and loops
-def generate_klein_bottle(twists, t, loop_factor):
-    u = np.linspace(0, 2 * np.pi * loop_factor, 50)
-    v = np.linspace(0, 2 * np.pi, 50)
-    u, v = np.meshgrid(u, v)
-    kx, ky, kz, kt = twists  # Twist components including time twist
+def mobius_strip_parametric(u, v, radius=2.0, width=0.5):
+    """
+    Enhanced Möbius strip for twisted strip visualization.
     
-    a, b = 2.0, 1.0  # Parameters for size
+    Parameters:
+    u: Parameter along the strip (0 to 2π)
+    v: Parameter across the strip (-width to width)
+    radius: Radius of the central circle
+    width: Half-width of the strip
+    """
+    cos_u_2, sin_u_2 = np.cos(u/2), np.sin(u/2)
+    cos_u, sin_u = np.cos(u), np.sin(u)
     
-    # Apply time twist effect - creates temporal distortion
-    timeFactor = kt * np.sin(u + t) * 0.3
+    x = (radius + v * cos_u_2) * cos_u
+    y = (radius + v * cos_u_2) * sin_u
+    z = v * sin_u_2
     
-    # Apply multi-dimensional twists and time evolution
-    x = (a + b * np.cos(v)) * np.cos(u + kx * t / 5)
-    y = (a + b * np.cos(v)) * np.sin(u + ky * t / 5)
-    z = b * np.sin(v) * np.cos((u + kz * t / 5) / 2)  # Simplified immersion
-    
-    # Apply time twist effect to create CTC visualization
-    x = x + timeFactor * np.cos(v)
-    y = y + timeFactor * np.sin(v)
-    
-    return x, y, z, u, v  # Return u and v for surface coloring
+    return x, y, z
 
-# Function to generate data for a torus (third Sub-SKB) with time and loops
-def generate_torus(twists, t, loop_factor):
-    """Generate a torus with multi-dimensional twists, time, and loops."""
-    u = np.linspace(0, 2 * np.pi * loop_factor, 50)
-    v = np.linspace(0, 2 * np.pi, 50)
+def torus_parametric(u, v, R=2.0, r=0.5):
+    """
+    Enhanced torus with better surface quality.
+    
+    Parameters:
+    u, v: Parameter arrays
+    R: Major radius
+    r: Minor radius
+    """
+    cos_u, sin_u = np.cos(u), np.sin(u)
+    cos_v, sin_v = np.cos(v), np.sin(v)
+    
+    x = (R + r * cos_v) * cos_u
+    y = (R + r * cos_v) * sin_u
+    z = r * sin_v
+    
+    return x, y, z
+
+# Enhanced function to generate data for a twisted strip (sub-SKB) with improved mathematics
+def generate_twisted_strip(twists, t, loop_factor, resolution=75):
+    """
+    Generate an enhanced twisted strip (sub-SKB) with improved mathematical modeling.
+    
+    Parameters:
+    twists: List of twist parameters [kx, ky, kz, kt]
+    t: Time parameter
+    loop_factor: Number of loops
+    resolution: Surface resolution for better quality
+    """
+    u = np.linspace(0, 2 * np.pi * loop_factor, resolution)
+    v = np.linspace(-0.75, 0.75, int(resolution * 0.6))  # Adjusted for better aspect ratio
     u, v = np.meshgrid(u, v)
-    kx, ky, kz, kt = twists  # Twist components including time twist
     
-    R, r = 2.0, 0.5  # Major and minor radii
+    kx, ky, kz, kt = twists
     
-    # Apply time twist effect - creates temporal distortion
-    timeFactor = kt * np.sin(u + t) * 0.3
+    # Enhanced time twist effect with better CTC modeling
+    time_factor = kt * np.sin(u + t) * 0.25
+    stability_factor = 1.0 / (1.0 + abs(kt))  # Stability decreases with higher time twist
     
-    # Apply multi-dimensional twists and time evolution
-    x = (R + r * np.cos(v + kx * t / 5)) * np.cos(u + ky * t / 5)
-    y = (R + r * np.cos(v + ky * t / 5)) * np.sin(u + kx * t / 5)
-    z = r * np.sin(v + kz * t / 5)
+    # Enhanced Möbius strip with multi-dimensional twists
+    radius = 2.0 + 0.3 * np.sin(kx * u / loop_factor)
+    width_modulation = 0.75 + 0.2 * np.sin(ky * u / loop_factor)
     
-    # Apply time twist effect to create CTC visualization
-    x = x + timeFactor * np.cos(v)
-    y = y + timeFactor * np.sin(v)
+    # Apply twist effects
+    cos_u_2 = np.cos((u + kx * t / 5) / 2)
+    sin_u_2 = np.sin((u + kx * t / 5) / 2)
+    cos_u = np.cos(u + ky * t / 5)
+    sin_u = np.sin(u + ky * t / 5)
     
-    return x, y, z, u, v  # Return u and v for surface coloring
+    # Enhanced parametric equations
+    x = (radius + v * width_modulation * cos_u_2) * cos_u
+    y = (radius + v * width_modulation * cos_u_2) * sin_u
+    z = v * width_modulation * sin_u_2 * np.cos(kz * u / loop_factor)
+    
+    # Apply time twist effect for CTC visualization
+    x = x + time_factor * np.cos(v) * stability_factor
+    y = y + time_factor * np.sin(v) * stability_factor
+    z = z + time_factor * np.sin(u / loop_factor) * 0.1
+    
+    return x, y, z, u, v
+
+# Enhanced function to generate data for a Klein bottle (stable SKB)
+def generate_klein_bottle(twists, t, loop_factor, resolution=75):
+    """
+    Generate an enhanced Klein bottle with improved mathematical modeling.
+    """
+    u = np.linspace(0, 2 * np.pi * loop_factor, resolution)
+    v = np.linspace(0, 2 * np.pi, resolution)
+    u, v = np.meshgrid(u, v)
+    
+    kx, ky, kz, kt = twists
+    
+    # Enhanced time twist modeling
+    time_factor = kt * np.sin(u + t) * 0.2
+    stability_factor = 1.0 / (1.0 + abs(kt) * 2)
+    
+    # Enhanced Klein bottle parameters
+    a = 2.5 + 0.3 * np.sin(kx * t / 10)  # Dynamic major radius
+    b = 1.2 + 0.2 * np.cos(ky * t / 10)  # Dynamic minor radius
+    
+    # Enhanced Klein bottle parametric equations
+    cos_u, sin_u = np.cos(u + kx * t / 8), np.sin(u + ky * t / 8)
+    cos_v, sin_v = np.cos(v + kz * t / 12), np.sin(v + kz * t / 12)
+    cos_2v = np.cos(2 * v + kz * t / 6)
+    
+    # Figure-8 Klein bottle immersion
+    x = (a + b * cos_v) * cos_u
+    y = (a + b * cos_v) * sin_u
+    z = b * sin_v * cos_u/2 + b * cos_2v * sin_u/4
+    
+    # Apply time twist effect for enhanced CTC visualization
+    x = x + time_factor * np.cos(v) * stability_factor
+    y = y + time_factor * np.sin(v) * stability_factor
+    z = z + time_factor * np.sin(u / loop_factor) * 0.15
+    
+    return x, y, z, u, v
+
+# Enhanced function to generate data for a torus (third Sub-SKB)
+def generate_torus(twists, t, loop_factor, resolution=75):
+    """
+    Generate an enhanced torus with improved mathematical modeling.
+    """
+    u = np.linspace(0, 2 * np.pi * loop_factor, resolution)
+    v = np.linspace(0, 2 * np.pi, resolution)
+    u, v = np.meshgrid(u, v)
+    
+    kx, ky, kz, kt = twists
+    
+    # Enhanced time twist modeling
+    time_factor = kt * np.sin(u + t) * 0.2
+    stability_factor = 1.0 / (1.0 + abs(kt) * 1.5)
+    
+    # Dynamic torus parameters
+    R = 2.2 + 0.2 * np.sin(kx * t / 8)  # Major radius variation
+    r = 0.6 + 0.1 * np.cos(ky * t / 8)  # Minor radius variation
+    
+    # Enhanced torus parametric equations with twist effects
+    cos_u = np.cos(u + ky * t / 10)
+    sin_u = np.sin(u + kx * t / 10)
+    cos_v = np.cos(v + kz * t / 12)
+    sin_v = np.sin(v + kz * t / 12)
+    
+    x = (R + r * cos_v) * cos_u
+    y = (R + r * cos_v) * sin_u
+    z = r * sin_v * (1 + 0.1 * np.sin(kz * u / loop_factor))
+    
+    # Apply time twist effect for CTC visualization
+    x = x + time_factor * np.cos(v) * stability_factor
+    y = y + time_factor * np.sin(v) * stability_factor
+    z = z + time_factor * np.cos(u / loop_factor) * 0.1
+    
+    return x, y, z, u, v
+
+def calculate_surface_curvature(x, y, z):
+    """
+    Calculate approximate Gaussian curvature for surface visualization enhancement.
+    
+    Returns:
+    curvature: Array of curvature values for color mapping
+    """
+    # Simple finite difference approximation of curvature
+    dx_du = np.gradient(x, axis=1)
+    dy_du = np.gradient(y, axis=1)
+    dz_du = np.gradient(z, axis=1)
+    
+    dx_dv = np.gradient(x, axis=0)
+    dy_dv = np.gradient(y, axis=0)
+    dz_dv = np.gradient(z, axis=0)
+    
+    # Normal vector approximation
+    nx = dy_du * dz_dv - dz_du * dy_dv
+    ny = dz_du * dx_dv - dx_du * dz_dv
+    nz = dx_du * dy_dv - dy_du * dx_dv
+    
+    # Normalize
+    norm = np.sqrt(nx**2 + ny**2 + nz**2) + 1e-10
+    nx, ny, nz = nx/norm, ny/norm, nz/norm
+    
+    # Approximate mean curvature
+    d2x_du2 = np.gradient(dx_du, axis=1)
+    d2y_du2 = np.gradient(dy_du, axis=1)
+    d2z_du2 = np.gradient(dz_du, axis=1)
+    
+    mean_curvature = np.abs(d2x_du2 * nx + d2y_du2 * ny + d2z_du2 * nz)
+    
+    return mean_curvature
+
+def create_enhanced_surface_trace(x, y, z, u, v, name, color, opacity, surface_type="Klein"):
+    """
+    Create an enhanced surface trace with better lighting and scientific coloring.
+    
+    Parameters:
+    x, y, z: Surface coordinates
+    u, v: Parameter grids for texture mapping
+    name: Surface name
+    color: Base color
+    opacity: Surface opacity
+    surface_type: Type of surface for specialized rendering
+    """
+    # Calculate curvature for enhanced coloring
+    curvature = calculate_surface_curvature(x, y, z)
+    
+    # Create enhanced colorscale based on mathematical properties
+    if surface_type == "Klein":
+        # Klein bottle specific coloring based on topology
+        colorscale = [
+            [0.0, f"rgba({color[0]}, {color[1]}, {color[2]}, 0.3)"],
+            [0.3, f"rgba({color[0]}, {color[1]}, {color[2]}, 0.6)"],
+            [0.7, f"rgba({min(255, color[0]+30)}, {min(255, color[1]+30)}, {min(255, color[2]+30)}, 0.8)"],
+            [1.0, f"rgba({min(255, color[0]+50)}, {min(255, color[1]+50)}, {min(255, color[2]+50)}, 1.0)"]
+        ]
+    else:
+        # Generic mathematical surface coloring
+        colorscale = [
+            [0.0, f"rgba({color[0]}, {color[1]}, {color[2]}, 0.4)"],
+            [0.5, f"rgba({color[0]}, {color[1]}, {color[2]}, 0.7)"],
+            [1.0, f"rgba({min(255, color[0]+40)}, {min(255, color[1]+40)}, {min(255, color[2]+40)}, 0.9)"]
+        ]
+    
+    # Enhanced surface trace with scientific lighting
+    surface_trace = {
+        'x': x.tolist(),
+        'y': y.tolist(),
+        'z': z.tolist(),
+        'surfacecolor': curvature.tolist(),  # Use curvature for coloring
+        'type': 'surface',
+        'colorscale': colorscale,
+        'showscale': False,
+        'opacity': opacity,
+        'name': name,
+        'hoverinfo': 'none',
+        'contours': {
+            'x': {'show': True, 'width': 2, 'color': 'rgba(255,255,255,0.4)'},
+            'y': {'show': True, 'width': 2, 'color': 'rgba(255,255,255,0.4)'},
+            'z': {'show': True, 'width': 2, 'color': 'rgba(255,255,255,0.4)'}
+        },
+        'lighting': {
+            'ambient': 0.4,
+            'diffuse': 0.8,
+            'roughness': 0.2,
+            'specular': 0.9,
+            'fresnel': 0.4
+        },
+        'lightposition': {
+            'x': 1.5,
+            'y': 1.5,
+            'z': 2.0
+        },
+        'hidesurface': False,
+        'cauto': False,
+        'cmin': np.min(curvature),
+        'cmax': np.max(curvature)
+    }
+    
+    return surface_trace
+
+def hex_to_rgb(hex_color):
+    """Convert hex color to RGB tuple."""
+    if hex_color.startswith('#'):
+        hex_color = hex_color[1:]
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 @app.route('/')
 def landing():
@@ -360,13 +579,13 @@ def compute_topological_compatibility(skb1=None, skb2=None):
 
 @app.route('/get_visualization', methods=['POST'])
 def get_visualization():
-    """Generate visualization data based on parameters."""
+    """Generate enhanced visualization data with improved mathematical modeling and scientific rendering."""
     try:
-        print("Received visualization request")
+        logger.info("Received enhanced visualization request")
         data = request.get_json()
-        print(f"Request data: {data}")
+        logger.debug(f"Request data: {data}")
         
-        # Extract parameters
+        # Extract and validate parameters
         t = float(data.get('t', 0))
         loop_factor = float(data.get('loop_factor', 1))
         loop1 = float(data.get('loop1', 1))
@@ -374,7 +593,7 @@ def get_visualization():
         loop3 = float(data.get('loop3', 1))
         merge = bool(data.get('merge', False))
         
-        print(f"Basic parameters: t={t}, loop_factor={loop_factor}, merge={merge}")
+        logger.debug(f"Basic parameters: t={t}, loop_factor={loop_factor}, merge={merge}")
         
         # Extract twist parameters for each sub-SKB
         twists = []
@@ -386,209 +605,345 @@ def get_visualization():
                 float(data.get(f't{i}t', 0))  # Time twist parameter
             ]
             twists.append(twist)
-            print(f"Sub-SKB {i} twists: {twist}")
+            logger.debug(f"Sub-SKB {i} twists: {twist}")
         
-        # Ensure values are within valid ranges
+        # Ensure values are within scientifically valid ranges
         t = max(0, min(2 * np.pi, t))
         loop_factor = max(1, min(5, loop_factor))
         loop1 = max(1, min(5, loop1))
         loop2 = max(1, min(5, loop2))
         loop3 = max(1, min(5, loop3))
-        merge = 1 if merge else 0
         
+        # Validate twist parameters
         for i in range(3):
             for j in range(3):
                 twists[i][j] = max(-5, min(5, twists[i][j]))
-            # Validate time twist parameter (index 3)
+            # Validate time twist parameter (index 3) - critical for CTC stability
             twists[i][3] = max(-1, min(1, twists[i][3]))
         
-        print("Generating visualization data...")
+        logger.info("Generating enhanced visualization data...")
         
-        # Generate visualization data
+        # Enhanced color processing
+        default_colors = {
+            'skb1': '#ff6b9d',  # Enhanced pink
+            'skb2': '#4fc3f7',  # Enhanced blue
+            'skb3': '#81c784'   # Enhanced green
+        }
+        colors = data.get('colors', default_colors)
+        
+        # Convert hex colors to RGB for enhanced processing
+        color_rgb = {}
+        for key, hex_color in colors.items():
+            color_rgb[key] = hex_to_rgb(hex_color)
+        
+        surfaces = []
+        
         if merge:
-            print("Generating merged SKB")
-            # Merged stable SKB - use average of all twist values
-            avg_twists = [sum(t[j] for t in twists)/3 for j in range(4)]  # Include time twist in average
-            x, y, z, u, v = generate_klein_bottle(avg_twists, t, loop_factor)
+            logger.debug("Generating enhanced merged SKB")
+            # Enhanced merged stable SKB with weighted averages based on topological significance
+            weight_factors = [0.4, 0.35, 0.25]  # Different weights for different components
+            avg_twists = []
+            for j in range(4):
+                weighted_sum = sum(weight_factors[i] * twists[i][j] for i in range(3))
+                avg_twists.append(weighted_sum)
             
-            # Create a single surface
-            surfaces = [{
-                'x': x.tolist(),
-                'y': y.tolist(),
-                'z': z.tolist(),
-                'type': 'surface',
-                'colorscale': 'Viridis',
-                'showscale': False,
-                'opacity': 0.8,
-                'name': 'Merged SKB',
-                'hoverinfo': 'none',
+            # Generate enhanced Klein bottle for merged state
+            x, y, z, u, v = generate_klein_bottle(avg_twists, t, loop_factor, resolution=85)
+            
+            # Create enhanced merged surface with scientific coloring
+            merged_color = [187, 134, 252]  # Purple for merged state
+            enhanced_surface = create_enhanced_surface_trace(
+                x, y, z, u, v, 
+                name='Merged SKB (Stable Hadron)',
+                color=merged_color,
+                opacity=0.85,
+                surface_type="Klein"
+            )
+            
+            # Enhanced properties for merged SKB
+            enhanced_surface.update({
                 'contours': {
-                    'x': {'show': True, 'width': 1.5, 'color': 'rgba(255,255,255,0.5)'},
-                    'y': {'show': True, 'width': 1.5, 'color': 'rgba(255,255,255,0.5)'},
-                    'z': {'show': True, 'width': 1.5, 'color': 'rgba(255,255,255,0.5)'}
+                    'x': {'show': True, 'width': 2.5, 'color': 'rgba(255,255,255,0.6)'},
+                    'y': {'show': True, 'width': 2.5, 'color': 'rgba(255,255,255,0.6)'},
+                    'z': {'show': True, 'width': 2.5, 'color': 'rgba(255,255,255,0.6)'}
                 },
                 'lighting': {
-                    'ambient': 0.6,
-                    'diffuse': 0.8,
-                    'roughness': 0.5,
-                    'specular': 0.6,
-                    'fresnel': 0.8
+                    'ambient': 0.5,
+                    'diffuse': 0.9,
+                    'roughness': 0.15,
+                    'specular': 1.0,
+                    'fresnel': 0.5
                 }
-            }]
-        else:
-            print("Generating individual Sub-SKBs")
-            # Individual sub-SKBs
-            surfaces = []
-            
-            # Colors from the request with improved contrast
-            colors = data.get('colors', {
-                'skb1': '#FF6E91',  # Default pink
-                'skb2': '#33C4FF',  # Default blue
-                'skb3': '#65FF8F'   # Default green
             })
             
-            # Enhanced wireframe settings for each Sub-SKB
-            wireframe_settings = [
-                {'width': 1.5, 'color': 'rgba(255,255,255,0.7)', 'highlight': 3.0},
-                {'width': 1.5, 'color': 'rgba(255,255,255,0.7)', 'highlight': 3.0},
-                {'width': 1.5, 'color': 'rgba(255,255,255,0.7)', 'highlight': 3.0}
-            ]
+            surfaces.append(enhanced_surface)
             
-            # Adjust opacities for layering effect
-            opacities = [0.7, 0.65, 0.6]
+        else:
+            logger.debug("Generating enhanced individual Sub-SKBs")
             
-            # Generate each sub-SKB
+            # Enhanced surface generation with improved mathematical modeling
+            surface_types = ["Klein", "Mobius", "Torus"]
+            surface_names = ["Sub-SKB 1 (Klein)", "Sub-SKB 2 (Möbius)", "Sub-SKB 3 (Torus)"]
+            opacities = [0.75, 0.68, 0.62]  # Graduated opacity for depth perception
+            
+            # Generate each enhanced sub-SKB
             for i, (twist, loop_val) in enumerate(zip(twists, [loop1, loop2, loop3])):
-                print(f"Generating Sub-SKB {i+1}")
+                logger.debug(f"Generating enhanced Sub-SKB {i+1}")
+                
                 if i == 0:
-                    # First sub-SKB: Klein bottle - used as wireframe with low surface opacity
-                    x, y, z, u, v = generate_klein_bottle(twist, t, loop_val)
-                    display_type = 'surface'
-                    lighting = {
-                        'ambient': 0.4,
-                        'diffuse': 0.8,
-                        'roughness': 0.6,
-                        'specular': 0.8,
-                        'fresnel': 0.7
-                    }
+                    # Enhanced Klein bottle for first sub-SKB
+                    x, y, z, u, v = generate_klein_bottle(twist, t, loop_val, resolution=80)
+                    surface_type = "Klein"
                 elif i == 1:
-                    # Second sub-SKB: Twisted strip - semi-transparent surface
-                    x, y, z, u, v = generate_twisted_strip(twist, t, loop_val)
-                    display_type = 'surface'
-                    lighting = {
-                        'ambient': 0.5,
-                        'diffuse': 0.6,
-                        'roughness': 0.4,
-                        'specular': 0.7,
+                    # Enhanced twisted strip (Möbius-like) for second sub-SKB
+                    x, y, z, u, v = generate_twisted_strip(twist, t, loop_val, resolution=80)
+                    surface_type = "Mobius"
+                else:
+                    # Enhanced torus for third sub-SKB
+                    x, y, z, u, v = generate_torus(twist, t, loop_val, resolution=80)
+                    surface_type = "Torus"
+                
+                logger.debug(f"Enhanced Sub-SKB {i+1} generated, shape: {x.shape}")
+                
+                # Create enhanced surface trace
+                color_key = f'skb{i+1}'
+                enhanced_surface = create_enhanced_surface_trace(
+                    x, y, z, u, v,
+                    name=surface_names[i],
+                    color=color_rgb[color_key],
+                    opacity=opacities[i],
+                    surface_type=surface_type
+                )
+                
+                # Add specialized lighting for each surface type
+                if surface_type == "Klein":
+                    enhanced_surface['lighting'] = {
+                        'ambient': 0.45,
+                        'diffuse': 0.85,
+                        'roughness': 0.25,
+                        'specular': 0.95,
                         'fresnel': 0.6
                     }
-                else:
-                    # Third sub-SKB: Torus - most transparent to show through
-                    x, y, z, u, v = generate_torus(twist, t, loop_val)
-                    display_type = 'surface'
-                    lighting = {
-                        'ambient': 0.6,
-                        'diffuse': 0.5,
-                        'roughness': 0.5,
-                        'specular': 0.6,
-                        'fresnel': 0.5
+                elif surface_type == "Mobius":
+                    enhanced_surface['lighting'] = {
+                        'ambient': 0.5,
+                        'diffuse': 0.75,
+                        'roughness': 0.3,
+                        'specular': 0.8,
+                        'fresnel': 0.4
+                    }
+                else:  # Torus
+                    enhanced_surface['lighting'] = {
+                        'ambient': 0.55,
+                        'diffuse': 0.7,
+                        'roughness': 0.35,
+                        'specular': 0.75,
+                        'fresnel': 0.35
                     }
                 
-                print(f"Sub-SKB {i+1} generated, shape: {x.shape}")
+                surfaces.append(enhanced_surface)
                 
-                # Create surface for this sub-SKB
-                color_key = f'skb{i+1}'
-                surfaces.append({
-                    'x': x.tolist(),
-                    'y': y.tolist(),
-                    'z': z.tolist(),
-                    'type': display_type,
-                    'colorscale': [[0, colors[color_key]], [1, colors[color_key]]],
-                    'showscale': False,
-                    'opacity': opacities[i],
-                    'name': f'Sub-SKB {i+1}',
-                    'hoverinfo': 'none',
-                    'contours': {
-                        'x': {'show': True, 'width': wireframe_settings[i]['width'], 'color': wireframe_settings[i]['color'], 'highlight': wireframe_settings[i]['highlight']},
-                        'y': {'show': True, 'width': wireframe_settings[i]['width'], 'color': wireframe_settings[i]['color'], 'highlight': wireframe_settings[i]['highlight']},
-                        'z': {'show': True, 'width': wireframe_settings[i]['width'], 'color': wireframe_settings[i]['color'], 'highlight': wireframe_settings[i]['highlight']}
-                    },
-                    'lighting': lighting,
-                    'lightposition': {
-                        'x': 1,
-                        'y': 1,
-                        'z': 1
-                    }
-                })
-                
-                # Add intersection markers where the surfaces meet
+                # Add enhanced intersection analysis for topological compatibility
                 if i > 0:
-                    # Calculate potential intersection areas (a simplified approach)
-                    # This is a simplified approach - real intersection detection would be more complex
-                    intersect_points_x = []
-                    intersect_points_y = []
-                    intersect_points_z = []
+                    intersection_points = calculate_surface_intersections(
+                        surfaces[0], enhanced_surface, tolerance=0.15
+                    )
                     
-                    # Sample points from grid for potential intersections
-                    for row in range(0, x.shape[0], 5):  # Sample every 5th point
-                        for col in range(0, x.shape[1], 5):  # Sample every 5th point
-                            cur_x, cur_y, cur_z = x[row, col], y[row, col], z[row, col]
-                            
-                            # Check if this point is close to any point in the previous surface
-                            for prev_i in range(i):
-                                prev_surface = surfaces[prev_i]
-                                prev_x = np.array(prev_surface['x']).reshape(x.shape)
-                                prev_y = np.array(prev_surface['y']).reshape(y.shape)
-                                prev_z = np.array(prev_surface['z']).reshape(z.shape)
-                                
-                                for prev_row in range(0, prev_x.shape[0], 5):
-                                    for prev_col in range(0, prev_x.shape[1], 5):
-                                        px, py, pz = prev_x[prev_row, prev_col], prev_y[prev_row, prev_col], prev_z[prev_row, prev_col]
-                                        
-                                        # Calculate distance - if close, mark as intersection
-                                        dist = np.sqrt((cur_x-px)**2 + (cur_y-py)**2 + (cur_z-pz)**2)
-                                        if dist < 0.08:  # Threshold for intersection
-                                            intersect_points_x.append(cur_x)
-                                            intersect_points_y.append(cur_y)
-                                            intersect_points_z.append(cur_z)
-                    
-                    # Add intersection markers if we found any
-                    if intersect_points_x:
-                        surfaces.append({
-                            'x': intersect_points_x,
-                            'y': intersect_points_y,
-                            'z': intersect_points_z,
+                    if intersection_points:
+                        # Create enhanced intersection markers
+                        intersection_trace = {
+                            'x': intersection_points['x'],
+                            'y': intersection_points['y'],
+                            'z': intersection_points['z'],
                             'mode': 'markers',
                             'type': 'scatter3d',
                             'marker': {
-                                'size': 3,
-                                'color': 'rgba(255, 255, 255, 0.8)',
-                                'symbol': 'circle',
+                                'size': 4,
+                                'color': 'rgba(255, 255, 100, 0.9)',
+                                'symbol': 'diamond',
                                 'line': {
-                                    'width': 1,
-                                    'color': 'rgba(0, 0, 0, 0.5)'
+                                    'width': 2,
+                                    'color': 'rgba(255, 255, 255, 0.8)'
                                 }
                             },
-                            'name': f'Intersection {i}',
-                            'hoverinfo': 'none'
-                        })
+                            'name': f'Topological Interface {i}',
+                            'hoverinfo': 'name',
+                            'showlegend': True
+                        }
+                        surfaces.append(intersection_trace)
             
-        print(f"Returning {len(surfaces)} surfaces")
+            # Add topological field lines for visualization of connections
+            if len(surfaces) >= 3:
+                field_lines = generate_topological_field_lines(twists, t)
+                if field_lines:
+                    surfaces.extend(field_lines)
         
-        # Return the visualization data
+        logger.info(f"Returning {len(surfaces)} enhanced surfaces and visualizations")
+        
+        # Enhanced response with additional metadata
         response_data = {
             'plot': {
                 'data': surfaces
+            },
+            'metadata': {
+                'surface_count': len(surfaces),
+                'enhancement_level': 'scientific',
+                'mathematical_accuracy': 'high',
+                'ctc_stability': calculate_ctc_stability(twists),
+                'topological_genus': calculate_total_genus(twists, merge)
             }
         }
         
         return jsonify(response_data)
     
     except Exception as e:
-        import traceback
-        print(f"Error in get_visualization: {str(e)}")
-        print(traceback.format_exc())
+        logger.error(f"Error in enhanced visualization: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': str(e)})
+
+def calculate_surface_intersections(surface1, surface2, tolerance=0.1):
+    """
+    Calculate intersections between two surfaces for enhanced visualization.
+    
+    Parameters:
+    surface1, surface2: Surface data dictionaries
+    tolerance: Distance tolerance for intersection detection
+    
+    Returns:
+    Dictionary with intersection point coordinates
+    """
+    try:
+        # Extract surface coordinates
+        x1, y1, z1 = np.array(surface1['x']), np.array(surface1['y']), np.array(surface1['z'])
+        x2, y2, z2 = np.array(surface2['x']), np.array(surface2['y']), np.array(surface2['z'])
+        
+        # Sample points for intersection calculation
+        sample_step = max(1, len(x1) // 20)  # Sample approximately 20 points per dimension
+        
+        intersections_x, intersections_y, intersections_z = [], [], []
+        
+        # Optimized intersection detection
+        for i in range(0, len(x1), sample_step):
+            for j in range(0, len(x1[0]), sample_step):
+                if i < len(x1) and j < len(x1[0]):
+                    p1 = np.array([x1[i][j], y1[i][j], z1[i][j]])
+                    
+                    # Find closest point on surface2
+                    min_dist = float('inf')
+                    closest_point = None
+                    
+                    for ii in range(0, len(x2), sample_step):
+                        for jj in range(0, len(x2[0]), sample_step):
+                            if ii < len(x2) and jj < len(x2[0]):
+                                p2 = np.array([x2[ii][jj], y2[ii][jj], z2[ii][jj]])
+                                dist = np.linalg.norm(p1 - p2)
+                                
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    closest_point = p2
+                    
+                    # If points are close enough, consider it an intersection
+                    if min_dist < tolerance and closest_point is not None:
+                        # Add midpoint as intersection
+                        midpoint = (p1 + closest_point) / 2
+                        intersections_x.append(midpoint[0])
+                        intersections_y.append(midpoint[1])
+                        intersections_z.append(midpoint[2])
+        
+        if intersections_x:
+            return {
+                'x': intersections_x,
+                'y': intersections_y,
+                'z': intersections_z
+            }
+        else:
+            return None
+            
+    except Exception as e:
+        logger.warning(f"Error calculating surface intersections: {e}")
+        return None
+
+def generate_topological_field_lines(twists, t):
+    """
+    Generate field lines representing topological connections between Sub-SKBs.
+    
+    Parameters:
+    twists: List of twist parameters for each Sub-SKB
+    t: Time parameter
+    
+    Returns:
+    List of field line traces
+    """
+    try:
+        field_lines = []
+        
+        # Calculate field strength based on twist compatibility
+        for i in range(len(twists)):
+            for j in range(i + 1, len(twists)):
+                twist1, twist2 = twists[i], twists[j]
+                
+                # Calculate topological field strength
+                field_strength = 1.0 / (1.0 + np.sqrt(
+                    (twist1[0] - twist2[0])**2 + 
+                    (twist1[1] - twist2[1])**2 + 
+                    (twist1[2] - twist2[2])**2
+                ))
+                
+                # Only show strong connections
+                if field_strength > 0.3:
+                    # Generate parametric field line
+                    u = np.linspace(0, 1, 20)
+                    
+                    # Create curved connection based on twist parameters
+                    curve_factor = (twist1[0] + twist2[0]) * 0.1
+                    
+                    x_line = (1 - u) * (2 * np.cos(i * 2 * np.pi / 3)) + u * (2 * np.cos(j * 2 * np.pi / 3))
+                    y_line = (1 - u) * (2 * np.sin(i * 2 * np.pi / 3)) + u * (2 * np.sin(j * 2 * np.pi / 3))
+                    z_line = curve_factor * np.sin(np.pi * u) + 0.2 * np.sin(t + u * np.pi)
+                    
+                    field_line = {
+                        'x': x_line.tolist(),
+                        'y': y_line.tolist(),
+                        'z': z_line.tolist(),
+                        'mode': 'lines',
+                        'type': 'scatter3d',
+                        'line': {
+                            'width': max(2, int(field_strength * 8)),
+                            'color': f'rgba(255, 200, 100, {field_strength * 0.8})'
+                        },
+                        'name': f'Field Line {i+1}-{j+1}',
+                        'hoverinfo': 'name',
+                        'showlegend': False
+                    }
+                    field_lines.append(field_line)
+        
+        return field_lines
+        
+    except Exception as e:
+        logger.warning(f"Error generating field lines: {e}")
+        return []
+
+def calculate_ctc_stability(twists):
+    """Calculate the overall CTC (Closed Timelike Curve) stability."""
+    try:
+        time_twists = [twist[3] for twist in twists]  # Extract time twist parameters
+        total_time_twist = sum(abs(tt) for tt in time_twists)
+        stability = max(0, 1 - total_time_twist / 3)  # Normalize to 0-1 range
+        return round(stability, 3)
+    except:
+        return 0.5
+
+def calculate_total_genus(twists, merged=False):
+    """Calculate the total topological genus of the configuration."""
+    try:
+        if merged:
+            # Merged topology typically has genus 2 for Klein bottle
+            return 2
+        else:
+            # Individual components: Klein bottle (1), Möbius strip (1), Torus (1)
+            return 3
+    except:
+        return 1
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

@@ -44,29 +44,62 @@ This repository has been updated to address the following security vulnerabiliti
 
 ## Prerequisites
 
-- Docker installed on your system
+- Docker Desktop installed and running
+- Docker Compose (included with Docker Desktop)
 - A web browser
 
-## Building the Docker Image
+## Quick Start
 
-1. Clone this repository or ensure all files are in the same directory.
-2. Build the image:
+### For Users (Run the Application)
+
+1. Clone this repository:
+   ```bash
+   git clone <repository-url>
+   cd wireframe
+   ```
+
+2. Run with Docker Compose:
+   ```bash
+   docker-compose up web
+   ```
+
+3. Open your browser and navigate to:
+   ```
+   http://localhost:5000
+   ```
+
+### For Developers
+
+📖 **See [Docker Development Guide](docs/DOCKER_DEVELOPMENT.md) for complete development setup and workflow.**
+
+Quick development setup:
+```bash
+# Clone the repository
+git clone <repository-url>
+cd wireframe
+
+# Start development environment with hot reloading
+docker-compose up web-dev
+```
+
+The development server includes:
+- Hot reloading for code changes
+- Debug mode enabled
+- Volume mounting for real-time development
+
+## Building the Docker Image (Optional)
+
+If you prefer to build and run manually:
+
+1. Build the image:
    ```bash
    docker build -t skb-web-visualizer .
    ```
 
-## Running the Container
-
-Run the container with the following command:
-
-```bash
-docker run -d -p 5000:5000 --name skb-visualization skb-web-visualizer
-```
-
-Then open your web browser and navigate to:
-```
-http://localhost:5000
-```
+2. Run the container:
+   ```bash
+   docker run -d -p 5000:5000 --name skb-visualization skb-web-visualizer
+   ```
 
 ## Using the Web Interface
 
@@ -110,17 +143,24 @@ This application uses:
 - Flask: Python web framework
 - Plotly: Interactive visualization library
 - NumPy: Mathematical operations
-- Docker: Containerization
+- Docker: Containerization for consistent development and deployment
 
-## Theoretical Basis
+## Development Environment
 
-The SKB model explores a novel hypothesis in which fundamental particles are modeled as 4-dimensional spacetime Klein bottles endowed with closed timelike curves. Key aspects include:
+This project is configured for **Docker-based development only**. Local Python installations are not required or recommended.
 
-- **Non-orientable Topology**: SKBs are non-orientable surfaces with no boundary
-- **Quark-like Components**: Three sub-SKBs with distinct topological features represent quark-like particles
-- **Composite Structures**: Merged SKBs represent baryons or other composite particles
-- **Categorical Framework**: Category theory provides a mathematical foundation for analyzing topological features
-- **Emergent Properties**: Particle attributes like mass and charge emerge from topological characteristics
+**Key Benefits:**
+- ✅ Consistent environment across all developers
+- ✅ No local Python package management needed
+- ✅ Easy onboarding for new developers
+- ✅ Identical to production environment
+- ✅ Supports hot reloading and debugging
+
+**Development Services:**
+- `web`: Production-like environment with Gunicorn
+- `web-dev`: Development environment with Flask debug server and hot reloading
+
+See [Docker Development Guide](docs/DOCKER_DEVELOPMENT.md) for detailed instructions.
 
 ## Stopping the Container
 
