@@ -95,14 +95,7 @@ jobs:
           resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
           imageToDeploy: ${{ env.FULL_IMAGE_TAG }}
           targetPort: 5000
-          environmentVariables: |
-            SKB_ENVIRONMENT=production
-            SKB_DEBUG=false
-            SKB_ENABLE_CACHING=true
-            SKB_CACHE_BACKEND=memory
-            SKB_LOG_LEVEL=INFO
-            SKB_HOST=0.0.0.0
-            SKB_PORT=5000
+          environmentVariables: 'SKB_ENVIRONMENT=production SKB_DEBUG=false SKB_ENABLE_CACHING=true SKB_CACHE_BACKEND=memory SKB_LOG_LEVEL=INFO SKB_HOST=0.0.0.0 SKB_PORT=5000'
 
       - name: Get Container App URL
         id: get-url
