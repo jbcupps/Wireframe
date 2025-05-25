@@ -1,15 +1,17 @@
 import numpy as np
-from src import app as app_module
+from src.mathematics.surfaces import generate_twisted_strip
+from src.services.topology_service import TopologyService
 
 
 def test_generate_twisted_strip_shape():
     twists = [1, 1, 1, 0]
-    x, y, z, u, v = app_module.generate_twisted_strip(twists, t=0.0, loop_factor=1)
-    assert x.shape == (50, 50)
-    assert y.shape == (50, 50)
-    assert z.shape == (50, 50)
-    assert u.shape == (50, 50)
-    assert v.shape == (50, 50)
+    x, y, z, u, v = generate_twisted_strip(twists, t=0.0, loop_factor=1)
+    # The v dimension is int(resolution * 0.6) = int(75 * 0.6) = 45
+    assert x.shape == (45, 75)  # (v_resolution, u_resolution)
+    assert y.shape == (45, 75)
+    assert z.shape == (45, 75)
+    assert u.shape == (45, 75)
+    assert v.shape == (45, 75)
 
 
 def test_compute_topological_compatibility_returns_dict():
@@ -29,6 +31,8 @@ def test_compute_topological_compatibility_returns_dict():
         'orientable': 1,
         'genus': 0
     }
-    result = app_module.compute_topological_compatibility(skb1=skb1, skb2=skb2)
+    
+    topology_service = TopologyService()
+    result = topology_service.compute_compatibility({'skb1': skb1, 'skb2': skb2})
     assert isinstance(result, dict)
     assert 'compatible' in result
