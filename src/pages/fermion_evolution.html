@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+{% block title %}Fermion Evolution - 4D Manifold Explorer{% endblock %}
+{% block head_extra %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fermion-evolution.css') }}">
+<script src="{{ url_for('static', filename='js/plotly-defaults.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1><i class="fas fa-project-diagram"></i> Fermion Evolution Visualization</h1>
+            <div class="subtitle">Dynamic Klein Bottle Topological Transformations in 4D Spacetime</div>
+            <div class="description">
+                Explore the evolution of fermions as 4D Klein bottle structures undergoing topological changes, 
+                mass generation through temporal loops, and electromagnetic field interactions.
+            </div>
+        </header>
+
+        <!-- Research Context -->
+        <div class="research-context">
+            <div class="research-card">
+                <h3><i class="fas fa-book-open"></i> Theoretical Foundation</h3>
+                <p>Based on the hypothesis that fermions are topological Klein bottle structures in 4D spacetime, 
+                this visualization demonstrates dynamic evolution through closed timelike curves (CTCs) and 
+                temporal symmetry breaking mechanisms.</p>
+                <div class="research-links">
+                    <a href="https://figshare.com/articles/preprint/The_4D_Spacetime_Klein_Bottle_Hypothesis_A_Geometric_Theory_of_Fundamental_Particles_and_Forces/28466273" 
+                       target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Read Full Paper
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Visualization Interface -->
+        <div class="visualization-interface">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="control-section">
+                    <h3><i class="fas fa-cogs"></i> Particle Selection</h3>
+                    <div class="particle-controls">
+                        <label class="particle-option">
+                            <input type="radio" name="particle" value="electron" checked>
+                            <span class="particle-label">
+                                <i class="fas fa-atom"></i>
+                                <span>Electron</span>
+                                <small>m = 0.511 MeV/c²</small>
+                            </span>
+                        </label>
+                        <label class="particle-option">
+                            <input type="radio" name="particle" value="muon">
+                            <span class="particle-label">
+                                <i class="fas fa-circle"></i>
+                                <span>Muon</span>
+                                <small>m = 105.7 MeV/c²</small>
+                            </span>
+                        </label>
+                        <label class="particle-option">
+                            <input type="radio" name="particle" value="tau">
+                            <span class="particle-label">
+                                <i class="fas fa-dot-circle"></i>
+                                <span>Tau</span>
+                                <small>m = 1777 MeV/c²</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3><i class="fas fa-sync-alt"></i> Evolution Parameters</h3>
+                    <div class="parameter-grid">
+                        <div class="parameter-control">
+                            <label for="twist-angle">Klein Bottle Twist</label>
+                            <input type="range" id="twist-angle" min="0" max="360" value="0" step="1">
+                            <span class="value-display" id="twist-value">0°</span>
+                        </div>
+                        
+                        <div class="parameter-control">
+                            <label for="temporal-phase">Temporal Phase</label>
+                            <input type="range" id="temporal-phase" min="0" max="628" value="0" step="1">
+                            <span class="value-display" id="phase-value">0</span>
+                        </div>
+                        
+                        <div class="parameter-control">
+                            <label for="field-strength">EM Field Strength</label>
+                            <input type="range" id="field-strength" min="0" max="100" value="50" step="1">
+                            <span class="value-display" id="field-value">50%</span>
+                        </div>
+                        
+                        <div class="parameter-control">
+                            <label for="evolution-speed">Evolution Speed</label>
+                            <input type="range" id="evolution-speed" min="0.1" max="3" value="1" step="0.1">
+                            <span class="value-display" id="speed-value">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3><i class="fas fa-clock"></i> Time Controls</h3>
+                    <div class="time-controls">
+                        <button id="play-btn" class="control-btn primary">
+                            <i class="fas fa-play"></i> Play Evolution
+                        </button>
+                        <button id="pause-btn" class="control-btn">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button id="reset-btn" class="control-btn">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                    
+                    <div class="timeline-control">
+                        <label for="timeline">Evolution Timeline</label>
+                        <input type="range" id="timeline" min="0" max="1000" value="0" step="1">
+                        <div class="timeline-labels">
+                            <span>t = 0</span>
+                            <span>t = T</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3><i class="fas fa-eye"></i> Visualization Options</h3>
+                    <div class="viz-options">
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="show-field-lines" checked>
+                            <span>Show EM Field Lines</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="show-ctc-paths">
+                            <span>Show CTC Paths</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="show-mass-generation">
+                            <span>Highlight Mass Generation</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="show-topology-changes" checked>
+                            <span>Show Topology Changes</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Visualization -->
+            <div class="visualization-container">
+                <div class="viz-header">
+                    <h3 id="current-particle">Electron Klein Bottle Evolution</h3>
+                    <div class="viz-stats">
+                        <span class="stat">
+                            <i class="fas fa-weight"></i>
+                            <span id="current-mass">0.511 MeV/c²</span>
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-bolt"></i>
+                            <span id="current-charge">-1e</span>
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-arrows-alt"></i>
+                            <span id="current-spin">1/2</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div id="klein-bottle-plot" class="plot-container">
+                    <div class="loading-indicator">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Initializing Klein Bottle Visualization...</span>
+                    </div>
+                </div>
+
+                <div class="plot-controls">
+                    <button class="view-btn" data-view="3d">
+                        <i class="fas fa-cube"></i> 3D View
+                    </button>
+                    <button class="view-btn" data-view="projection">
+                        <i class="fas fa-compress"></i> 2D Projection
+                    </button>
+                    <button class="view-btn" data-view="cross-section">
+                        <i class="fas fa-cut"></i> Cross Section
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evolution Timeline Display -->
+        <div class="evolution-timeline">
+            <h3><i class="fas fa-chart-line"></i> Evolution Properties Over Time</h3>
+            <div class="timeline-plots">
+                <div class="timeline-plot" id="mass-evolution-plot">
+                    <h4>Mass Generation</h4>
+                    <div class="mini-plot-container">
+                        <canvas id="mass-chart" width="300" height="150"></canvas>
+                    </div>
+                </div>
+                
+                <div class="timeline-plot" id="topology-evolution-plot">
+                    <h4>Topological Invariants</h4>
+                    <div class="mini-plot-container">
+                        <canvas id="topology-chart" width="300" height="150"></canvas>
+                    </div>
+                </div>
+                
+                <div class="timeline-plot" id="field-evolution-plot">
+                    <h4>Electromagnetic Coupling</h4>
+                    <div class="mini-plot-container">
+                        <canvas id="field-chart" width="300" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Content -->
+        <div class="educational-content">
+            <div class="content-tabs">
+                <button class="tab-btn active" data-tab="theory">
+                    <i class="fas fa-graduation-cap"></i> Theory
+                </button>
+                <button class="tab-btn" data-tab="physics">
+                    <i class="fas fa-atom"></i> Physics
+                </button>
+                <button class="tab-btn" data-tab="mathematics">
+                    <i class="fas fa-square-root-alt"></i> Mathematics
+                </button>
+                <button class="tab-btn" data-tab="references">
+                    <i class="fas fa-book"></i> References
+                </button>
+            </div>
+
+            <div class="tab-content active" id="theory-content">
+                <h3>4D Klein Bottle Fermion Theory</h3>
+                <p>In this theoretical framework, fermions are modeled as topological Klein bottle structures embedded in 4D spacetime with closed timelike curves (CTCs). The key insights include:</p>
+                <ul>
+                    <li><strong>Topological Mass Generation:</strong> Mass emerges from the complexity of temporal loops in the Klein bottle structure</li>
+                    <li><strong>Charge from Orientation:</strong> Electric charge arises from the non-orientable nature of the Klein bottle</li>
+                    <li><strong>Spin from Topology:</strong> The half-integer spin of fermions reflects the fundamental topological properties</li>
+                    <li><strong>Generation Hierarchy:</strong> Different fermion generations correspond to different Klein bottle twist configurations</li>
+                </ul>
+                
+                <div class="equation-box">
+                    <h4>Mass Generation Formula</h4>
+                    <div class="equation">
+                        m = ∫ ρ(φ, ψ) |∂φ/∂τ|² dV₄
+                    </div>
+                    <p>Where φ is the Klein bottle parametrization and τ is proper time along CTCs.</p>
+                </div>
+            </div>
+
+            <div class="tab-content" id="physics-content">
+                <h3>Physical Interpretation</h3>
+                <div class="physics-concepts">
+                    <div class="concept-card">
+                        <h4><i class="fas fa-arrows-alt-v"></i> Beta Decay</h4>
+                        <p>In the Klein bottle model, beta decay represents a topological transformation where one Klein bottle configuration transitions to another, changing the particle's mass and charge properties.</p>
+                    </div>
+                    
+                    <div class="concept-card">
+                        <h4><i class="fas fa-sync"></i> Temporal Evolution</h4>
+                        <p>The evolution through closed timelike curves allows the particle to "sample" different mass states, with the observed mass being a time-averaged value over the CTC loop.</p>
+                    </div>
+                    
+                    <div class="concept-card">
+                        <h4><i class="fas fa-magnet"></i> Electromagnetic Interaction</h4>
+                        <p>Field lines threading through the Klein bottle structure create electromagnetic coupling, with field strength affecting the topology and thus the particle properties.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="mathematics-content">
+                <h3>Mathematical Framework</h3>
+                <div class="math-section">
+                    <h4>Klein Bottle Parametrization</h4>
+                    <div class="equation-set">
+                        <div class="equation">x = (R + r·cos(v))·cos(u)</div>
+                        <div class="equation">y = (R + r·cos(v))·sin(u)</div>
+                        <div class="equation">z = r·sin(v)·cos(u/2)</div>
+                        <div class="equation">w = r·sin(v)·sin(u/2)</div>
+                    </div>
+                    
+                    <h4>CTC Metric</h4>
+                    <div class="equation">
+                        ds² = -dt² + dx² + dy² + dz² + 2ε·dt·dφ
+                    </div>
+                    <p>Where ε determines the strength of the closed timelike curves.</p>
+                    
+                    <h4>Topological Invariants</h4>
+                    <ul>
+                        <li>Euler Characteristic: χ = 0</li>
+                        <li>First Betti Number: b₁ = 1</li>
+                        <li>Stiefel-Whitney Classes: w₁ ≠ 0, w₂ = 0</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-content" id="references-content">
+                <h3>Scientific References</h3>
+                <div class="references-list">
+                    <div class="reference">
+                        <h4>Primary Research</h4>
+                        <p><strong>"The 4D Spacetime Klein Bottle Hypothesis: A Geometric Theory of Fundamental Particles and Forces"</strong></p>
+                                                <p>A comprehensive framework proposing Klein bottles as fundamental particle models.</p>                        <a href="https://figshare.com/articles/preprint/The_4D_Spacetime_Klein_Bottle_Hypothesis_A_Geometric_Theory_of_Fundamental_Particles_and_Forces/28466273" target="_blank" rel="noopener">                            <i class="fas fa-external-link-alt"></i> View Paper                        </a>
+                    </div>
+                    
+                    <div class="reference">
+                        <h4>Supporting Studies</h4>
+                        <ul>
+                            <li>Klein, F. (1882). "Über Riemann's Theorie der algebraischen Funktionen"</li>
+                            <li>Hawking, S. W. (1975). "Particle creation by black holes"</li>
+                            <li>Penrose, R. (2004). "The Road to Reality: A Complete Guide to the Laws of the Universe"</li>
+                            <li>Witten, E. (1988). "Topological quantum field theory"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/fermion-evolution.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the fermion evolution visualization
+    if (typeof FermionEvolution !== 'undefined') {
+        window.fermionViz = new FermionEvolution();
+        window.fermionViz.init();
+    } else {
+        console.warn('FermionEvolution class not loaded. Basic functionality will be limited.');
+        // Initialize basic functionality
+        initBasicControls();
+    }
+});
+
+function initBasicControls() {
+    // Basic tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            
+            // Update active states
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById(tabId + '-content').classList.add('active');
+        });
+    });
+    
+    // Basic parameter display updates
+    const sliders = document.querySelectorAll('input[type="range"]');
+    sliders.forEach(slider => {
+        slider.addEventListener('input', function() {
+            const valueDisplay = document.getElementById(this.id.replace('-', '-') + '-value') || 
+                                document.querySelector(`[id$="${this.id.split('-').pop()}-value"]`);
+            if (valueDisplay) {
+                let value = this.value;
+                if (this.id === 'twist-angle') value += '°';
+                else if (this.id === 'field-strength') value += '%';
+                else if (this.id === 'evolution-speed') value += 'x';
+                valueDisplay.textContent = value;
+            }
+        });
+    });
+    
+    // Basic particle selection
+    const particleInputs = document.querySelectorAll('input[name="particle"]');
+    particleInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const particleData = {
+                electron: { name: 'Electron', mass: '0.511 MeV/c²', charge: '-1e' },
+                muon: { name: 'Muon', mass: '105.7 MeV/c²', charge: '-1e' },
+                tau: { name: 'Tau', mass: '1777 MeV/c²', charge: '-1e' }
+            };
+            
+            const data = particleData[this.value];
+            document.getElementById('current-particle').textContent = data.name + ' Klein Bottle Evolution';
+            document.getElementById('current-mass').textContent = data.mass;
+            document.getElementById('current-charge').textContent = data.charge;
+        });
+    });
+    
+    console.log('Basic fermion evolution controls initialized');
+}
+</script>
+{% endblock %} 

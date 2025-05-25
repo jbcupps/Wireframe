@@ -1,34 +1,143 @@
-<nav class="nav-links">
-    <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
-    <a href="/visualization" class="{% if request.path == '/visualization' %}active{% endif %}">Visualization</a>
-    <a href="/evolution" class="{% if request.path == '/evolution' %}active{% endif %}">Evolution</a>
-    <div class="nav-dropdown">
-        <div class="dropdown-toggle">
-            <span>Quantum Physics</span>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-        <div class="dropdown-menu">
-            <a href="/oscillator">Oscillator</a>
-            <a href="/double_slit">Double-Slit</a>
-            <a href="/quantum_tunneling">Quantum Tunneling</a>
-        </div>
-    </div>
-    <div class="nav-dropdown">
-        <div class="dropdown-toggle">
-            <span>Electromagnetism</span>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-        <div class="dropdown-menu">
-            <a href="/maxwell">Maxwell</a>
-            <a href="/maxwells">Maxwell's</a>
-        </div>
-    </div>
-    <div class="theme-toggle">
-        <i id="theme-icon-light" class="fas fa-sun theme-toggle-icon"></i>
-        <label class="theme-switch">
-            <input type="checkbox" id="theme-toggle">
-            <span class="slider"></span>
+<nav class="main-nav" role="navigation" aria-label="Main navigation">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" 
+            aria-label="Toggle navigation menu" 
+            aria-expanded="false" 
+            aria-controls="nav-menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="sr-only">Menu</span>
+    </button>
+
+    <!-- Navigation Menu -->
+    <ul class="nav-menu" id="nav-menu" role="menubar">
+        <li class="nav-item" role="none">
+            <a href="{{ url_for('main.landing') }}" 
+               class="nav-link {% if request.endpoint == 'main.landing' %}active{% endif %}"
+               role="menuitem"
+               aria-current="{% if request.endpoint == 'main.landing' %}page{% endif %}">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span>Home</span>
+            </a>
+        </li>
+        
+        <li class="nav-item" role="none">
+            <a href="{{ url_for('main.visualization') }}" 
+               class="nav-link {% if request.endpoint == 'main.visualization' %}active{% endif %}"
+               role="menuitem"
+               aria-current="{% if request.endpoint == 'main.visualization' %}page{% endif %}">
+                <i class="fas fa-cube" aria-hidden="true"></i>
+                <span>Visualization</span>
+            </a>
+        </li>
+        
+        <li class="nav-item" role="none">
+            <a href="{{ url_for('main.evolution') }}" 
+               class="nav-link {% if request.endpoint == 'main.evolution' %}active{% endif %}"
+               role="menuitem"
+               aria-current="{% if request.endpoint == 'main.evolution' %}page{% endif %}">
+                <i class="fas fa-dna" aria-hidden="true"></i>
+                <span>Evolution</span>
+            </a>
+        </li>
+
+        <!-- Quantum Physics Dropdown -->
+        <li class="nav-item nav-dropdown" role="none">
+            <button class="nav-link dropdown-toggle {% if request.endpoint and (request.endpoint.startswith('quantum.') or request.endpoint in ['main.oscillator', 'main.fermion_evolution']) %}active{% endif %}" 
+                    role="menuitem"
+                    aria-haspopup="true" 
+                    aria-expanded="false"
+                    aria-controls="quantum-menu">
+                <i class="fas fa-atom" aria-hidden="true"></i>
+                <span>Quantum Physics</span>
+                <i class="fas fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+            </button>
+            <ul class="dropdown-menu" id="quantum-menu" role="menu" aria-label="Quantum Physics submenu">
+                <li role="none">
+                    <a href="{{ url_for('main.oscillator') }}" 
+                       class="dropdown-link {% if request.endpoint == 'main.oscillator' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'main.oscillator' %}page{% endif %}">
+                        <i class="fas fa-wave-square" aria-hidden="true"></i>
+                        <span>Oscillator</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="{{ url_for('quantum.double_slit') }}" 
+                       class="dropdown-link {% if request.endpoint == 'quantum.double_slit' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'quantum.double_slit' %}page{% endif %}">
+                        <i class="fas fa-columns" aria-hidden="true"></i>
+                        <span>Double-Slit</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="{{ url_for('quantum.quantum_tunneling') }}" 
+                       class="dropdown-link {% if request.endpoint == 'quantum.quantum_tunneling' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'quantum.quantum_tunneling' %}page{% endif %}">
+                        <i class="fas fa-mountain" aria-hidden="true"></i>
+                        <span>Quantum Tunneling</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="{{ url_for('main.fermion_evolution') }}" 
+                       class="dropdown-link {% if request.endpoint == 'main.fermion_evolution' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'main.fermion_evolution' %}page{% endif %}">
+                        <i class="fas fa-project-diagram" aria-hidden="true"></i>
+                        <span>Fermion Evolution</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Electromagnetism Dropdown -->
+        <li class="nav-item nav-dropdown" role="none">
+            <button class="nav-link dropdown-toggle {% if request.endpoint and (request.endpoint == 'main.maxwell' or request.endpoint == 'main.maxwells') %}active{% endif %}" 
+                    role="menuitem"
+                    aria-haspopup="true" 
+                    aria-expanded="false"
+                    aria-controls="em-menu">
+                <i class="fas fa-bolt" aria-hidden="true"></i>
+                <span>Electromagnetism</span>
+                <i class="fas fa-chevron-down dropdown-arrow" aria-hidden="true"></i>
+            </button>
+            <ul class="dropdown-menu" id="em-menu" role="menu" aria-label="Electromagnetism submenu">
+                <li role="none">
+                    <a href="{{ url_for('main.maxwell') }}" 
+                       class="dropdown-link {% if request.endpoint == 'main.maxwell' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'main.maxwell' %}page{% endif %}">
+                        <i class="fas fa-wave-sine" aria-hidden="true"></i>
+                        <span>Maxwell</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="{{ url_for('main.maxwells') }}" 
+                       class="dropdown-link {% if request.endpoint == 'main.maxwells' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'main.maxwells' %}page{% endif %}">
+                        <i class="fas fa-calculator" aria-hidden="true"></i>
+                        <span>Maxwell's Equations</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+    <!-- Theme Toggle -->
+    <div class="nav-theme-toggle" role="group" aria-label="Theme selection">
+        <label class="theme-toggle-label" for="theme-toggle-checkbox">
+            <span class="sr-only">Toggle dark/light theme</span>
+            <i class="fas fa-sun theme-icon theme-icon-light" aria-hidden="true"></i>
+            <input type="checkbox" 
+                   id="theme-toggle-checkbox" 
+                   class="theme-checkbox"
+                   aria-label="Switch to dark theme">
+            <span class="theme-slider" aria-hidden="true"></span>
+            <i class="fas fa-moon theme-icon theme-icon-dark" aria-hidden="true"></i>
         </label>
-        <i id="theme-icon-dark" class="fas fa-moon theme-toggle-icon"></i>
     </div>
 </nav>

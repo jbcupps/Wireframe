@@ -51,6 +51,12 @@ def maxwells():
     return render_template('maxwells.html')
 
 
+@main_bp.route('/fermion-evolution')
+def fermion_evolution():
+    """Fermion evolution visualization page route."""
+    return render_template('fermion_evolution.html')
+
+
 @main_bp.route('/health')
 def health_check():
     """Health check endpoint for container monitoring."""

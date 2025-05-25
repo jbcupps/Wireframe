@@ -5,7 +5,8 @@ Provides environment-specific configurations with validation and defaults.
 
 import os
 from typing import Optional, List
-from pydantic import BaseSettings, Field, validator
+from pydantic import Field, field_validator, ConfigDict
+from pydantic_settings import BaseSettings
 from enum import Enum
 
 
@@ -27,6 +28,12 @@ class LogLevel(str, Enum):
 
 class Settings(BaseSettings):
     """Application settings with validation and environment support."""
+    
+    model_config = ConfigDict(
+        env_prefix="SKB_",
+        env_file=".env",
+        case_sensitive=False
+    )
     
     # Application Settings
     app_name: str = Field(default="SKB Visualization", description="Application name")
@@ -91,53 +98,54 @@ class Settings(BaseSettings):
     export_formats: List[str] = Field(default=["png", "pdf", "svg"], description="Supported export formats")
     max_export_size_mb: float = Field(default=50.0, description="Maximum export file size in MB")
     
-    @validator("port")
+    @field_validator("port")
+    @classmethod
     def validate_port(cls, v):
         """Validate port range."""
         if not 1024 <= v <= 65535:
             raise ValueError("Port must be between 1024 and 65535")
         return v
     
-    @validator("workers")
+    @field_validator("workers")
+    @classmethod
     def validate_workers(cls, v):
         """Validate worker count."""
         if v < 1:
             raise ValueError("Workers must be at least 1")
         return v
     
-    @validator("max_surface_resolution")
+    @field_validator("max_surface_resolution")
+    @classmethod
     def validate_resolution(cls, v):
         """Validate surface resolution."""
         if not 10 <= v <= 500:
             raise ValueError("Surface resolution must be between 10 and 500")
         return v
     
-    @validator("numerical_precision")
+    @field_validator("numerical_precision")
+    @classmethod
     def validate_precision(cls, v):
         """Validate numerical precision."""
         if not 1 <= v <= 15:
             raise ValueError("Numerical precision must be between 1 and 15")
         return v
     
-    @validator("stability_threshold")
+    @field_validator("stability_threshold")
+    @classmethod
     def validate_threshold(cls, v):
         """Validate stability threshold."""
         if not 1e-10 <= v <= 1e-1:
             raise ValueError("Stability threshold must be between 1e-10 and 1e-1")
         return v
     
-    @validator("secret_key")
-    def validate_secret_key(cls, v, values):
+    @field_validator("secret_key")
+    @classmethod
+    def validate_secret_key(cls, v, info):
         """Validate secret key for production."""
-        if values.get("environment") == Environment.PRODUCTION and v == "dev-secret-key-change-in-production":
+        # Note: In Pydantic v2, access to other fields requires info.data
+        if info.data and info.data.get("environment") == Environment.PRODUCTION and v == "dev-secret-key-change-in-production":
             raise ValueError("Must set a secure secret key in production")
         return v
-    
-    class Config:
-        """Pydantic configuration."""
-        env_prefix = "SKB_"
-        env_file = ".env"
-        case_sensitive = False
 
 
 class DevelopmentSettings(Settings):

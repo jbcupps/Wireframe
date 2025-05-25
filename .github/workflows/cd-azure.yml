@@ -1,45 +1,62 @@
-# Azure one-time prep:
-# 1. Create an Entra ID App Registration.
-# 2. Add a federated credential scoped to this repo.
-# 3. Assign AcrPush and Website Contributor roles on the resource group or web app.
-# GitHub Docs / Microsoft Learn
-name: cd-azure
+# Azure Container Apps Deployment with OIDC Authentication
+# Prerequisites:
+# 1. Azure Container Registry (ACR) exists in subscription
+# 2. OIDC App Registration with federated credentials configured
+# 3. Required Azure secrets configured in GitHub repository
+
+name: Deploy to Azure Container Apps
 
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
   workflow_dispatch:
     inputs:
-      AZURE_RESOURCE_GROUP:
+      environment:
+        description: 'Deployment environment'
         required: true
-        type: string
-      ACR_NAME:
-        required: true
-        type: string
-      WEBAPP_NAME:
-        required: true
-        type: string
-      IMAGE_TAG:
-        required: true
-        type: string
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      force_deploy:
+        description: 'Force deployment even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  CONTAINER_APP_NAME: ${{ secrets.CONTAINER_APP_NAME }}
+  CONTAINER_APP_ENVIRONMENT: ${{ secrets.CONTAINER_APP_ENVIRONMENT }}
+  IMAGE_TAG: ${{ github.sha }}
 
 permissions:
   contents: read
   id-token: write
+  packages: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'production' }}
+    
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Node modules
-        if: ${{ hashFiles('**/package-lock.json') != '' }}
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: node-${{ hashFiles('**/package-lock.json') }}
+      - name: Set environment variables
+        run: |
+          echo "IMAGE_NAME=${ACR_NAME}.azurecr.io/skb-visualization" >> $GITHUB_ENV
+          echo "FULL_IMAGE_TAG=${ACR_NAME}.azurecr.io/skb-visualization:${IMAGE_TAG}" >> $GITHUB_ENV
 
-      - name: Azure login
+      - name: Azure login with OIDC
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -49,21 +66,88 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: ACR login
+      - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
-          login-server: ${{ inputs.ACR_NAME }}.azurecr.io
+          login-server: ${{ env.ACR_NAME }}.azurecr.io
 
-      - name: Build and push image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          context: .
+          file: ./Dockerfile
+          target: production
           push: true
-          tags: ${{ inputs.ACR_NAME }}.azurecr.io/${{ inputs.WEBAPP_NAME }}:${{ inputs.IMAGE_TAG }}
+          tags: |
+            ${{ env.FULL_IMAGE_TAG }}
+            ${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            GIT_COMMIT=${{ github.sha }}
+            GIT_BRANCH=${{ github.ref_name }}
 
-      - name: Deploy to Web App
-        uses: azure/webapps-deploy@v3
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v2
         with:
-          app-name: ${{ inputs.WEBAPP_NAME }}
-          images: ${{ inputs.ACR_NAME }}.azurecr.io/${{ inputs.WEBAPP_NAME }}:${{ inputs.IMAGE_TAG }}
+          acrName: ${{ env.ACR_NAME }}
+          containerAppName: ${{ env.CONTAINER_APP_NAME }}
+          resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+          imageToDeploy: ${{ env.FULL_IMAGE_TAG }}
+          targetPort: 5000
+          environmentVariables: |
+            SKB_ENVIRONMENT=production
+            SKB_DEBUG=false
+            SKB_ENABLE_CACHING=true
+            SKB_CACHE_BACKEND=memory
+            SKB_LOG_LEVEL=INFO
+            SKB_HOST=0.0.0.0
+            SKB_PORT=5000
+
+      - name: Get Container App URL
+        id: get-url
+        run: |
+          APP_URL=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          echo "app-url=https://$APP_URL" >> $GITHUB_OUTPUT
+          echo "Application deployed to: https://$APP_URL"
+
+      - name: Run health check
+        run: |
+          echo "Waiting for application to start..."
+          sleep 30
+          
+          for i in {1..10}; do
+            if curl -f "${{ steps.get-url.outputs.app-url }}/health" >/dev/null 2>&1; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            echo "⏳ Attempt $i/10 failed, waiting 30 seconds..."
+            sleep 30
+          done
+          
+          echo "❌ Health check failed after 10 attempts"
+          exit 1
+
+      - name: Create deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Deployment Summary
+          
+          **Application**: SKB Visualization
+          **Environment**: ${{ inputs.environment || 'production' }}
+          **Image**: \`${{ env.FULL_IMAGE_TAG }}\`
+          **Container App**: ${{ env.CONTAINER_APP_NAME }}
+          **Resource Group**: ${{ env.AZURE_RESOURCE_GROUP }}
+          **Application URL**: [${{ steps.get-url.outputs.app-url }}](${{ steps.get-url.outputs.app-url }})
+          
+          ### Build Information
+          - **Commit**: ${{ github.sha }}
+          - **Branch**: ${{ github.ref_name }}
+          - **Triggered by**: ${{ github.event_name }}
+          
+          EOF

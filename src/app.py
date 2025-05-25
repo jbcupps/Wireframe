@@ -7,12 +7,16 @@ import os
 import logging
 from flask import Flask
 
-from .config import settings, get_logging_config
+from .config import settings, get_logging_config, get_cache_config
 from .routes import main_bp, api_bp, quantum_bp
-from .utils.cache import initialize_cache, get_cache_config
+from .utils.cache import initialize_cache
 
-# Configure enhanced logging for scientific visualization
-logging.basicConfig(**get_logging_config())
+# Configure simple logging for application startup
+logging.basicConfig(
+    level=settings.log_level.value,
+    format=settings.log_format,
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
 logger = logging.getLogger(__name__)
 
 # Determine base directory

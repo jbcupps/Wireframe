@@ -14,9 +14,17 @@ from .surfaces import (
 from .topology import (
     calculate_ctc_stability,
     calculate_total_genus,
-    generate_topological_field_lines
+    generate_topological_field_lines,
+    calculate_surface_intersections
 )
 from .utils import hex_to_rgb
+from .fermion_evolution import (
+    FermionSKB, 
+    FermionEvolutionSystem,
+    FermionProperties,
+    create_fermion_evolution_system,
+    calculate_klein_bottle_fermion
+)
 
 # Export all mathematical functions and classes
 __all__ = [
@@ -35,6 +43,14 @@ __all__ = [
     "calculate_ctc_stability",
     "calculate_total_genus",
     "generate_topological_field_lines",
+    "calculate_surface_intersections",
+    
+    # Fermion evolution
+    "FermionSKB",
+    "FermionEvolutionSystem", 
+    "FermionProperties",
+    "create_fermion_evolution_system",
+    "calculate_klein_bottle_fermion",
     
     # Utilities
     "hex_to_rgb"
