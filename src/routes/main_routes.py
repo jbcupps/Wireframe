@@ -57,6 +57,12 @@ def fermion_evolution():
     return render_template('fermion_evolution.html')
 
 
+@main_bp.route('/skb_explorer')
+def skb_explorer():
+    """Spacetime Klein Bottle Explorer page route."""
+    return render_template('skb_explorer.html')
+
+
 @main_bp.route('/health')
 def health_check():
     """Health check endpoint for container monitoring."""

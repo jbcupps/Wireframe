@@ -44,7 +44,7 @@
 
         <!-- Quantum Physics Dropdown -->
         <li class="nav-item nav-dropdown" role="none">
-            <button class="nav-link dropdown-toggle {% if request.endpoint and (request.endpoint.startswith('quantum.') or request.endpoint in ['main.oscillator', 'main.fermion_evolution']) %}active{% endif %}" 
+            <button class="nav-link dropdown-toggle {% if request.endpoint and (request.endpoint.startswith('quantum.') or request.endpoint in ['main.oscillator', 'main.fermion_evolution', 'main.skb_explorer']) %}active{% endif %}" 
                     role="menuitem"
                     aria-haspopup="true" 
                     aria-expanded="false"
@@ -88,6 +88,15 @@
                        aria-current="{% if request.endpoint == 'main.fermion_evolution' %}page{% endif %}">
                         <i class="fas fa-project-diagram" aria-hidden="true"></i>
                         <span>Fermion Evolution</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="{{ url_for('main.skb_explorer') }}" 
+                       class="dropdown-link {% if request.endpoint == 'main.skb_explorer' %}active{% endif %}"
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == 'main.skb_explorer' %}page{% endif %}">
+                        <i class="fas fa-infinity" aria-hidden="true"></i>
+                        <span>SKB Explorer</span>
                     </a>
                 </li>
             </ul>
