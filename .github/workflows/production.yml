@@ -1,0 +1,243 @@
+# Production Deployment Pipeline - Manually triggered
+# Deploys to Azure Container Apps with OIDC authentication
+# Requires manual approval and includes production-ready builds
+
+name: Production Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      force_deploy:
+        description: 'Force deployment even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      skip_tests:
+        description: 'Skip test suite (not recommended for production)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  CONTAINER_APP_NAME: ${{ secrets.CONTAINER_APP_NAME }}
+  CONTAINER_APP_ENVIRONMENT: ${{ secrets.CONTAINER_APP_ENVIRONMENT }}
+  IMAGE_TAG: ${{ github.sha }}
+  PYTHON_VERSION: "3.11"
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+
+jobs:
+  # Pre-deployment validation
+  pre-deployment-checks:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_tests }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run critical tests
+        run: |
+          pytest tests/unit tests/integration --tb=short --maxfail=5
+          
+      - name: Security scan
+        run: |
+          bandit -r app/ src/ -f json -o bandit-production-report.json
+          
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-security-report
+          path: bandit-production-report.json
+
+  # Production build and deployment
+  build-and-deploy:
+    name: Build and Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks]
+    if: always() && (needs.pre-deployment-checks.result == 'success' || inputs.skip_tests)
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          echo "IMAGE_NAME=${ACR_NAME}.azurecr.io/skb-visualization" >> $GITHUB_ENV
+          echo "FULL_IMAGE_TAG=${ACR_NAME}.azurecr.io/skb-visualization:${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Azure login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Azure Container Registry
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Build and push production Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          target: production
+          push: true
+          tags: |
+            ${{ env.FULL_IMAGE_TAG }}
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ inputs.environment }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            GIT_COMMIT=${{ github.sha }}
+            GIT_BRANCH=${{ github.ref_name }}
+            ENVIRONMENT=${{ inputs.environment }}
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          acrName: ${{ env.ACR_NAME }}
+          containerAppName: ${{ env.CONTAINER_APP_NAME }}
+          resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+          imageToDeploy: ${{ env.FULL_IMAGE_TAG }}
+          targetPort: 5000
+          environmentVariables: |
+            SKB_ENVIRONMENT=${{ inputs.environment }}
+            SKB_DEBUG=false
+            SKB_ENABLE_CACHING=true
+            SKB_CACHE_BACKEND=redis
+            SKB_LOG_LEVEL=INFO
+            SKB_HOST=0.0.0.0
+            SKB_PORT=5000
+            SKB_SECURE_HEADERS=true
+
+      - name: Get Container App URL
+        id: get-url
+        run: |
+          APP_URL=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          echo "app-url=https://$APP_URL" >> $GITHUB_OUTPUT
+          echo "Application deployed to: https://$APP_URL"
+
+      - name: Production health check
+        run: |
+          echo "Waiting for application to start..."
+          sleep 60
+          
+          # Extended health check for production
+          for i in {1..15}; do
+            if curl -f "${{ steps.get-url.outputs.app-url }}/health" >/dev/null 2>&1; then
+              echo "✅ Health check passed"
+              break
+            fi
+            if [ $i -eq 15 ]; then
+              echo "❌ Health check failed after 15 attempts"
+              exit 1
+            fi
+            echo "⏳ Attempt $i/15 failed, waiting 30 seconds..."
+            sleep 30
+          done
+
+      - name: Run smoke tests
+        run: |
+          # Basic smoke tests for production
+          echo "Running production smoke tests..."
+          
+          # Test main endpoints
+          curl -f "${{ steps.get-url.outputs.app-url }}/" || exit 1
+          curl -f "${{ steps.get-url.outputs.app-url }}/visualization" || exit 1
+          curl -f "${{ steps.get-url.outputs.app-url }}/evolution" || exit 1
+          
+          echo "✅ Smoke tests passed"
+
+      - name: Create deployment notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { context } = require('@actions/github');
+            const deploymentUrl = '${{ steps.get-url.outputs.app-url }}';
+            const environment = '${{ inputs.environment }}';
+            
+            // Create a deployment status
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment?.id || 0,
+              state: 'success',
+              environment_url: deploymentUrl,
+              description: `Successfully deployed to ${environment}`
+            });
+
+  # Post-deployment summary
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, build-and-deploy]
+    if: always()
+    
+    steps:
+      - name: Create deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Production Deployment Summary
+          
+          **Environment**: ${{ inputs.environment }}
+          **Image**: \`${{ env.ACR_NAME }}.azurecr.io/skb-visualization:${{ github.sha }}\`
+          **Container App**: ${{ env.CONTAINER_APP_NAME }}
+          **Resource Group**: ${{ env.AZURE_RESOURCE_GROUP }}
+          **Application URL**: [${{ needs.build-and-deploy.outputs.app-url }}](${{ needs.build-and-deploy.outputs.app-url }})
+          
+          ### Deployment Information
+          - **Commit**: ${{ github.sha }}
+          - **Branch**: ${{ github.ref_name }}
+          - **Triggered by**: ${{ github.actor }}
+          - **Force Deploy**: ${{ inputs.force_deploy }}
+          - **Skip Tests**: ${{ inputs.skip_tests }}
+          
+          ### Status
+          - **Pre-deployment Checks**: ${{ needs.pre-deployment-checks.result }}
+          - **Build and Deploy**: ${{ needs.build-and-deploy.result }}
+          
+          ### Post-deployment Actions
+          - ✅ Monitor application performance
+          - 📊 Check application logs and metrics
+          - 🔄 Update documentation if needed
+          - 📢 Notify stakeholders of deployment
+          
+          EOF 
