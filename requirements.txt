@@ -25,3 +25,4 @@ numba==0.58.1
 # Development Tools
 setuptools>=70.0.0
 
+urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
