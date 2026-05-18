@@ -147,16 +147,16 @@ This application uses:
 
 ## Deploy with Vercel
 
-The repository includes a Vercel serverless entrypoint and routing config:
+The repository is set up for Vercel's zero-configuration Flask runtime:
 
-- `api/index.py` exposes the Flask `app` instance for Vercel's Python runtime.
-- `vercel.json` rewrites all application routes to that function.
+- `src/app.py` exposes the Flask `app` instance Vercel discovers automatically.
+- `.vercelignore` keeps development-only files out of the deployment bundle.
 - `public/static` contains the static CSS and JavaScript assets Vercel serves directly.
 
 To deploy:
 
 1. Import this GitHub repository into Vercel.
-2. Use the default project settings. Vercel will install `requirements.txt` and use `vercel.json`.
+2. Use the default project settings. Vercel will install `requirements.txt` and detect the Flask app in `src/app.py`.
 3. Add `SKB_SECRET_KEY` in Vercel Project Settings for stable Flask session signing.
 
 When running on Vercel, the app automatically uses production settings and disables file logging because serverless functions should write logs to stdout/stderr only.
