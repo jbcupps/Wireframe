@@ -1,0 +1,48 @@
+{% extends "site_base.html" %}
+{% block title %}{{ explorer.title }} - Spacetime Manifolds{% endblock %}
+{% block head_extra %}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+{% endblock %}
+{% block content %}
+<section class="explorer-shell" style="--accent: {{ explorer.accent }}">
+    <div class="explorer-info">
+        <a class="back-link" href="/">Back to demos</a>
+        <span class="sp-kicker">Interactive Demo</span>
+        <h1>{{ explorer.title }}</h1>
+        <p>{{ explorer.tagline }}</p>
+        <div class="invariant-pill">{{ explorer.invariant }}</div>
+        <div class="control-panel">
+            <button class="icon-button" id="play-toggle" type="button" aria-label="Pause animation">Pause</button>
+            <button class="icon-button" id="reset-view" type="button" aria-label="Reset view">Reset</button>
+            <label class="range-control">
+                <span>Twist</span>
+                <input id="twist-control" type="range" min="0" max="2" step="0.01" value="0.65">
+            </label>
+            <label class="range-control">
+                <span>Resolution</span>
+                <input id="resolution-control" type="range" min="32" max="96" step="8" value="64">
+            </label>
+            <label class="check-control">
+                <input id="wireframe-control" type="checkbox">
+                <span>Wireframe</span>
+            </label>
+        </div>
+    </div>
+    <div class="viewer-panel">
+        <div id="topology-viewer" class="topology-viewer" data-mode="{{ slug }}" aria-label="{{ explorer.title }} 3D viewer"></div>
+        <div class="viewer-status" id="viewer-status">Initializing geometry...</div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+    window.TOPOLOGY_EXPLORER = {{ {"slug": slug, "title": explorer.title, "accent": explorer.accent} | tojson }};
+</script>
+<script type="module" src="{{ url_for('static', filename='js/topology-explorer.js') }}"></script>
+{% endblock %}

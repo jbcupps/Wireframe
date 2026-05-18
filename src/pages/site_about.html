@@ -1,0 +1,20 @@
+{% extends "site_base.html" %}
+{% block title %}About - Spacetime Manifolds{% endblock %}
+{% block content %}
+<section class="sp-page-head">
+    <span class="sp-kicker">About</span>
+    <h1>About this site</h1>
+    <p>An interactive browser laboratory for non-orientable topology, 4D projections, and spacetime-manifold intuition.</p>
+</section>
+
+<section class="sp-split">
+    <div>
+        <h2>What it does</h2>
+        <p>The site keeps the public route structure of spacetimemanifolds.com while running on this Flask/Vercel deployment. The explorer pages are interactive, client-rendered views backed by local static assets.</p>
+    </div>
+    <div class="sp-callout">
+        <strong>Also preserved</strong>
+        <p>The original Flask visualization routes are still available, including <a href="/visualization">/visualization</a>, <a href="/skb_explorer">/skb_explorer</a>, and <a href="/evolution">/evolution</a>.</p>
+    </div>
+</section>
+{% endblock %}

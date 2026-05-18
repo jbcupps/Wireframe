@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Spacetime Manifolds{% endblock %}</title>
+    <meta name="description" content="Interactive topology explorer for spacetime manifolds, Klein bottles, non-orientable surfaces, and SKB-inspired geometry.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spacetime.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <header class="sp-header">
+        <a class="sp-logo" href="/">Spacetime Manifolds</a>
+        <nav class="sp-nav" aria-label="Main navigation">
+            <a href="/">Home</a>
+            <a href="/theory">The Hypothesis</a>
+            <a href="/papers">Papers</a>
+            <a href="/about">About</a>
+            <details class="sp-menu">
+                <summary>Explore</summary>
+                <div class="sp-menu-panel">
+                    <a href="/explore/mobius">Mobius Strip</a>
+                    <a href="/explore/klein">Klein Bottle</a>
+                    <a href="/explore/crosscap">Crosscap Particles</a>
+                    <a href="/explore/projective">Projective Plane</a>
+                    <a href="/explore/curves">Closed Curves</a>
+                    <a href="/explore/immersion">4D Immersions</a>
+                </div>
+            </details>
+        </nav>
+    </header>
+
+    <main class="sp-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="sp-footer">
+        <span>Spacetime Manifolds</span>
+        <span>Interactive topology and SKB visualization</span>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

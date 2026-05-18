@@ -1,0 +1,42 @@
+{% extends "site_base.html" %}
+{% block title %}Spacetime Manifolds - Interactive Topology Explorer{% endblock %}
+{% block content %}
+<section class="sp-hero">
+    <div class="sp-kicker">Interactive Topology Explorer</div>
+    <h1>Explore non-orientable spacetime geometry in your browser.</h1>
+    <p>Drag, twist, rotate, and compare Klein bottles, Mobius strips, crosscaps, closed curves, and 4D projections using live mathematical visualizations.</p>
+    <div class="sp-actions">
+        <a class="sp-button primary" href="/explore/klein">Open Explorer</a>
+        <a class="sp-button" href="/theory">Read the Hypothesis</a>
+    </div>
+</section>
+
+<section class="sp-grid-section">
+    <div class="sp-section-heading">
+        <span>Explore Demos</span>
+        <h2>Operational routes matching spacetimemanifolds.com</h2>
+    </div>
+    <div class="explorer-grid">
+        {% for slug, item in explorers.items() %}
+        <a class="explorer-card" href="/explore/{{ slug }}" style="--accent: {{ item.accent }}">
+            <div class="card-symbol">{{ item.symbol }}</div>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.tagline }}</p>
+            <span>{{ item.invariant }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="sp-split">
+    <div>
+        <span class="sp-kicker">The Hypothesis</span>
+        <h2>Spacetime as the primitive object</h2>
+        <p>The site presents particle-like behavior as geometry, topology, and holonomy rather than as separate objects placed inside spacetime.</p>
+    </div>
+    <div class="sp-callout">
+        <strong>Download route ready</strong>
+        <p>The public paper path is available at <a href="/papers/Everything_is_Spacetime.pdf">/papers/Everything_is_Spacetime.pdf</a>.</p>
+    </div>
+</section>
+{% endblock %}

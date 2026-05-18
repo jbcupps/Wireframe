@@ -37,6 +37,7 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
+test-results/
 .tox/
 .nox/
 .coverage
@@ -127,6 +128,9 @@ yarn-error.log*
 # Docker
 .dockerignore
 docker-compose.override.yml
+
+# Vercel
+.vercel/
 
 # Local development
 .env.local

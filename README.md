@@ -145,6 +145,28 @@ This application uses:
 - NumPy: Mathematical operations
 - Docker: Containerization for consistent development and deployment
 
+## Deploy with Vercel
+
+The repository includes a Vercel serverless entrypoint and routing config:
+
+- `api/index.py` exposes the Flask `app` instance for Vercel's Python runtime.
+- `vercel.json` rewrites all application routes to that function.
+- `public/static` contains the static CSS and JavaScript assets Vercel serves directly.
+
+To deploy:
+
+1. Import this GitHub repository into Vercel.
+2. Use the default project settings. Vercel will install `requirements.txt` and use `vercel.json`.
+3. Add `SKB_SECRET_KEY` in Vercel Project Settings for stable Flask session signing.
+
+When running on Vercel, the app automatically uses production settings and disables file logging because serverless functions should write logs to stdout/stderr only.
+
+The Vercel deployment also exposes the current spacetimemanifolds.com operational route surface:
+
+- `/`, `/theory`, `/papers`, `/about`
+- `/explore/mobius`, `/explore/klein`, `/explore/crosscap`, `/explore/projective`, `/explore/curves`, `/explore/immersion`
+- `/papers/Everything_is_Spacetime.pdf` and `/og-image.png`
+
 ## Development Environment
 
 This project is configured for **Docker-based development only**. Local Python installations are not required or recommended.

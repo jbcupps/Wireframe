@@ -1,0 +1,30 @@
+{% extends "site_base.html" %}
+{% block title %}Papers & Downloads - Spacetime Manifolds{% endblock %}
+{% block content %}
+<section class="sp-page-head">
+    <span class="sp-kicker">Research</span>
+    <h1>Papers & Downloads</h1>
+    <p>Reference material and working notes for the spacetime topology models in this repository.</p>
+</section>
+
+<section class="paper-list">
+    <article class="paper-card">
+        <div>
+            <h2>Everything is Spacetime</h2>
+            <p>Public download endpoint compatible with the live site.</p>
+        </div>
+        {% if paper_available %}
+        <a class="sp-button primary" href="/papers/Everything_is_Spacetime.pdf">Download PDF</a>
+        {% else %}
+        <span class="paper-missing">PDF missing from docs/technical</span>
+        {% endif %}
+    </article>
+    <article class="paper-card">
+        <div>
+            <h2>SKB Hypothesis Notes</h2>
+            <p>Background theory, visualization notes, and architecture documents remain available in the repository docs.</p>
+        </div>
+        <a class="sp-button" href="/theory">Read overview</a>
+    </article>
+</section>
+{% endblock %}

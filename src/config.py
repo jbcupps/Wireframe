@@ -4,6 +4,7 @@ Provides environment-specific configurations with validation and defaults.
 """
 
 import os
+import secrets
 from typing import Optional, List
 from pydantic import Field, field_validator, ConfigDict
 from pydantic_settings import BaseSettings
@@ -24,6 +25,18 @@ class LogLevel(str, Enum):
     WARNING = "WARNING"
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
+
+
+def is_vercel_runtime() -> bool:
+    """Return True when running inside Vercel's build or function runtime."""
+    return os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV") is not None
+
+
+def default_secret_key() -> str:
+    """Provide a safe default for non-session Vercel deployments."""
+    if is_vercel_runtime():
+        return secrets.token_urlsafe(32)
+    return "dev-secret-key-change-in-production"
 
 
 class Settings(BaseSettings):
@@ -48,7 +61,7 @@ class Settings(BaseSettings):
     timeout: int = Field(default=120, description="Request timeout in seconds")
     
     # Security Settings
-    secret_key: str = Field(default="dev-secret-key-change-in-production", description="Secret key for sessions")
+    secret_key: str = Field(default_factory=default_secret_key, description="Secret key for sessions")
     allowed_hosts: List[str] = Field(default=["*"], description="Allowed hosts for CORS")
     cors_origins: List[str] = Field(default=["*"], description="CORS allowed origins")
     
@@ -172,9 +185,11 @@ class ProductionSettings(Settings):
     debug: bool = False
     log_level: LogLevel = LogLevel.INFO
     enable_caching: bool = True
-    enable_metrics: bool = True
-    enable_file_logging: bool = True
-    log_file_path: str = "/var/log/skb/application.log"
+    enable_metrics: bool = Field(default_factory=lambda: not is_vercel_runtime())
+    enable_file_logging: bool = Field(default_factory=lambda: not is_vercel_runtime())
+    log_file_path: Optional[str] = Field(
+        default_factory=lambda: None if is_vercel_runtime() else "/var/log/skb/application.log"
+    )
 
 
 def get_settings() -> Settings:
@@ -184,7 +199,10 @@ def get_settings() -> Settings:
     Returns:
         Settings: Configured settings instance
     """
-    env = os.getenv("SKB_ENVIRONMENT", "development").lower()
+    env = os.getenv("SKB_ENVIRONMENT")
+    if env is None and is_vercel_runtime():
+        env = "production"
+    env = (env or "development").lower()
     
     if env == "production":
         return ProductionSettings()
@@ -291,14 +309,14 @@ def get_logging_config() -> dict:
         }
         config["loggers"]["skb"]["handlers"].append("file")
         config["root"]["handlers"].append("file")
-    
+
     return config
 
 
 # Export commonly used settings
 __all__ = [
     "Settings",
-    "DevelopmentSettings", 
+    "DevelopmentSettings",
     "TestingSettings",
     "ProductionSettings",
     "Environment",
@@ -308,4 +326,4 @@ __all__ = [
     "get_database_url",
     "get_cache_config",
     "get_logging_config"
-] 
+]
