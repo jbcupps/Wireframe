@@ -273,6 +273,27 @@ a {
     padding: 22px;
 }
 
+/* Mathematical content containment inside theory cards (prevents wide KaTeX from overflowing) */
+.theory-panel .katex-display {
+    overflow-x: auto;
+    max-width: 100%;
+    padding: 6px 4px;
+    margin: 10px 0;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.theory-panel p {
+    overflow-wrap: break-word;
+}
+
+/* Slightly more paper-like treatment for equations sections */
+.theory-panel h2 {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+}
+
 .sp-split {
     display: grid;
     grid-template-columns: 1.4fr 1fr;

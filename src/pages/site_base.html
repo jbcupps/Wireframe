@@ -8,44 +8,38 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/spacetime.css') }}">
 
     <!-- KaTeX for all mathematical equations (Core.pdf, Maxwell derivation, bordism, holonomy, etc.) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcQDuKdOh8t1p2p1z0O5p4p0p0p0p0p0p0p0p0p0p0p0p0p0p0p0p0" crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44l8hT4l1N0L0p0p0p0p0p0p0p0p0p0p0p0p0p0p" crossorigin="anonymous"
-            onload="renderMathInElement(document.body, { delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false},
-                {left: '\\[', right: '\\]', display: true}
-            ]});"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function renderAllMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false },
+                        { left: "\\[", right: "\\]", display: true }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+        renderAllMath();
+
+        // Expose a helper so dynamic pages (baryons, explorers) can re-render after content changes
+        window.SKB_renderMath = renderAllMath;
+    });
+    </script>
 
     {% block head_extra %}{% endblock %}
 </head>
 <body>
-    <!-- Guided Tour Progress Bar + Stepper (linear, unlock-on-completion) -->
-    <div id="guided-tour-bar" role="navigation" aria-label="Guided tour progress">
-        <div class="tour-progress">
-            <div class="tour-progress-track" id="tour-progress-track">
-                <div class="tour-progress-fill" id="tour-progress-fill" style="width: 0%"></div>
-            </div>
-            <ol class="tour-steps" id="tour-steps" role="list">
-                <li data-step="home" class="tour-step active"><a href="/">Home</a></li>
-                <li data-step="framework"><a href="/theory">Framework</a></li>
-                <li data-step="topologies"><a href="/explore/klein">Topologies</a></li>
-                <li data-step="particles"><a href="/baryons">Particles</a></li>
-                <li data-step="forces"><a href="/baryons#forces">Forces</a></li>
-                <li data-step="ontology"><a href="/theory#ontology">Ontology</a></li>
-                <li data-step="predictions"><a href="/papers">Predictions</a></li>
-            </ol>
-        </div>
-        <div class="tour-controls">
-            <button id="tour-prev" class="tour-btn" aria-label="Previous tour step">← Prev</button>
-            <span id="tour-status" class="tour-status" aria-live="polite">Step 1 of 7</span>
-            <button id="tour-next" class="tour-btn primary" aria-label="Next tour step">Next →</button>
-            <button id="tour-reset" class="tour-btn subtle" aria-label="Reset tour progress">Reset</button>
-        </div>
-    </div>
-
     <header class="sp-header">
+        <!-- Original logo + nav (unchanged look & feel) -->
         <a class="sp-logo" href="/">Spacetime Manifolds</a>
         <nav class="sp-nav" aria-label="Main navigation">
             <a href="/">Home</a>
@@ -66,6 +60,16 @@
                 </div>
             </details>
         </nav>
+
+        <!-- Compact Guided Tour stepper integrated inside the header (does not change original look & feel) -->
+        <div id="guided-tour-bar" class="tour-in-header" role="navigation" aria-label="Guided tour progress">
+            <div class="tour-compact">
+                <span class="tour-label">Tour</span>
+                <div class="tour-dots" id="tour-dots"></div>
+                <button id="tour-prev" class="tour-btn tiny" aria-label="Previous">←</button>
+                <button id="tour-next" class="tour-btn tiny primary" aria-label="Next">→</button>
+            </div>
+        </div>
     </header>
 
     <main class="sp-main">
