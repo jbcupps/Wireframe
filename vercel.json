@@ -1,3 +1,28 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "echo 'Static site - no build step required'",
+  "outputDirectory": "public",
+  "routes": [
+    { "src": "/baryons", "dest": "/pages/baryons.html" },
+    { "src": "/theory", "dest": "/pages/site_theory.html" },
+    { "src": "/explore/(.*)", "dest": "/pages/topology_explorer.html" },
+    { "src": "/(.*\\.html)", "dest": "/$1" },
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
 }

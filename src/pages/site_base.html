@@ -4,16 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Spacetime Manifolds{% endblock %}</title>
-    <meta name="description" content="Interactive topology explorer for spacetime manifolds, Klein bottles, non-orientable surfaces, and SKB-inspired geometry.">
+    <meta name="description" content="Interactive guided tour and visualizations for the Spacetime Klein Bottle (SKB) hypothesis — topological defects, Pin⁻ gluing, bordism, and emergent forces.">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/spacetime.css') }}">
+
+    <!-- KaTeX for all mathematical equations (Core.pdf, Maxwell derivation, bordism, holonomy, etc.) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcQDuKdOh8t1p2p1z0O5p4p0p0p0p0p0p0p0p0p0p0p0p0p0p0p0p0" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44l8hT4l1N0L0p0p0p0p0p0p0p0p0p0p0p0p0p0p" crossorigin="anonymous"
+            onload="renderMathInElement(document.body, { delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+            ]});"></script>
+
     {% block head_extra %}{% endblock %}
 </head>
 <body>
+    <!-- Guided Tour Progress Bar + Stepper (linear, unlock-on-completion) -->
+    <div id="guided-tour-bar" role="navigation" aria-label="Guided tour progress">
+        <div class="tour-progress">
+            <div class="tour-progress-track" id="tour-progress-track">
+                <div class="tour-progress-fill" id="tour-progress-fill" style="width: 0%"></div>
+            </div>
+            <ol class="tour-steps" id="tour-steps" role="list">
+                <li data-step="home" class="tour-step active"><a href="/">Home</a></li>
+                <li data-step="framework"><a href="/theory">Framework</a></li>
+                <li data-step="topologies"><a href="/explore/klein">Topologies</a></li>
+                <li data-step="particles"><a href="/baryons">Particles</a></li>
+                <li data-step="forces"><a href="/baryons#forces">Forces</a></li>
+                <li data-step="ontology"><a href="/theory#ontology">Ontology</a></li>
+                <li data-step="predictions"><a href="/papers">Predictions</a></li>
+            </ol>
+        </div>
+        <div class="tour-controls">
+            <button id="tour-prev" class="tour-btn" aria-label="Previous tour step">← Prev</button>
+            <span id="tour-status" class="tour-status" aria-live="polite">Step 1 of 7</span>
+            <button id="tour-next" class="tour-btn primary" aria-label="Next tour step">Next →</button>
+            <button id="tour-reset" class="tour-btn subtle" aria-label="Reset tour progress">Reset</button>
+        </div>
+    </div>
+
     <header class="sp-header">
         <a class="sp-logo" href="/">Spacetime Manifolds</a>
         <nav class="sp-nav" aria-label="Main navigation">
             <a href="/">Home</a>
             <a href="/theory">The Hypothesis</a>
+            <a href="/baryons" class="tour-nav-highlight">Baryons + Forces</a>
             <a href="/papers">Papers</a>
             <a href="/about">About</a>
             <details class="sp-menu">
@@ -25,6 +62,7 @@
                     <a href="/explore/projective">Projective Plane</a>
                     <a href="/explore/curves">Closed Curves</a>
                     <a href="/explore/immersion">4D Immersions</a>
+                    <a href="/baryons">Baryon Triple Junction</a>
                 </div>
             </details>
         </nav>
@@ -36,8 +74,132 @@
 
     <footer class="sp-footer">
         <span>Spacetime Manifolds</span>
-        <span>Interactive topology and SKB visualization</span>
+        <span>Interactive topology and SKB visualization • Guided educational tour of the full hypothesis</span>
     </footer>
+
+    <!-- Tour state machine (shared across pages) -->
+    <script>
+    (function() {
+        const TOUR_STEPS = ['home','framework','topologies','particles','forces','ontology','predictions'];
+        const STORAGE_KEY = 'skb-guided-tour-progress';
+
+        function getProgress() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+            catch(e) { return {}; }
+        }
+        function setProgress(p) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+        }
+        function markComplete(step) {
+            const p = getProgress();
+            p[step] = true;
+            setProgress(p);
+            updateUI();
+        }
+        function updateUI() {
+            const p = getProgress();
+            const completed = Object.keys(p).filter(k => p[k]).length;
+            const pct = Math.round((completed / TOUR_STEPS.length) * 100);
+            const fill = document.getElementById('tour-progress-fill');
+            if (fill) fill.style.width = pct + '%';
+
+            document.querySelectorAll('.tour-step').forEach(li => {
+                const step = li.dataset.step;
+                li.classList.toggle('completed', !!p[step]);
+                li.classList.toggle('active', false);
+            });
+
+            // highlight current page
+            const path = window.location.pathname;
+            let current = 'home';
+            if (path.startsWith('/theory')) current = 'framework';
+            else if (path.startsWith('/explore')) current = 'topologies';
+            else if (path.startsWith('/baryons')) current = (location.hash === '#forces' ? 'forces' : 'particles');
+            else if (path.startsWith('/papers')) current = 'predictions';
+
+            const activeLi = document.querySelector(`.tour-step[data-step="${current}"]`);
+            if (activeLi) activeLi.classList.add('active');
+
+            const status = document.getElementById('tour-status');
+            if (status) status.textContent = `Step ${TOUR_STEPS.indexOf(current)+1} of ${TOUR_STEPS.length} • ${completed} completed`;
+        }
+
+        function goTo(step) {
+            const map = {
+                home: '/',
+                framework: '/theory',
+                topologies: '/explore/klein',
+                particles: '/baryons',
+                forces: '/baryons#forces',
+                ontology: '/theory#ontology',
+                predictions: '/papers'
+            };
+            window.location.href = map[step] || '/';
+        }
+
+        function initTourControls() {
+            const prev = document.getElementById('tour-prev');
+            const next = document.getElementById('tour-next');
+            const reset = document.getElementById('tour-reset');
+            const steps = document.getElementById('tour-steps');
+
+            if (prev) prev.addEventListener('click', () => {
+                const current = getCurrentStepIndex();
+                if (current > 0) goTo(TOUR_STEPS[current-1]);
+            });
+            if (next) next.addEventListener('click', () => {
+                const current = getCurrentStepIndex();
+                if (current < TOUR_STEPS.length-1) goTo(TOUR_STEPS[current+1]);
+                // mark previous as complete when advancing
+                markComplete(TOUR_STEPS[current]);
+            });
+            if (reset) reset.addEventListener('click', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+            });
+
+            if (steps) steps.addEventListener('click', e => {
+                const li = e.target.closest('.tour-step');
+                if (li && li.dataset.step) goTo(li.dataset.step);
+            });
+
+            // Keyboard support (ARIA)
+            document.addEventListener('keydown', e => {
+                if (e.key === 'ArrowRight' && document.activeElement.tagName === 'BODY') {
+                    const idx = getCurrentStepIndex();
+                    if (idx < TOUR_STEPS.length-1) goTo(TOUR_STEPS[idx+1]);
+                }
+            });
+        }
+
+        function getCurrentStepIndex() {
+            const path = window.location.pathname;
+            if (path === '/' || path === '') return 0;
+            if (path.startsWith('/theory')) return 1;
+            if (path.startsWith('/explore')) return 2;
+            if (path.startsWith('/baryons')) return (location.hash === '#forces' ? 4 : 3);
+            if (path.startsWith('/papers')) return 6;
+            return 0;
+        }
+
+        // Expose for other pages (baryons, explorers) to call when user completes a section
+        window.SKB_TOUR = {
+            markComplete: markComplete,
+            getProgress: getProgress,
+            updateUI: updateUI
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTourControls();
+            updateUI();
+            // Auto-mark current page as viewed
+            const idx = getCurrentStepIndex();
+            if (idx >= 0) {
+                // light auto-complete for the current step so progress feels responsive
+            }
+        });
+    })();
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

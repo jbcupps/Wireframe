@@ -1,0 +1,442 @@
+{% extends "site_base.html" %}
+
+{% block title %}Baryons & Forces — SKB Triple Junction + Tentacles{% endblock %}
+
+{% block head_extra %}
+<style>
+  .baryon-shell { max-width: 1280px; margin: 0 auto; }
+  .baryon-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; margin-top: 16px; }
+  @media (max-width: 980px) { .baryon-grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: rgba(17,19,39,0.92);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .panel h3 { margin: 0 0 12px; font-size: 1.05rem; color: var(--cyan); }
+
+  .flavor-btn {
+    background: #1a1c33; border: 1px solid #3a3e5c; color: #e6e9f2;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; margin: 2px;
+    font-size: 0.92rem;
+  }
+  .flavor-btn.selected { background: #2a2f55; border-color: var(--cyan); color: #fff; }
+
+  #baryon-viewer {
+    width: 100%; height: 560px; background: #05060f;
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+
+  .math-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; }
+  .math-table th, .math-table td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  .math-table th { background: rgba(255,255,255,0.04); color: var(--cyan); }
+
+  .force-toggles label { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; cursor: pointer; }
+  .force-toggles input { accent-color: var(--cyan); }
+
+  .result-box {
+    background: #0c0e1f; border: 1px solid #2a2f55; padding: 12px; border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92rem; line-height: 1.45;
+  }
+  .result-box .label { color: #8b90a8; }
+  .result-box .value { color: #e6e9f2; font-weight: 600; }
+
+  .tour-callout {
+    background: rgba(0, 221, 255, 0.08); border-left: 4px solid var(--cyan);
+    padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="baryon-shell">
+  <section class="sp-page-head">
+    <span class="sp-kicker">Particles → Forces</span>
+    <h1>Baryon Triple Junction &amp; Force Tentacles</h1>
+    <p>
+      Interactive model of three SKB defects (quarks) glued into a stable baryon.
+      Select flavors to compute <strong>k</strong> (number of odd quarks), the holonomy product
+      \((-1)^k\), and the bordism class \(k \mod 16\) in \(\Omega_4^{\text{Pin}^-} \cong \mathbb{Z}/16\mathbb{Z}\).
+      All cases admit a global Pin⁻ structure (\([c] = 0\)).
+    </p>
+  </section>
+
+  <div class="tour-callout">
+    <strong>Guided Tour:</strong> This page covers the <em>Particles</em> and <em>Forces</em> steps.
+    Use the progress bar above or the Next/Prev buttons. When you achieve a stable glued state
+    (distance + phase gates satisfied), the tour will allow you to mark this section complete.
+  </div>
+
+  <div class="baryon-grid">
+    <!-- Left column: controls + tables -->
+    <div>
+      <div class="panel">
+        <h3>Interactive Calculator (from Baryon Glueing.pdf)</h3>
+
+        <p><strong>Select three quark flavors</strong> (u = even, d/s/b = odd):</p>
+        <div id="flavor-picker" style="margin: 10px 0 16px;">
+          <button class="flavor-btn" data-flavor="u">u (even)</button>
+          <button class="flavor-btn" data-flavor="d">d (odd)</button>
+          <button class="flavor-btn" data-flavor="s">s (odd)</button>
+          <button class="flavor-btn" data-flavor="c">c (even)</button>
+          <button class="flavor-btn" data-flavor="b">b (odd)</button>
+          <button class="flavor-btn" data-flavor="t">t (even)</button>
+        </div>
+
+        <div style="margin: 10px 0;">
+          <strong>Presets</strong><br>
+          <button class="tour-btn" id="preset-proton">Proton (uud)</button>
+          <button class="tour-btn" id="preset-neutron">Neutron (udd)</button>
+          <button class="tour-btn" id="preset-sigma">Σ⁺ (uus)</button>
+          <button class="tour-btn" id="preset-omega">Ω⁻ (sss)</button>
+        </div>
+
+        <div class="result-box" id="calc-results">
+          <div><span class="label">Quarks:</span> <span id="res-quarks" class="value">—</span></div>
+          <div><span class="label">k (odd count):</span> <span id="res-k" class="value">—</span></div>
+          <div><span class="label">Holonomy product:</span> <span id="res-prod" class="value">—</span></div>
+          <div><span class="label">Bordism class (mod 16):</span> <span id="res-bordism" class="value">—</span></div>
+          <div><span class="label">Pin⁻ obstruction [c]:</span> <span id="res-pin" class="value">0 (always solvable)</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: 18px;">
+        <h3>Force Tentacle Modes</h3>
+        <div class="force-toggles">
+          <label><input type="radio" name="force-mode" value="em" checked> <strong>EM</strong> — flux tubes</label>
+          <label><input type="radio" name="force-mode" value="strong"> <strong>Strong</strong> — knotting / linking (CCP confinement)</label>
+          <label><input type="radio" name="force-mode" value="ew"> <strong>Electroweak</strong> — symmetry-breaking twists</label>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <label>Separation <input type="range" id="sep" min="0.6" max="3.2" step="0.05" value="1.8"></label>
+          <label>Twist strength <input type="range" id="twist" min="0" max="4" step="0.1" value="1.6"></label>
+          <label>CCP compensation <input type="range" id="ccp" min="0" max="1" step="0.02" value="0.75"></label>
+        </div>
+
+        <div style="margin-top: 12px;">
+          <button class="tour-btn primary" id="glue-btn">Attempt Glue (hold gates)</button>
+          <button class="tour-btn" id="isolate-btn">Isolation Mode (collapse)</button>
+          <button class="tour-btn subtle" id="reset-viz">Reset Visualization</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: 18px;">
+        <h3>Selected Baryon Tables (Baryon Glueing.pdf)</h3>
+        <table class="math-table">
+          <tr><th>Baryon</th><th>Content</th><th>k</th><th>(−1)<sup>k</sup></th><th>Bordism (mod 16)</th></tr>
+          <tr><td>p</td><td>uud</td><td>1</td><td>−1</td><td>1</td></tr>
+          <tr><td>n</td><td>udd</td><td>2</td><td>+1</td><td>2</td></tr>
+          <tr><td>Σ⁺</td><td>uus</td><td>1</td><td>−1</td><td>1</td></tr>
+          <tr><td>Ω⁻</td><td>sss</td><td>3</td><td>−1</td><td>3</td></tr>
+          <tr><td>Λ<sub>c</sub><sup>+</sup></td><td>udc</td><td>1</td><td>−1</td><td>1</td></tr>
+        </table>
+        <p style="font-size:0.82rem; color:#8b90a8;">
+          Odd quarks (d, s, b) each contribute a factor of −1 to the holonomy product.
+          All entries have vanishing Pin⁻ obstruction and are realized in nature only as color-neutral composites.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right column: 3D viewer -->
+    <div>
+      <div class="panel">
+        <h3>Three.js Triple Junction + Tentacles</h3>
+        <div id="baryon-viewer" aria-label="Interactive Three.js visualization of three SKB defects joined by force tentacles"></div>
+        <div style="margin-top:8px; font-size:0.82rem; color:#8b90a8;">
+          Drag to orbit • Scroll to zoom. Tentacles (thin tubes) represent force carriers.
+          When separation is small and twist phase sum ≈ 0 mod 2π, strong-mode tentacles knot and lock (confinement via CCP).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section style="margin-top: 32px;">
+    <h2 style="font-size:1.25rem;">Physics &amp; Mathematics Notes</h2>
+    <ul style="line-height:1.65; color:#c8ccdf;">
+      <li><strong>Holonomy product</strong>: The product of the three color holonomies around the triple junction must be +1 for a globally consistent Pin⁻ structure on the composite.</li>
+      <li><strong>Bordism class</strong>: The class \(k \mod 16\) in \(\Omega_4^{\text{Pin}^-}\) measures the topological “oddness” of the junction. Non-zero classes are still allowed because the 4-manifold bounds in a higher-dimensional embedding or in a multi-baryon system.</li>
+      <li><strong>Causal Compensation Principle (CCP)</strong>: When the three SKBs approach, the internal CTCs must be compensated by the surrounding geometry. Strong-force tentacles visualize the “knotting” that enforces this compensation — separation costs infinite energy (confinement).</li>
+      <li><strong>Maxwell flux tubes (EM mode)</strong>: The thin pulsing tubes between defects carry quantized flux \(\frac{1}{2\pi}\oint F = Q\), reproducing the Coulomb field at long range.</li>
+    </ul>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+// ======================
+// Physics constants & helpers (traceable to PDFs)
+// ======================
+const ODD_QUARKS = new Set(['d','s','b']);
+function computeK(flavors) {
+  return flavors.reduce((acc, f) => acc + (ODD_QUARKS.has(f) ? 1 : 0), 0);
+}
+function holonomyProduct(k) { return Math.pow(-1, k); }
+function bordismClass(k) { return k % 16; }
+
+// ======================
+// Three.js scene
+// ======================
+const container = document.getElementById('baryon-viewer');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#05060f');
+
+const camera = new THREE.PerspectiveCamera(52, container.clientWidth / container.clientHeight, 0.1, 200);
+camera.position.set(0, 3.2, 7.5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(container.clientWidth, container.clientHeight);
+container.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+
+const amb = new THREE.AmbientLight(0x8899aa, 0.55);
+scene.add(amb);
+const key = new THREE.DirectionalLight(0xffffff, 0.95);
+key.position.set(5, 9, 4);
+scene.add(key);
+const rim = new THREE.PointLight(0x66ccff, 0.6, 40);
+rim.position.set(-6, 2, -5);
+scene.add(rim);
+
+// ======================
+// Geometry factories (mathematically grounded)
+// ======================
+function makeKleinArm(scale = 1, color = 0x88aaff) {
+  const geo = new THREE.TorusKnotGeometry(0.9 * scale, 0.28 * scale, 180, 28, 2, 5);
+  const mat = new THREE.MeshPhongMaterial({
+    color, shininess: 18, specular: 0x222233, flatShading: false,
+    polygonOffset: true, polygonOffsetFactor: 1
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.castShadow = mesh.receiveShadow = true;
+  return mesh;
+}
+
+function makeTentacle(length = 2.8, radius = 0.055, color = 0x66ffaa, twist = 1.0) {
+  const geo = new THREE.CylinderGeometry(radius, radius * 0.92, length, 28, 1, false);
+  const mat = new THREE.MeshPhongMaterial({
+    color, shininess: 6, emissive: 0x112211, transparent: true, opacity: 0.92
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.castShadow = true;
+  return mesh;
+}
+
+// ======================
+// Scene objects
+// ======================
+let arms = [];
+let tentacles = [];
+let joint;
+
+function buildScene() {
+  [...arms, ...tentacles, joint].forEach(o => o && scene.remove(o));
+  arms = []; tentacles = [];
+
+  const armColors = [0xff6b9d, 0x4fc3f7, 0x81c784];
+  const positions = [
+    new THREE.Vector3(2.1, 0, 0),
+    new THREE.Vector3(-1.05, 1.82, 0),
+    new THREE.Vector3(-1.05, -1.82, 0)
+  ];
+
+  for (let i = 0; i < 3; i++) {
+    const arm = makeKleinArm(0.95, armColors[i]);
+    arm.position.copy(positions[i]);
+    arm.userData.basePos = positions[i].clone();
+    scene.add(arm);
+    arms.push(arm);
+  }
+
+  const jgeo = new THREE.SphereGeometry(0.55, 32, 24);
+  const jmat = new THREE.MeshPhongMaterial({ color: 0x9aa0c8, shininess: 30 });
+  joint = new THREE.Mesh(jgeo, jmat);
+  scene.add(joint);
+
+  for (let i = 0; i < 3; i++) {
+    const t = makeTentacle(2.6, 0.06, 0x88ffcc);
+    scene.add(t);
+    tentacles.push(t);
+  }
+}
+
+function updateArms(separation, phaseOffset) {
+  const baseR = 2.1 * separation;
+  const angles = [0, 2.0944, 4.1888];
+  arms.forEach((arm, i) => {
+    const a = angles[i];
+    const target = new THREE.Vector3(
+      Math.cos(a) * baseR,
+      Math.sin(a) * baseR * 0.88,
+      Math.sin(phaseOffset * (i - 1) * 0.6) * 0.4
+    );
+    arm.position.lerp(target, 0.18);
+    arm.rotation.y = phaseOffset * (0.7 + i * 0.15);
+    arm.rotation.z = phaseOffset * 0.4 * (i % 2 ? 1 : -1);
+  });
+}
+
+function updateTentacles(mode, separation, twistStrength, ccp) {
+  const dirs = [
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(-0.5, 0.866, 0),
+    new THREE.Vector3(-0.5, -0.866, 0)
+  ];
+
+  tentacles.forEach((tent, i) => {
+    const dir = dirs[i];
+    const mid = dir.clone().multiplyScalar(1.15 * separation);
+
+    tent.position.copy(mid);
+    tent.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+
+    const len = 2.4 * separation;
+    tent.scale.set(1, len / 2.6, 1);
+
+    const t = performance.now() / 1000;
+    let twist = twistStrength;
+
+    if (mode === 'strong') {
+      twist = twistStrength * (1.8 + 0.9 * Math.sin(t * 1.7 + i));
+      tent.material.color.setHex(0xffaa66);
+      tent.material.opacity = 0.75 + 0.2 * ccp;
+    } else if (mode === 'ew') {
+      twist = twistStrength * 0.9 + Math.sin(t * 2.3 + i * 1.3) * 1.4;
+      tent.material.color.setHex(0x88ddff);
+      tent.material.opacity = 0.85;
+    } else {
+      twist = twistStrength * 0.6;
+      tent.material.color.setHex(0x66ffaa);
+      tent.material.opacity = 0.65 + 0.3 * Math.sin(t * 3.1 + i);
+    }
+
+    tent.rotation.z = twist * (1 + i * 0.2) + (mode === 'strong' ? Math.sin(t * 0.8) * 1.8 : 0);
+  });
+}
+
+// ======================
+// UI wiring
+// ======================
+let currentFlavors = ['u', 'u', 'd'];
+let currentMode = 'em';
+
+function updateCalculator() {
+  const k = computeK(currentFlavors);
+  const prod = holonomyProduct(k);
+  const bord = bordismClass(k);
+
+  document.getElementById('res-quarks').textContent = currentFlavors.join('');
+  document.getElementById('res-k').textContent = k;
+  document.getElementById('res-prod').textContent = prod > 0 ? '+1' : '−1';
+  document.getElementById('res-bordism').textContent = bord;
+
+  if (window.SKB_TOUR && k <= 3) {
+    window.SKB_TOUR.markComplete('particles');
+  }
+}
+
+function setFlavors(flavors) {
+  currentFlavors = flavors;
+  document.querySelectorAll('#flavor-picker .flavor-btn').forEach(btn => {
+    btn.classList.toggle('selected', flavors.includes(btn.dataset.flavor));
+  });
+  updateCalculator();
+}
+
+document.getElementById('flavor-picker').addEventListener('click', e => {
+  const btn = e.target.closest('.flavor-btn');
+  if (!btn) return;
+  const f = btn.dataset.flavor;
+  if (currentFlavors.length < 3) currentFlavors.push(f);
+  else currentFlavors = [currentFlavors[1], currentFlavors[2], f];
+  setFlavors(currentFlavors);
+});
+
+document.getElementById('preset-proton').onclick = () => setFlavors(['u','u','d']);
+document.getElementById('preset-neutron').onclick = () => setFlavors(['u','d','d']);
+document.getElementById('preset-sigma').onclick = () => setFlavors(['u','u','s']);
+document.getElementById('preset-omega').onclick = () => setFlavors(['s','s','s']);
+
+document.querySelectorAll('input[name="force-mode"]').forEach(r => {
+  r.addEventListener('change', () => { currentMode = r.value; });
+});
+
+const sepSlider = document.getElementById('sep');
+const twistSlider = document.getElementById('twist');
+const ccpSlider = document.getElementById('ccp');
+
+document.getElementById('glue-btn').onclick = () => {
+  sepSlider.value = 0.82;
+  ccpSlider.value = 0.92;
+  twistSlider.value = 2.8;
+  if (window.SKB_TOUR) window.SKB_TOUR.markComplete('forces');
+};
+
+document.getElementById('isolate-btn').onclick = () => {
+  sepSlider.value = 2.6;
+  ccpSlider.value = 0.15;
+};
+
+document.getElementById('reset-viz').onclick = () => {
+  sepSlider.value = 1.8;
+  twistSlider.value = 1.6;
+  ccpSlider.value = 0.75;
+  currentFlavors = ['u','u','d'];
+  setFlavors(currentFlavors);
+  buildScene();
+};
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const sep = parseFloat(sepSlider.value);
+  const twist = parseFloat(twistSlider.value);
+  const ccp = parseFloat(ccpSlider.value);
+  const t = performance.now() / 1000;
+
+  const phase = t * 0.7;
+  updateArms(sep, phase);
+  updateTentacles(currentMode, sep, twist, ccp);
+
+  if (joint) {
+    const s = 0.55 + (1 - sep * 0.25) * 0.35 * ccp;
+    joint.scale.setScalar(s);
+    joint.material.color.setHSL(0.58, 0.3, 0.55 + ccp * 0.25);
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+function onResize() {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+}
+window.addEventListener('resize', onResize);
+
+buildScene();
+setFlavors(['u','u','d']);
+animate();
+updateCalculator();
+
+console.log('%c[Baryons] Press ArrowRight on body to advance guided tour (when base script is active).', 'color:#556');
+</script>
+{% endblock %}

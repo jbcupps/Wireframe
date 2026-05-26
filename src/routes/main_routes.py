@@ -186,6 +186,21 @@ def skb_explorer():
     return render_template('skb_explorer.html')
 
 
+@main_bp.route('/baryons')
+def baryons():
+    """
+    Full interactive Baryon Triple Junction + Forces (Tentacles) demo.
+    Implements the exact constructions from Baryon Glueing.pdf:
+      - k = number of odd quarks (d, s, b)
+      - Holonomy product = (-1)^k
+      - Bordism class = k mod 16 in Ω₄^{Pin⁻} ≅ ℤ/16ℤ
+      - Pin⁻ gluing obstruction [c] = 0 for all cases (always solvable)
+      - Force tentacles: EM (flux tubes), Strong (knotting/linking via CCP),
+        Electroweak (symmetry-breaking twists)
+    """
+    return render_template('baryons.html')
+
+
 @main_bp.route('/health')
 def health_check():
     """Health check endpoint for container monitoring."""

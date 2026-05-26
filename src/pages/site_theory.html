@@ -1,37 +1,211 @@
 {% extends "site_base.html" %}
-{% block title %}The SKB Hypothesis - Spacetime Manifolds{% endblock %}
+{% block title %}The SKB Hypothesis — Framework, Axioms &amp; Predictions{% endblock %}
+
 {% block content %}
 <section class="sp-page-head">
-    <span class="sp-kicker">The Hypothesis</span>
+    <span class="sp-kicker">Guided Tour: Framework</span>
     <h1>Everything is spacetime.</h1>
-    <p>A geometric framework where particles and interactions are modeled as persistent topological structure in a four-dimensional manifold.</p>
+    <p>
+        The Spacetime Klein Bottle (SKB) hypothesis proposes that all fundamental particles and forces emerge as
+        topological and geometric features of a single 4-dimensional Lorentzian manifold. No point particles or
+        fundamental gauge fields are postulated; only spacetime itself.
+    </p>
+    <button id="mark-framework-complete" class="tour-btn primary" style="margin-top:12px;">
+        Mark Framework section complete (advances tour)
+    </button>
+</section>
+
+<section class="theory-layout" id="framework">
+    <article class="theory-panel">
+        <h2>Axiom 1 — Ontological Primacy of Spacetime</h2>
+        <p>
+            The 4-dimensional pseudo-Riemannian manifold \((M, g_{\mu\nu})\) with Lorentzian signature is the sole
+            fundamental entity. Einstein’s equation holds,
+        </p>
+        <p style="text-align:center; font-size:1.05rem;">
+            \[ R_{\mu\nu} - \frac12 R g_{\mu\nu} = 8\pi G T_{\mu\nu} \]
+        </p>
+        <p>
+            where the stress-energy \(T_{\mu\nu}\) arises entirely from topological defects and their compensation
+            structures rather than from external matter sources.
+        </p>
+    </article>
+
+    <article class="theory-panel">
+        <h2>Axiom 2 — SKB Construction</h2>
+        <p>
+            An isolated Spacetime Klein Bottle (SKB) is the quotient
+        </p>
+        <p style="text-align:center;">
+            \[ K = \mathbb{R}^{3,1} \Big/ \sim \qquad\text{where}\quad (t,x,y,z)\sim (t+T,-x,y,z) \]
+        </p>
+        <p>
+            This identification produces a non-orientable 4-manifold with a single closed timelike curve (CTC) of
+            period \(T\). The fundamental group is the infinite dihedral group \(\pi_1(K) \cong \langle a,b \mid aba = b^{-1}\rangle\).
+        </p>
+    </article>
+
+    <article class="theory-panel">
+        <h2>Axiom 3 — Causal Compensation Principle (CCP)</h2>
+        <p>
+            Every SKB containing internal CTCs must be accompanied by a compensating region \(C\) such that the
+            total holonomy around the composite is trivial for external observers:
+        </p>
+        <p style="text-align:center;">
+            \[ \oint_{\gamma_{\text{ext}}} T_{\mu\nu}\,dx^\mu = 0 \]
+        </p>
+        <p>
+            Uncompensated defects cannot exist as stable isolated objects — this supplies a purely topological
+            origin for confinement.
+        </p>
+    </article>
+</section>
+
+<section class="theory-layout" id="ontology">
+    <article class="theory-panel">
+        <h2>Pin⁻ Structures &amp; Fermions</h2>
+        <p>
+            On a non-orientable manifold a consistent spinor bundle exists if and only if the second Stiefel–Whitney
+            class satisfies the Kirby–Taylor obstruction
+        </p>
+        <p style="text-align:center;">
+            \[ w_2(TK) + w_1(TK)^2 = 0 \in H^2(K;\mathbb{Z}/2) \]
+        </p>
+        <p>
+            When this condition holds, a principal \(\operatorname{Pin}^-(3,1)\) bundle exists and spin-½ statistics
+            emerge automatically from the orientation-reversing loops: \(\psi(\gamma) = -\psi(1)\).
+        </p>
+    </article>
+
+    <article class="theory-panel">
+        <h2>Holonomy, Charge &amp; Color</h2>
+        <p>
+            Electric charge and color are quantized fluxes and holonomies on the defect:
+        </p>
+        <p style="text-align:center;">
+            \[ Q = \frac{1}{2\pi}\oint_{\partial K} F, \qquad \theta_q = \frac{2\pi k}{3} + \delta_q \]
+        </p>
+        <p>
+            For three quarks forming a baryon the color-neutrality (gluing) condition is that the product of the
+            three holonomies equals \(+1\):
+        </p>
+        <p style="text-align:center;">
+            \[ g_{q_1} \cdot g_{q_2} \cdot g_{q_3} = (-1)^k = +1 \pmod{\text{color}} \]
+        </p>
+        <p>
+            Here \(k\) is the number of “odd” quarks (d, s, b). This is exactly the invariant computed on the
+            <a href="/baryons">Baryons + Forces</a> page.
+        </p>
+    </article>
+
+    <article class="theory-panel">
+        <h2>Bordism Classification</h2>
+        <p>
+            The topological type of a triple junction is classified by its bordism class in the Pin⁻ cobordism group
+        </p>
+        <p style="text-align:center; font-size:1.1rem;">
+            \[ \Omega_4^{\operatorname{Pin}^-} \cong \mathbb{Z}/16\mathbb{Z} \]
+        </p>
+        <p>
+            For a baryon with \(k\) odd quarks the class is simply \(k \mod 16\). All physically realized baryons
+            have \([c]=0\) (vanishing obstruction), yet non-trivial bordism classes are allowed because the 4-manifold
+            can bound in a higher-dimensional or multi-baryon configuration.
+        </p>
+    </article>
 </section>
 
 <section class="theory-layout">
     <article class="theory-panel">
-        <h2>Geometric monism</h2>
-        <p>The primitive is the manifold itself. Matter-like degrees of freedom appear as stable, compact, non-orientable features of that geometry.</p>
+        <h2>Maxwell’s Equations from Flux Quantization</h2>
+        <p>
+            Away from defects the electromagnetic 2-form \(F\) satisfies the homogeneous equations
+        </p>
+        <p style="text-align:center;">
+            \[ dF = 0, \qquad d\star F = 0 \]
+        </p>
+        <p>
+            (no magnetic monopoles, Faraday’s law). On a 3-volume enclosing a defect the sourced equation appears:
+        </p>
+        <p style="text-align:center;">
+            \[ d\star F = \mu_0 J \]
+        </p>
+        <p>
+            where the current \(J\) is supported on the world-line of the SKB defect. Gauss’s law and the
+            Ampère–Maxwell law are recovered in components. The fine-structure constant itself emerges from the
+            minimal Planck-scale flux quantum:
+        </p>
+        <p style="text-align:center;">
+            \[ \alpha = \frac{e^2}{4\pi\epsilon_0\hbar c} = \frac{2\pi\ell_P}{\Phi_0\lambda_C} \]
+        </p>
     </article>
+
     <article class="theory-panel">
-        <h2>Topological defects</h2>
-        <p>Defects are classified by invariants such as orientability, winding, holonomy, and admissible Pin structures.</p>
-    </article>
-    <article class="theory-panel">
-        <h2>Causal compensation</h2>
-        <p>Internal closed structure is balanced by exterior consistency constraints so the visible spacetime remains causally well behaved.</p>
-    </article>
-    <article class="theory-panel">
-        <h2>Interactions as geometry</h2>
-        <p>Combinations and transitions are represented by cobordisms, gluing operations, and junction constraints rather than point vertices.</p>
+        <h2>The TwistMan Category (Ontology.pdf)</h2>
+        <p>
+            The full ontology is formalized as a monoidal category \(\mathbf{TwistMan}\) whose objects are
+            4-manifolds equipped with a twist structure \(T\), a set of CTCs \(C\), and a stability label \(S\).
+            Morphisms include:
+        </p>
+        <ul>
+            <li><strong>Gluing morphism</strong> \(f_{\text{glue}}\): two unstable SKBs \(\to\) one stable composite (pushout).</li>
+            <li><strong>Stabilization morphism</strong>: adds compensating twists until CCP is satisfied.</li>
+            <li><strong>Perspective morphism</strong>: external (dynamical) vs. internal (fixed history) observers.</li>
+        </ul>
+        <p>
+            The monoidal product \(\otimes\) corresponds to disjoint union; the unit is the empty manifold.
+            This categorical language makes the emergence of composite particles and the resolution of CTC
+            paradoxes completely rigorous.
+        </p>
     </article>
 </section>
 
-<section class="sp-band">
-    <h2>Explore the model</h2>
-    <p>Use the live demos to inspect the underlying surfaces and projections.</p>
-    <div class="sp-actions">
-        <a class="sp-button primary" href="/explore/crosscap">Crosscap particles</a>
-        <a class="sp-button" href="/explore/curves">Closed curves</a>
+<section class="sp-band" id="predictions">
+    <h2>Predictions &amp; Tests</h2>
+    <ul style="line-height:1.7;">
+        <li>Majorana neutrinos (neutrino SKBs are their own antiparticles).</li>
+        <li>Modified dispersion at the Planck scale: \(E^2 = p^2c^2 + m^2c^4 + \eta p^3c^3\ell_P/\hbar\).</li>
+        <li>Topological dark matter candidates — stable higher-winding SKBs.</li>
+        <li>Characteristic CTC signatures in ultra-high-energy cosmic rays or heavy-ion collisions.</li>
+    </ul>
+    <p style="margin-top:12px;">
+        All Standard-Model parameters (masses, charges, mixing angles, confinement) are recovered at low energy
+        from the geometry; new phenomena appear only at the Planck or topological scales.
+    </p>
+
+    <div class="sp-actions" style="margin-top:18px;">
+        <a class="sp-button primary" href="/baryons">Explore the Baryon Triple Junction</a>
+        <a class="sp-button" href="/papers">Download the full papers</a>
     </div>
+
+    <button id="mark-ontology-complete" class="tour-btn primary" style="margin-top:16px;">
+        Mark Ontology &amp; Predictions complete (advances tour)
+    </button>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn1 = document.getElementById('mark-framework-complete');
+    const btn2 = document.getElementById('mark-ontology-complete');
+
+    if (btn1) btn1.addEventListener('click', () => {
+        if (window.SKB_TOUR) {
+            window.SKB_TOUR.markComplete('framework');
+            window.SKB_TOUR.markComplete('ontology');
+        }
+        btn1.textContent = '✓ Framework marked complete';
+        btn1.disabled = true;
+    });
+
+    if (btn2) btn2.addEventListener('click', () => {
+        if (window.SKB_TOUR) {
+            window.SKB_TOUR.markComplete('ontology');
+            window.SKB_TOUR.markComplete('predictions');
+        }
+        btn2.textContent = '✓ Ontology & Predictions marked complete';
+        btn2.disabled = true;
+    });
+});
+</script>
 {% endblock %}
