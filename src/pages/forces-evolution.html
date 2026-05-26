@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Forces Evolution - Guided Spacetime Deformations{% endblock %}
+{% block head_extra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="{{ url_for('static', filename='js/forces-tentacles-evolution.js') }}"></script>
+<style>
+  #forces-canvas { width: 100%; height: 70vh; background: #0a0a1f; border: 1px solid #334455; }
+  .stage { position: absolute; top: 20px; left: 20px; background: rgba(10,10,30,0.85); padding: 12px 24px; border-radius: 8px; color: #0ff; font-family: monospace; }
+</style>
+{% endblock %}
+{% block content %}
+<div style="position:relative">
+  <h1>Forces as Continuous Spacetime Deformations</h1>
+  <p>7-stage guided evolution: flat fabric → defect → inseparable tentacles (gluons) → torsion tension → curvature deformation → mass emergence → baryon confinement</p>
+  <div id="forces-canvas"></div>
+  <div class="stage" id="stage-display">Stage 1: Flat Spacetime</div>
+  <div id="math-overlay"></div>
+</div>
+<script>
+  window.onload = () => ForcesEvolution.init();
+</script>
+{% endblock %}
