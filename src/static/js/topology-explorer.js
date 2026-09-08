@@ -61,7 +61,7 @@ function parseColor(hex) {
     return new THREE.Color(hex);
 }
 
-function surfaceGeometry(fn, uSegments, vSegments, wire = false) {
+function surfaceGeometry(fn, uSegments, vSegments, wire = false, { stitchMobiusSeam = false } = {}) {
     const positions = [];
     const colors = [];
     const indices = [];
@@ -69,7 +69,8 @@ function surfaceGeometry(fn, uSegments, vSegments, wire = false) {
     const shadow = new THREE.Color('#27355f');
     const highlight = new THREE.Color('#eaf8ff');
 
-    for (let i = 0; i <= uSegments; i += 1) {
+    const uRowCount = stitchMobiusSeam ? uSegments : uSegments + 1;
+    for (let i = 0; i < uRowCount; i += 1) {
         const u = i / uSegments;
         for (let j = 0; j <= vSegments; j += 1) {
             const v = j / vSegments;
@@ -84,13 +85,19 @@ function surfaceGeometry(fn, uSegments, vSegments, wire = false) {
 
     for (let i = 0; i < uSegments; i += 1) {
         for (let j = 0; j < vSegments; j += 1) {
+            const atMobiusSeam = stitchMobiusSeam && i === uSegments - 1;
+            const nextRow = atMobiusSeam ? 0 : i + 1;
             const a = i * (vSegments + 1) + j;
-            const b = (i + 1) * (vSegments + 1) + j;
-            const c = b + 1;
+            const b = nextRow * (vSegments + 1) + (atMobiusSeam ? vSegments - j : j);
+            const c = nextRow * (vSegments + 1) + (atMobiusSeam ? vSegments - j - 1 : j + 1);
             const d = a + 1;
             indices.push(a, b, d, b, c, d);
         }
     }
+
+    // A Möbius strip identifies its final cross-section with the first one in
+    // reverse order. Wrapping the final sampling row to that reversed row
+    // creates the identification without overlapping, zero-area seam faces.
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -120,17 +127,22 @@ function disposeObject(object) {
     });
 }
 
-function createInspectionPath(fn, twist) {
+function createInspectionPath(fn, twist, followsMobiusSeam = false) {
     const group = new THREE.Group();
     const points = [];
-    for (let i = 0; i <= 180; i += 1) {
+    const pathPointCount = followsMobiusSeam ? 180 : 181;
+    for (let i = 0; i < pathPointCount; i += 1) {
         const u = i / 180;
-        const v = 0.58 + 0.12 * Math.sin(u * Math.PI * 4);
+        // At the Möbius seam, v maps to 1 - v.  This path starts and ends at
+        // matching identified points, so it remains a single closed guide.
+        const v = followsMobiusSeam
+            ? 0.5 + 0.22 * Math.cos(u * Math.PI * 2)
+            : 0.58 + 0.12 * Math.sin(u * Math.PI * 4);
         const point = fn(u, v, twist);
         points.push(new THREE.Vector3(point.x, point.y, point.z));
     }
 
-    const line = new THREE.Line(
+    const line = new (followsMobiusSeam ? THREE.LineLoop : THREE.Line)(
         new THREE.BufferGeometry().setFromPoints(points),
         new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9 }),
     );
@@ -146,9 +158,16 @@ function createInspectionPath(fn, twist) {
 }
 
 function mobiusPoint(u, v, twist) {
-    const U = u * Math.PI * 2;
-    const V = (v - 0.5) * 1.15;
-    const half = U * (0.5 + twist * 0.35);
+    const safeU = THREE.MathUtils.clamp(Number.isFinite(u) ? u : 0, 0, 1);
+    const safeV = THREE.MathUtils.clamp(Number.isFinite(v) ? v : 0.5, 0, 1);
+    const twistRatio = THREE.MathUtils.clamp(Number.isFinite(twist) ? twist : 0.65, 0, 2);
+    const U = safeU * Math.PI * 2;
+    const V = (safeV - 0.5) * 1.15;
+
+    // Keep the endpoint rotation at exactly half a turn: theta(0) = 0 and
+    // theta(1) = PI.  The sinusoidal term adds smooth, visible local twists
+    // while preserving the Möbius edge identification for every slider value.
+    const half = U * 0.5 + twistRatio * Math.PI * 0.8 * Math.sin(U * 2);
     const radius = 2.0;
     return {
         x: (radius + V * Math.cos(half)) * Math.cos(U),
@@ -284,8 +303,8 @@ function fitCameraToObject(force = false) {
 }
 
 function createGeometry() {
-    const resolution = Number(resolutionControl.value);
-    const twist = Number(twistControl.value);
+    const resolution = THREE.MathUtils.clamp(Number(resolutionControl.value) || 64, 32, 96);
+    const twist = THREE.MathUtils.clamp(Number(twistControl.value) || 0, 0, 2);
     const wire = wireframeControl.checked;
     twistValue.textContent = twist.toFixed(2);
     resolutionValue.textContent = String(resolution);
@@ -331,12 +350,21 @@ function createGeometry() {
         crosscap: crosscapPoint,
     };
     const fn = fnByMode[mode] || kleinPoint;
-    mesh = surfaceGeometry((u, v) => fn(u, v, twist), resolution, Math.max(18, Math.floor(resolution * 0.68)), wire);
+    const isMobius = mode === 'mobius';
+    mesh = surfaceGeometry(
+        (u, v) => fn(u, v, twist),
+        resolution,
+        Math.max(18, Math.floor(resolution * 0.68)),
+        wire,
+        { stitchMobiusSeam: isMobius },
+    );
     scene.add(mesh);
-    inspectionGroup = createInspectionPath(fn, twist);
+    inspectionGroup = createInspectionPath(fn, twist, isMobius);
     scene.add(inspectionGroup);
     fitCameraToObject();
-    statusEl.textContent = `${config.title || mode} at twist ${twist.toFixed(2)}. Follow the bright path, then drag to inspect it.`;
+    statusEl.textContent = isMobius
+        ? `One continuous Möbius strip with twist variation ${twist.toFixed(2)}. Follow the closed bright path, then drag to inspect it.`
+        : `${config.title || mode} at twist ${twist.toFixed(2)}. Follow the bright path, then drag to inspect it.`;
 }
 
 function resize() {

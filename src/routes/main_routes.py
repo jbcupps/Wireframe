@@ -23,7 +23,9 @@ EXPLORERS = {
         "level": "Start here",
         "time": "5 min",
         "look_for": "Follow the bright path. After one complete trip, does it return to the side where it began?",
-        "control_hint": "Change the twist slowly and watch the path cross the middle of the strip.",
+        "control_hint": "Increase twist variation to add smooth bends while the strip stays joined as one continuous surface.",
+        "twist_label": "Twist variation",
+        "twist_help": "Adds smooth local twists without opening the strip's joined edge.",
         "next_slug": "klein",
     },
     "klein": {

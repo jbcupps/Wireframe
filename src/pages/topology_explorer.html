@@ -30,9 +30,9 @@
                 <button class="icon-button" id="reset-view" type="button">Reset view</button>
             </div>
             <label class="range-control">
-                <span>Twist <output id="twist-value" for="twist-control">0.65</output></span>
+                <span>{{ explorer.get("twist_label", "Twist") }} <output id="twist-value" for="twist-control">0.65</output></span>
                 <input id="twist-control" type="range" min="0" max="2" step="0.01" value="0.65" aria-describedby="twist-help">
-                <small id="twist-help">Changes the parameter used to draw the model.</small>
+                <small id="twist-help">{{ explorer.get("twist_help", "Changes the parameter used to draw the model.") }}</small>
             </label>
             <label class="range-control">
                 <span>Detail <output id="resolution-value" for="resolution-control">64</output></span>
