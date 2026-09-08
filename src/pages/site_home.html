@@ -1,28 +1,40 @@
 {% extends "site_base.html" %}
 {% block title %}Spacetime Manifolds - Interactive Topology Explorer{% endblock %}
 {% block content %}
-<section class="sp-hero">
-    <div class="sp-kicker">Interactive Topology Explorer</div>
-    <h1>Explore non-orientable spacetime geometry in your browser.</h1>
-    <p>Drag, twist, rotate, and compare Klein bottles, Mobius strips, crosscaps, closed curves, and 4D projections using live mathematical visualizations.</p>
-    <div class="sp-actions">
-        <a class="sp-button primary" href="/explore/klein">Open Explorer</a>
-        <a class="sp-button" href="/theory">Read the Hypothesis</a>
+<section class="sp-hero sp-home-hero">
+    <div class="sp-hero-copy">
+        <div class="sp-kicker">A visual physics notebook</div>
+        <h1>Start with a shape you can reason about.</h1>
+        <p>Use a familiar surface to build an intuition for paths, symmetry, and dimensions—then carry that intuition into spacetime geometry.</p>
+        <div class="sp-actions">
+            <a class="sp-button primary" href="/explore/mobius">Start with the M&ouml;bius strip <span aria-hidden="true">&rarr;</span></a>
+            <a class="sp-button" href="/theory">Why topology matters</a>
+        </div>
     </div>
+    <aside class="learning-card" aria-label="How to use the explorer">
+        <span class="eyebrow">A simple way in</span>
+        <ol class="learning-steps">
+            <li><span>01</span><div><strong>Look</strong><p>Rotate a model until its shape feels familiar.</p></div></li>
+            <li><span>02</span><div><strong>Experiment</strong><p>Change one control and watch only that idea move.</p></div></li>
+            <li><span>03</span><div><strong>Connect</strong><p>Use the prompt to turn what you saw into a question.</p></div></li>
+        </ol>
+    </aside>
 </section>
 
-<section class="sp-grid-section">
+<section class="sp-grid-section" id="explore">
     <div class="sp-section-heading">
-        <span>Explore Demos</span>
-        <h2>Operational routes matching spacetimemanifolds.com</h2>
+        <span>Choose an idea</span>
+        <h2>Find your next visual question</h2>
+        <p>There is no required background. Begin with a surface, a path, or a projection—whichever makes you curious.</p>
     </div>
     <div class="explorer-grid">
         {% for slug, item in explorers.items() %}
         <a class="explorer-card" href="/explore/{{ slug }}" style="--accent: {{ item.accent }}">
-            <div class="card-symbol">{{ item.symbol }}</div>
+            <div class="card-topline"><span class="card-symbol">{{ item.symbol }}</span><span class="card-level">{{ item.level }} &middot; {{ item.time }}</span></div>
             <h3>{{ item.title }}</h3>
             <p>{{ item.tagline }}</p>
             <span>{{ item.invariant }}</span>
+            <span class="card-link">Open the model <b aria-hidden="true">&rarr;</b></span>
         </a>
         {% endfor %}
     </div>
@@ -30,13 +42,14 @@
 
 <section class="sp-split">
     <div>
-        <span class="sp-kicker">The Hypothesis</span>
-        <h2>Spacetime as the primitive object</h2>
-        <p>The site presents particle-like behavior as geometry, topology, and holonomy rather than as separate objects placed inside spacetime.</p>
+        <span class="sp-kicker">From a strip to spacetime</span>
+        <h2>Geometry is a way to ask better questions.</h2>
+        <p>These models introduce the visual language behind a research hypothesis: particle-like behavior may arise from persistent geometric and topological structure, not only from objects placed in space.</p>
     </div>
     <div class="sp-callout">
-        <strong>Download route ready</strong>
-        <p>The public paper path is available at <a href="/papers/Everything_is_Spacetime.pdf">/papers/Everything_is_Spacetime.pdf</a>.</p>
+        <strong>Ready for the deeper version?</strong>
+        <p>Read the hypothesis in plain language, then follow the references when you want the mathematical detail.</p>
+        <a class="text-link" href="/theory">Read the hypothesis <span aria-hidden="true">&rarr;</span></a>
     </div>
 </section>
 {% endblock %}

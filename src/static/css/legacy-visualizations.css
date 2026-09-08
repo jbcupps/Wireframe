@@ -1,0 +1,103 @@
+/* Shared safeguards for the original Plotly and canvas-based learning labs. */
+
+.main-content,
+.content-wrapper,
+.content {
+    max-width: 1440px;
+    margin-inline: auto;
+}
+
+.visualization-container,
+.visualization-panel,
+.plot-container,
+.visualization,
+.plot-col,
+.side-by-side > *,
+.simulation-container > * {
+    min-inline-size: 0;
+}
+
+.plot-container,
+.visualization,
+#distribution-plot,
+#velocity-plot {
+    max-inline-size: 100%;
+    overflow: hidden;
+}
+
+.js-plotly-plot,
+.js-plotly-plot .plot-container,
+.js-plotly-plot .svg-container,
+.plotly,
+.plotly .svg-container {
+    max-inline-size: 100% !important;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .visualization-panel {
+        min-height: clamp(22rem, 64svh, 34rem) !important;
+        height: min(68svh, 34rem) !important;
+        max-height: none !important;
+    }
+
+    .visualization-panel .plot-container {
+        height: calc(100% - 96px) !important;
+    }
+
+    .visualization,
+    .plot-container,
+    #distribution-plot,
+    #velocity-plot {
+        min-height: clamp(20rem, 58svh, 32rem);
+    }
+
+    .controls-panel {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 680px) {
+    .container,
+    .main-content,
+    .content-wrapper,
+    .content {
+        width: 100%;
+        padding-inline: 14px;
+    }
+
+    .visualization-container {
+        min-height: 0;
+        padding: 12px;
+    }
+
+    .plot-row,
+    .side-by-side,
+    .simulation-container {
+        grid-template-columns: 1fr !important;
+    }
+
+    .plot-col {
+        min-width: 0;
+    }
+
+    .visualization,
+    .plot-container,
+    #distribution-plot,
+    #velocity-plot {
+        min-height: clamp(18rem, 56svh, 28rem);
+        height: clamp(18rem, 56svh, 28rem) !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .js-plotly-plot .main-svg,
+    .js-plotly-plot .gl-container {
+        transition: none !important;
+    }
+}

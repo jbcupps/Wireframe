@@ -12,26 +12,35 @@ const resetButton = document.getElementById('reset-view');
 const twistControl = document.getElementById('twist-control');
 const resolutionControl = document.getElementById('resolution-control');
 const wireframeControl = document.getElementById('wireframe-control');
+const twistValue = document.getElementById('twist-value');
+const resolutionValue = document.getElementById('resolution-value');
 
-let playing = true;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let playing = !reducedMotion;
 let mesh;
 let lineGroup;
+let inspectionGroup;
+let inspectionMarker;
+let inspectionPoints = [];
 let animationFrame;
 let start = performance.now();
+let hasFittedView = false;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#080914');
+scene.background = new THREE.Color('#09101e');
+scene.fog = new THREE.Fog('#09101e', 9, 18);
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
 camera.position.set(4.2, 3.2, 5.6);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 viewer.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.autoRotate = true;
+controls.autoRotate = playing;
 controls.autoRotateSpeed = 0.55;
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.62));
@@ -42,6 +51,12 @@ const rim = new THREE.PointLight(accent, 1.8, 18);
 rim.position.set(-3, 1.2, -2.5);
 scene.add(rim);
 
+const grid = new THREE.GridHelper(9, 12, '#28466e', '#162842');
+grid.position.y = -2.65;
+grid.material.transparent = true;
+grid.material.opacity = 0.32;
+scene.add(grid);
+
 function parseColor(hex) {
     return new THREE.Color(hex);
 }
@@ -51,6 +66,8 @@ function surfaceGeometry(fn, uSegments, vSegments, wire = false) {
     const colors = [];
     const indices = [];
     const color = parseColor(accent);
+    const shadow = new THREE.Color('#27355f');
+    const highlight = new THREE.Color('#eaf8ff');
 
     for (let i = 0; i <= uSegments; i += 1) {
         const u = i / uSegments;
@@ -58,8 +75,10 @@ function surfaceGeometry(fn, uSegments, vSegments, wire = false) {
             const v = j / vSegments;
             const p = fn(u, v);
             positions.push(p.x, p.y, p.z);
-            const shade = 0.58 + 0.42 * Math.sin((u + v) * Math.PI);
-            colors.push(color.r * shade, color.g * shade, color.b * shade);
+            const wave = 0.5 + 0.5 * Math.sin((u * 1.8 + v * 0.7) * Math.PI);
+            const vertexColor = shadow.clone().lerp(color, 0.42 + wave * 0.48);
+            vertexColor.lerp(highlight, Math.max(0, Math.sin((u - v) * Math.PI)) * 0.1);
+            colors.push(vertexColor.r, vertexColor.g, vertexColor.b);
         }
     }
 
@@ -80,14 +99,50 @@ function surfaceGeometry(fn, uSegments, vSegments, wire = false) {
     geometry.computeVertexNormals();
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
-        metalness: 0.08,
-        roughness: 0.36,
+        metalness: 0.14,
+        roughness: 0.31,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.92,
+        opacity: wire ? 0.9 : 0.96,
         wireframe: wire,
     });
     return new THREE.Mesh(geometry, material);
+}
+
+function disposeObject(object) {
+    object.traverse((child) => {
+        child.geometry?.dispose();
+        if (Array.isArray(child.material)) {
+            child.material.forEach((material) => material.dispose());
+        } else {
+            child.material?.dispose();
+        }
+    });
+}
+
+function createInspectionPath(fn, twist) {
+    const group = new THREE.Group();
+    const points = [];
+    for (let i = 0; i <= 180; i += 1) {
+        const u = i / 180;
+        const v = 0.58 + 0.12 * Math.sin(u * Math.PI * 4);
+        const point = fn(u, v, twist);
+        points.push(new THREE.Vector3(point.x, point.y, point.z));
+    }
+
+    const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9 }),
+    );
+    const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.075, 16, 16),
+        new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: accent, emissiveIntensity: 1.4 }),
+    );
+    marker.position.copy(points[0]);
+    group.add(line, marker);
+    inspectionMarker = marker;
+    inspectionPoints = points;
+    return group;
 }
 
 function mobiusPoint(u, v, twist) {
@@ -189,33 +244,83 @@ function createImmersionGroup(twist) {
     return group;
 }
 
+function getFocusObject() {
+    return mesh || lineGroup || inspectionGroup;
+}
+
+function fitCameraToObject(force = false) {
+    const focus = getFocusObject();
+    if (!focus) return;
+
+    const bounds = new THREE.Box3().setFromObject(focus);
+    if (bounds.isEmpty()) return;
+
+    const center = bounds.getCenter(new THREE.Vector3());
+    const sphere = bounds.getBoundingSphere(new THREE.Sphere());
+    const radius = Math.max(sphere.radius, 0.75);
+    const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+    const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * Math.max(camera.aspect, 0.1));
+    const requiredDistance = Math.max(
+        radius / Math.sin(verticalFov / 2),
+        radius / Math.sin(horizontalFov / 2),
+    ) * 1.18;
+    const currentDistance = camera.position.distanceTo(controls.target);
+
+    if (force || !hasFittedView || currentDistance < requiredDistance) {
+        const direction = camera.position.clone().sub(controls.target);
+        if (direction.lengthSq() < 0.001) direction.set(4.2, 3.2, 5.6);
+        direction.normalize();
+        camera.position.copy(center).addScaledVector(direction, requiredDistance);
+    }
+
+    controls.target.copy(center);
+    controls.minDistance = Math.max(1.2, radius * 0.8);
+    controls.maxDistance = requiredDistance * 4;
+    camera.near = Math.max(0.05, requiredDistance / 100);
+    camera.far = Math.max(100, requiredDistance * 8);
+    camera.updateProjectionMatrix();
+    controls.update();
+    hasFittedView = true;
+}
+
 function createGeometry() {
     const resolution = Number(resolutionControl.value);
     const twist = Number(twistControl.value);
     const wire = wireframeControl.checked;
+    twistValue.textContent = twist.toFixed(2);
+    resolutionValue.textContent = String(resolution);
 
     if (mesh) {
         scene.remove(mesh);
-        mesh.geometry?.dispose();
-        mesh.material?.dispose();
+        disposeObject(mesh);
         mesh = undefined;
     }
     if (lineGroup) {
         scene.remove(lineGroup);
+        disposeObject(lineGroup);
         lineGroup = undefined;
+    }
+    if (inspectionGroup) {
+        scene.remove(inspectionGroup);
+        disposeObject(inspectionGroup);
+        inspectionGroup = undefined;
+        inspectionMarker = undefined;
+        inspectionPoints = [];
     }
 
     if (mode === 'curves') {
         lineGroup = createCurveGroup(twist);
         scene.add(lineGroup);
-        statusEl.textContent = 'Closed loop families rendered. Drag to inspect winding and holonomy.';
+        fitCameraToObject();
+        statusEl.textContent = `Four closed loop families at twist ${twist.toFixed(2)}. Pause to compare their winding.`;
         return;
     }
 
     if (mode === 'immersion') {
         lineGroup = createImmersionGroup(twist);
         scene.add(lineGroup);
-        statusEl.textContent = '4D hypercube projected into 3D. Twist rotates through the hidden axis.';
+        fitCameraToObject();
+        statusEl.textContent = `A 4D frame projected into 3D at rotation ${twist.toFixed(2)}. Move the twist in small steps.`;
         return;
     }
 
@@ -228,7 +333,10 @@ function createGeometry() {
     const fn = fnByMode[mode] || kleinPoint;
     mesh = surfaceGeometry((u, v) => fn(u, v, twist), resolution, Math.max(18, Math.floor(resolution * 0.68)), wire);
     scene.add(mesh);
-    statusEl.textContent = `${config.title || mode} ready. Drag, zoom, and adjust controls.`;
+    inspectionGroup = createInspectionPath(fn, twist);
+    scene.add(inspectionGroup);
+    fitCameraToObject();
+    statusEl.textContent = `${config.title || mode} at twist ${twist.toFixed(2)}. Follow the bright path, then drag to inspect it.`;
 }
 
 function resize() {
@@ -238,6 +346,7 @@ function resize() {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
+    fitCameraToObject();
 }
 
 function animate(now) {
@@ -251,6 +360,10 @@ function animate(now) {
             lineGroup.rotation.x = elapsed * 0.18;
             lineGroup.rotation.y = elapsed * 0.28;
         }
+        if (inspectionMarker && inspectionPoints.length) {
+            const index = Math.floor((elapsed * 18) % inspectionPoints.length);
+            inspectionMarker.position.copy(inspectionPoints[index]);
+        }
     } else {
         controls.autoRotate = false;
     }
@@ -261,23 +374,35 @@ function animate(now) {
 
 playButton.addEventListener('click', () => {
     playing = !playing;
-    playButton.textContent = playing ? 'Pause' : 'Play';
-    playButton.setAttribute('aria-label', playing ? 'Pause animation' : 'Play animation');
+    playButton.textContent = playing ? 'Pause motion' : 'Play motion';
+    playButton.setAttribute('aria-label', playing ? 'Pause motion' : 'Play motion');
+    statusEl.textContent = playing ? 'Motion resumed. Drag at any time to take over the view.' : 'Motion paused. Compare the shape from this angle.';
 });
 
 resetButton.addEventListener('click', () => {
-    camera.position.set(4.2, 3.2, 5.6);
-    controls.target.set(0, 0, 0);
-    controls.update();
+    fitCameraToObject(true);
     start = performance.now();
 });
 
 twistControl.addEventListener('input', createGeometry);
-resolutionControl.addEventListener('change', createGeometry);
+resolutionControl.addEventListener('input', createGeometry);
 wireframeControl.addEventListener('change', createGeometry);
 window.addEventListener('resize', resize);
 window.addEventListener('beforeunload', () => cancelAnimationFrame(animationFrame));
+window.addEventListener('keydown', (event) => {
+    if (event.target instanceof HTMLInputElement) return;
+    if (event.code === 'Space') {
+        event.preventDefault();
+        playButton.click();
+    }
+    if (event.key.toLowerCase() === 'r') resetButton.click();
+});
 
 resize();
 createGeometry();
+if (reducedMotion) {
+    playButton.textContent = 'Play motion';
+    playButton.setAttribute('aria-label', 'Play motion');
+    statusEl.textContent = 'Motion is paused to respect your reduced-motion preference. Drag to inspect the model.';
+}
 animate(performance.now());

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
     {% block head_extra %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/legacy-visualizations.css') }}">
 </head>
 <body>
     <header class="site-header">
@@ -46,5 +47,6 @@
 
     <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
     {% block scripts %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/responsive-plots.js') }}"></script>
 </body>
 </html>

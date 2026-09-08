@@ -45,6 +45,7 @@ function initTabs() {
                     content.classList.add('active');
                 }
             });
+            document.dispatchEvent(new Event('legacy-plot-visible'));
         });
     });
 }
@@ -1461,4 +1462,4 @@ function calculatePoynting() {
 function clearCalculator() {
     // Reset the form based on current equation
     setupCalculatorForm(document.getElementById('equation-select').value);
-} 
+}

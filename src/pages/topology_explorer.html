@@ -11,33 +11,58 @@
 {% endblock %}
 {% block content %}
 <section class="explorer-shell" style="--accent: {{ explorer.accent }}">
-    <div class="explorer-info">
-        <a class="back-link" href="/">Back to demos</a>
-        <span class="sp-kicker">Interactive Demo</span>
+    <aside class="explorer-info">
+        <a class="back-link" href="/#explore">&larr; All models</a>
+        <span class="sp-kicker">{{ explorer.level }}</span>
         <h1>{{ explorer.title }}</h1>
         <p>{{ explorer.tagline }}</p>
         <div class="invariant-pill">{{ explorer.invariant }}</div>
-        <div class="control-panel">
-            <button class="icon-button" id="play-toggle" type="button" aria-label="Pause animation">Pause</button>
-            <button class="icon-button" id="reset-view" type="button" aria-label="Reset view">Reset</button>
+
+        <section class="observation-card" aria-labelledby="notice-heading">
+            <span class="eyebrow">First, notice</span>
+            <h2 id="notice-heading">{{ explorer.look_for }}</h2>
+        </section>
+
+        <div class="control-panel" aria-label="Model controls">
+            <div class="controls-heading"><span class="eyebrow">Then, experiment</span><p>{{ explorer.control_hint }}</p></div>
+            <div class="control-actions">
+                <button class="icon-button primary-control" id="play-toggle" type="button" aria-label="Pause animation">Pause motion</button>
+                <button class="icon-button" id="reset-view" type="button">Reset view</button>
+            </div>
             <label class="range-control">
-                <span>Twist</span>
-                <input id="twist-control" type="range" min="0" max="2" step="0.01" value="0.65">
+                <span>Twist <output id="twist-value" for="twist-control">0.65</output></span>
+                <input id="twist-control" type="range" min="0" max="2" step="0.01" value="0.65" aria-describedby="twist-help">
+                <small id="twist-help">Changes the parameter used to draw the model.</small>
             </label>
             <label class="range-control">
-                <span>Resolution</span>
+                <span>Detail <output id="resolution-value" for="resolution-control">64</output></span>
                 <input id="resolution-control" type="range" min="32" max="96" step="8" value="64">
+                <small>Lower detail makes the construction easier to inspect.</small>
             </label>
             <label class="check-control">
                 <input id="wireframe-control" type="checkbox">
-                <span>Wireframe</span>
+                <span><strong>Show construction lines</strong><small>Reveal the grid used to render the surface.</small></span>
             </label>
         </div>
-    </div>
-    <div class="viewer-panel">
+    </aside>
+    <figure class="viewer-panel">
+        <figcaption class="viewer-header">
+            <div><span class="eyebrow">Live model</span><strong>{{ explorer.title }}</strong></div>
+            <div class="viewer-gestures"><span>Drag to rotate</span><span>Scroll to zoom</span></div>
+        </figcaption>
         <div id="topology-viewer" class="topology-viewer" data-mode="{{ slug }}" aria-label="{{ explorer.title }} 3D viewer"></div>
-        <div class="viewer-status" id="viewer-status">Initializing geometry...</div>
+        <div class="viewer-status" id="viewer-status" aria-live="polite">Initializing geometry...</div>
+        <div class="viewer-legend"><span><i class="legend-dot" aria-hidden="true"></i> Bright path = a route to trace</span><span><i class="legend-grid" aria-hidden="true"></i> Grid = construction lines</span></div>
+    </figure>
+</section>
+
+<section class="explorer-reflection" style="--accent: {{ explorer.accent }}">
+    <div>
+        <span class="sp-kicker">Make the connection</span>
+        <h2>What changed when you moved one control?</h2>
+        <p>Describe the change before naming it. That habit is the bridge from a visual model to mathematical language.</p>
     </div>
+    <a class="sp-button primary" href="/explore/{{ next_slug }}">Next: {{ next_explorer.title }} <span aria-hidden="true">&rarr;</span></a>
 </section>
 {% endblock %}
 {% block scripts %}

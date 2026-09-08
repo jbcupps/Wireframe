@@ -385,7 +385,7 @@
                 }
             };
             
-            Plotly.newPlot('distribution-plot', plotData, layout);
+            Plotly.newPlot('distribution-plot', plotData, layout, { responsive: true, displaylogo: false });
         }
         
         function updateVelocityPlot() {
@@ -455,7 +455,7 @@
                 }
             };
             
-            Plotly.newPlot('velocity-plot', data, layout);
+            Plotly.newPlot('velocity-plot', data, layout, { responsive: true, displaylogo: false });
         }
         
         // Initialize when the page loads
