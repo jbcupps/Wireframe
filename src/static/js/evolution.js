@@ -1460,7 +1460,7 @@ class EvolutionUI {
             
             // Create header with hadron number
             const header = document.createElement('h4');
-            header.textContent = `Stable Hadron #${idx + 1}`;
+            header.textContent = `Candidate Model Match #${idx + 1}`;
             header.style.marginTop = '0';
             header.style.marginBottom = '10px';
             card.appendChild(header);
@@ -1680,7 +1680,7 @@ class EvolutionUI {
             
             // Create plot layout with auto-calculated ranges
             const layout = {
-                title: `Stable Hadron Visualization (Compatibility: ${hadron.compatibilityScore.toFixed(3)})`,
+                title: `Candidate Model Match (Compatibility: ${hadron.compatibilityScore.toFixed(3)})`,
                 scene: {
                     xaxis: { title: 'X', range: validateRange(xRange) },
                     yaxis: { title: 'Y', range: validateRange(yRange) },

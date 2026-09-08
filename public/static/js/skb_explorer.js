@@ -74,10 +74,12 @@ class SKBExplorer {
         });
         
         // Initialize tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        if (window.bootstrap && window.bootstrap.Tooltip) {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new window.bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
     }
     
     initializePlot() {
@@ -130,8 +132,14 @@ class SKBExplorer {
             
             // Update the plot
             if (data.plot && data.plot.data) {
-                Plotly.react(this.plotDiv, data.plot.data, 
-                    Plotly.relayout(this.plotDiv).layout || this.getDefaultLayout());
+                const plotElement = document.getElementById(this.plotDiv);
+                const layout = Object.assign(
+                    {},
+                    plotElement && plotElement.layout ? plotElement.layout : this.getDefaultLayout(),
+                    data.plot.layout || {},
+                    { autosize: true, uirevision: 'skb-explorer' }
+                );
+                Plotly.react(plotElement, data.plot.data, layout, PlotlyDefaults.getDefaultConfig());
             }
             
             // Update topological properties

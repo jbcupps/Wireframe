@@ -1,12 +1,13 @@
 // Initialize Three.js components
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const sceneElement = document.getElementById('scene');
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 camera.position.set(0, 0, 15);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight * 0.6); // 60% of viewport height
-document.getElementById('scene').appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+sceneElement.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -120,7 +121,7 @@ function updateHistogram() {
         }
     });
 
-    Plotly.newPlot(plotDiv, data, PlotlyDefaults.getDefaultLayout('Detection Pattern', 'Position (x)', 'Count / Intensity'));
+    Plotly.newPlot(plotDiv, data, PlotlyDefaults.getDefaultLayout('Detection Pattern', 'Position (x)', 'Count / Intensity'), PlotlyDefaults.getDefaultConfig());
 }
 
 function computeTheoreticalI() {
@@ -137,7 +138,7 @@ function computeTheoreticalI() {
         }
     }];
 
-    Plotly.newPlot(plotDiv, data, PlotlyDefaults.getDefaultLayout('Intensity Pattern', 'Position (x)', 'Intensity'));
+    Plotly.newPlot(plotDiv, data, PlotlyDefaults.getDefaultLayout('Intensity Pattern', 'Position (x)', 'Intensity'), PlotlyDefaults.getDefaultConfig());
 }
 
 function switchMode(mode) {
@@ -190,14 +191,19 @@ document.getElementById('play-button').addEventListener('click', () => {
 
 document.getElementById('reset-button').addEventListener('click', resetSimulation);
 
-// Handle window resize
-window.addEventListener('resize', () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+function resizeScene() {
+    const bounds = sceneElement.getBoundingClientRect();
+    const width = Math.max(1, bounds.width);
+    const height = Math.max(240, bounds.height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(width, height * 0.6);
-});
+    renderer.setSize(width, height, false);
+}
+
+const sceneResizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resizeScene);
+if (sceneResizeObserver) sceneResizeObserver.observe(sceneElement);
+window.addEventListener('resize', resizeScene, { passive: true });
+resizeScene();
 
 // Initial setup
 switchMode('wave');
@@ -208,4 +214,4 @@ function animate() {
     controls.update();
     renderer.render(scene, camera);
 }
-animate(); 
+animate();

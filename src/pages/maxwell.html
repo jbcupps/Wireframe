@@ -128,6 +128,11 @@
 {% block content %}
     <main class="container">
         <h1>Maxwell-Boltzmann Distribution Visualization</h1>
+        <section class="lab-brief" aria-label="How to use this lab">
+            <span class="lab-status">Established physics</span>
+            <div><h2>Try this</h2><p>Raise the temperature or lower the particle mass, then compare where the curve peaks.</p></div>
+            <p class="lab-brief__notice"><strong>Notice:</strong> a warmer gas has a broader speed distribution, so more molecules occupy faster speeds. Temperatures are in K; mass is in atomic mass units (u).</p>
+        </section>
         
         <div class="panel">
             <h2>About the Maxwell-Boltzmann Distribution</h2>
@@ -200,8 +205,8 @@
             </div>
             
             <div class="tabs">
-                <div class="tab active" data-tab="distribution">Speed Distribution</div>
-                <div class="tab" data-tab="3d-visualization">3D Velocity Distribution</div>
+                <button type="button" class="tab active" data-tab="distribution">Speed Distribution</button>
+                <button type="button" class="tab" data-tab="3d-visualization">3D Velocity Distribution</button>
             </div>
             
             <div class="tab-content active" id="distribution-tab">

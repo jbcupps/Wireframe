@@ -135,6 +135,23 @@ const EnhancedConfig = {
 
 // Default layout settings for all plots
 const PlotlyDefaults = {
+    // Kept as a small stable palette for the older labs. Newer code can use
+    // getCurrentThemeColors() when it needs to follow the theme exactly.
+    colors: {
+        primary: '#8b5cf6',
+        secondary: '#03dac6',
+        realColor: '#ff6e91',
+        imagColor: '#33c4ff',
+        envelopeColor: '#65ff8f'
+    },
+
+    getDefaultConfig: function() {
+        return Object.assign({}, EnhancedConfig, {
+            responsive: true,
+            displaylogo: false
+        });
+    },
+
     /**
      * Get CSS variable value
      * @param {string} name - CSS variable name
@@ -690,4 +707,4 @@ if (typeof Plotly !== 'undefined') {
     console.log('Enhanced Plotly defaults initialized for scientific visualization');
 } else {
     console.warn('Plotly library not found - enhanced defaults will be applied when available');
-} 
+}

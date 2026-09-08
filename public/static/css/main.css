@@ -1067,4 +1067,235 @@ h3::before {
 
 .tooltip:hover::after {
     opacity: 1;
-} 
+}
+
+/* Shared shell for the original interactive physics labs. */
+.legacy-visualization {
+    --legacy-panel: color-mix(in srgb, var(--surface) 94%, #0b1220);
+    --legacy-border: color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.legacy-visualization main.container,
+.legacy-visualization .main-content > .container,
+.legacy-visualization .content > .container {
+    max-width: 1400px;
+}
+
+.legacy-visualization .lab-brief {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(15rem, .8fr);
+    gap: 1rem 1.25rem;
+    align-items: start;
+    margin: 1rem 0 1.5rem;
+    padding: 1rem 1.125rem;
+    background: var(--legacy-panel);
+    border: 1px solid var(--legacy-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .16);
+}
+
+.legacy-visualization .lab-brief p,
+.legacy-visualization .lab-brief h2 {
+    margin: 0;
+}
+
+.legacy-visualization .lab-brief h2 {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.legacy-visualization .lab-brief__notice {
+    color: var(--text-secondary);
+    font-size: .94rem;
+}
+
+.legacy-visualization .lab-status {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 2rem;
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    background: rgba(3, 218, 198, .12);
+    color: var(--text-primary);
+    font-size: .83rem;
+    font-weight: 650;
+}
+
+.legacy-visualization .lab-status--research {
+    background: rgba(245, 158, 11, .15);
+    color: #ffe4a3;
+}
+
+.legacy-visualization .plot-container,
+.legacy-visualization [id="plot"],
+.legacy-visualization [id$="-plot"] {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.legacy-visualization .js-plotly-plot,
+.legacy-visualization .plot-container > .js-plotly-plot,
+.legacy-visualization [id="plot"] > .plot-container,
+.legacy-visualization [id$="-plot"] > .plot-container {
+    max-width: 100%;
+}
+
+.legacy-visualization .tabs,
+.legacy-visualization .content-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+.legacy-visualization .tab,
+.legacy-visualization .tab-btn,
+.legacy-visualization .tab-button {
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.legacy-visualization button.tab,
+.legacy-visualization button.tab-btn,
+.legacy-visualization button.tab-button {
+    background: transparent;
+}
+
+.legacy-visualization button,
+.legacy-visualization select,
+.legacy-visualization input[type="range"],
+.legacy-visualization input[type="checkbox"],
+.legacy-visualization input[type="radio"] {
+    touch-action: manipulation;
+}
+
+.legacy-visualization input[type="range"] {
+    min-height: 30px;
+}
+
+.legacy-visualization input[type="range"]::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+}
+
+.legacy-visualization input[type="range"]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+}
+
+.legacy-visualization canvas {
+    max-width: 100%;
+}
+
+@media (max-width: 900px) {
+    .legacy-visualization .lab-brief {
+        grid-template-columns: auto 1fr;
+    }
+
+    .legacy-visualization .lab-brief__notice {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .legacy-visualization .lab-brief {
+        display: block;
+        padding: .9rem 1rem;
+    }
+
+    .legacy-visualization .lab-brief > * + * {
+        margin-top: .6rem;
+    }
+
+    .legacy-visualization .tab,
+    .legacy-visualization .tab-btn,
+    .legacy-visualization .tab-button {
+        flex: 1 1 10rem;
+        text-align: center;
+    }
+
+    .legacy-visualization .plot-container,
+    .legacy-visualization [id="plot"],
+    .legacy-visualization [id$="-plot"] {
+        min-height: min(62vh, 440px);
+        height: clamp(280px, 58vw, 420px) !important;
+    }
+}
+
+/* Canvas labs size their renderers from the panel, never from the viewport. */
+.legacy-double-slit #scene {
+    height: clamp(320px, 54vw, 520px) !important;
+}
+
+.legacy-double-slit #plot {
+    height: clamp(260px, 42vw, 360px) !important;
+}
+
+.legacy-quantum-tunneling .main-content {
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.legacy-quantum-tunneling .visualization-panel {
+    display: grid;
+    grid-template-rows: minmax(300px, 3fr) minmax(220px, 2fr);
+    min-width: 0;
+    height: min(72vh, 720px);
+    max-height: none;
+}
+
+.legacy-quantum-tunneling #scene,
+.legacy-quantum-tunneling #plot {
+    height: auto !important;
+    min-height: 0;
+    margin: 0;
+}
+
+.legacy-skb-explorer .legacy-plot {
+    height: clamp(360px, 58vh, 640px) !important;
+}
+
+.legacy-skb-explorer .container-fluid {
+    max-width: 1400px;
+    margin: 5.5rem auto 0;
+    padding: 0 1.25rem;
+}
+
+.legacy-skb-explorer .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.legacy-skb-explorer .col-12 { flex: 1 0 100%; }
+.legacy-skb-explorer .col-lg-8 { flex: 2 1 38rem; min-width: 0; }
+.legacy-skb-explorer .col-lg-4 { flex: 1 1 18rem; min-width: 0; }
+.legacy-skb-explorer .card-body { padding: 1rem; }
+.legacy-skb-explorer .mt-3 { margin-top: 1rem; }
+.legacy-skb-explorer .mb-3 { margin-bottom: 1rem; }
+.legacy-skb-explorer .mt-4 { margin-top: 1.5rem; }
+.legacy-skb-explorer .d-grid { display: grid; }
+.legacy-skb-explorer .gap-2 { gap: .5rem; }
+.legacy-skb-explorer .text-center { text-align: center; }
+.legacy-skb-explorer .text-muted { color: var(--text-secondary); }
+
+.legacy-fermion-evolution .mini-plot-container {
+    min-height: 160px;
+}
+
+.legacy-fermion-evolution .mini-plot-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+@media (max-width: 1024px) {
+    .legacy-quantum-tunneling .main-content {
+        flex-direction: column;
+    }
+
+    .legacy-quantum-tunneling .visualization-panel,
+    .legacy-quantum-tunneling .controls-panel {
+        width: 100%;
+        max-width: none;
+    }
+}

@@ -2,7 +2,7 @@
 
 {% block title %}Spacetime Klein Bottle Explorer{% endblock %}
 
-{% block styles %}
+{% block head_extra %}
 {{ super() }}
 <style>
     .plot-container {
@@ -77,6 +77,11 @@
             <p class="text-center text-muted">
                 Explore the geometry and topology of a single Spacetime Klein Bottle (SKB) with interactive controls
             </p>
+            <section class="lab-brief" aria-label="How to use this lab">
+                <span class="lab-status lab-status--research">Research hypothesis</span>
+                <div><h2>Try this</h2><p>Adjust one twist at a time and rotate the surface to see how a 4D-inspired parameterization projects into 3D.</p></div>
+                <p class="lab-brief__notice"><strong>Notice:</strong> this is an exploratory geometric model. It illustrates a proposed SKB framework; it is not evidence that particles are Klein bottles.</p>
+            </section>
         </div>
     </div>
 
@@ -85,10 +90,10 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">3D Visualization</h5>
+                    <h5 class="mb-0">3D Visualization <span class="sr-only">— drag to rotate and use the plot toolbar to reset the view</span></h5>
                 </div>
                 <div class="card-body">
-                    <div id="skb-plot" class="plot-container" style="height: 600px;"></div>
+                    <div id="skb-plot" class="plot-container legacy-plot" aria-label="Interactive three-dimensional Spacetime Klein Bottle model"></div>
                 </div>
             </div>
         </div>

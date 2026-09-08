@@ -387,6 +387,28 @@
     }
     
         /* Research Links Enhancement */    .research-links {        text-align: center;        margin: 20px 0;        padding: 15px;        background: rgba(255, 255, 255, 0.02);        border-radius: 12px;        border: 1px solid rgba(255, 255, 255, 0.05);    }        /* Fix for text overlay issues */    #plot {        height: 100% !important;        position: relative;        z-index: 1;    }        .js-plotly-plot {        height: 100% !important;    }        /* Minimize properties panel intrusion */    .properties-panel {        font-size: 0.7rem !important;        padding: 4px 15px !important;        max-height: 60px !important;        background: rgba(45, 55, 72, 0.8) !important;    }
+
+    /* Keep the chart and its readout in separate rows so neither covers the other. */
+    .legacy-visualization .visualization-panel {
+        display: grid;
+        grid-template-rows: minmax(300px, 1fr) auto;
+        height: min(72vh, 800px);
+        min-height: 0;
+    }
+
+    .legacy-visualization .visualization-panel .plot-container {
+        height: auto !important;
+        min-height: 0;
+        margin: 0;
+    }
+
+    .legacy-visualization .visualization-panel .properties-panel {
+        position: static;
+        max-height: none !important;
+        padding: .75rem 1rem !important;
+        border-radius: 0;
+        opacity: 1;
+    }
     
     .research-links p {
         margin: 0;
@@ -512,6 +534,11 @@
             <header>
                 <h1>Spacetime Klein Bottle 4D Manifold Explorer</h1>
                 <div class="subtitle">Interactive visualization and exploration of 4D manifold topological structures</div>
+                <section class="lab-brief" aria-label="How to use this lab">
+                    <span class="lab-status lab-status--research">Research hypothesis</span>
+                    <div><h2>Try this</h2><p>Change one twist at a time, rotate the model, and use Reset View in the chart toolbar whenever you want to start over.</p></div>
+                    <p class="lab-brief__notice"><strong>Notice:</strong> this is a geometric exploration of a proposed SKB framework. It does not demonstrate that the proposed structures describe real particles.</p>
+                </section>
             </header>
     
             <div class="research-links">

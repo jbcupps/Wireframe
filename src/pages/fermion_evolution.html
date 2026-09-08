@@ -20,6 +20,11 @@
                 Explore the evolution of fermions as 4D Klein bottle structures undergoing topological changes, 
                 mass generation through temporal loops, and electromagnetic field interactions.
             </div>
+            <section class="lab-brief" aria-label="How to use this lab">
+                <span class="lab-status lab-status--research">Research hypothesis</span>
+                <div><h2>Try this</h2><p>Select a particle, change one parameter, then pause to inspect the projected surface and the three small trend charts.</p></div>
+                <p class="lab-brief__notice"><strong>Notice:</strong> the particle masses are established measurements, while the Klein-bottle and closed-timelike-curve interpretation is speculative and shown here as a research visualization.</p>
+            </section>
         </header>
 
         <!-- Research Context -->
@@ -168,7 +173,7 @@
                     </div>
                 </div>
                 
-                <div id="klein-bottle-plot" class="plot-container">
+                <div id="klein-bottle-plot" class="plot-container" aria-label="Interactive projected Klein bottle research model">
                     <div class="loading-indicator">
                         <i class="fas fa-spinner fa-spin"></i>
                         <span>Initializing Klein Bottle Visualization...</span>
@@ -325,71 +330,4 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/fermion-evolution.js') }}"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the fermion evolution visualization
-    if (typeof FermionEvolution !== 'undefined') {
-        window.fermionViz = new FermionEvolution();
-        window.fermionViz.init();
-    } else {
-        console.warn('FermionEvolution class not loaded. Basic functionality will be limited.');
-        // Initialize basic functionality
-        initBasicControls();
-    }
-});
-
-function initBasicControls() {
-    // Basic tab switching
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            
-            // Update active states
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            
-            this.classList.add('active');
-            document.getElementById(tabId + '-content').classList.add('active');
-        });
-    });
-    
-    // Basic parameter display updates
-    const sliders = document.querySelectorAll('input[type="range"]');
-    sliders.forEach(slider => {
-        slider.addEventListener('input', function() {
-            const valueDisplay = document.getElementById(this.id.replace('-', '-') + '-value') || 
-                                document.querySelector(`[id$="${this.id.split('-').pop()}-value"]`);
-            if (valueDisplay) {
-                let value = this.value;
-                if (this.id === 'twist-angle') value += '°';
-                else if (this.id === 'field-strength') value += '%';
-                else if (this.id === 'evolution-speed') value += 'x';
-                valueDisplay.textContent = value;
-            }
-        });
-    });
-    
-    // Basic particle selection
-    const particleInputs = document.querySelectorAll('input[name="particle"]');
-    particleInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            const particleData = {
-                electron: { name: 'Electron', mass: '0.511 MeV/c²', charge: '-1e' },
-                muon: { name: 'Muon', mass: '105.7 MeV/c²', charge: '-1e' },
-                tau: { name: 'Tau', mass: '1777 MeV/c²', charge: '-1e' }
-            };
-            
-            const data = particleData[this.value];
-            document.getElementById('current-particle').textContent = data.name + ' Klein Bottle Evolution';
-            document.getElementById('current-mass').textContent = data.mass;
-            document.getElementById('current-charge').textContent = data.charge;
-        });
-    });
-    
-    console.log('Basic fermion evolution controls initialized');
-}
-</script>
-{% endblock %} 
+{% endblock %}

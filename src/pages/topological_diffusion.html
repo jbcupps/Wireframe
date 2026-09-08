@@ -423,6 +423,11 @@
         <header>
             <h1>Topological Diffusion GAN</h1>
             <div class="subtitle">Generating and identifying topological maps using generative adversarial networks and diffusion models</div>
+            <section class="lab-brief" aria-label="How to use this lab">
+                <span class="lab-status lab-status--research">Exploratory model</span>
+                <div><h2>Try this</h2><p>Generate samples, change the noise strength, and compare the diffusion path, GAN sample view, and map below.</p></div>
+                <p class="lab-brief__notice"><strong>Notice:</strong> the displays are an interactive concept model for topological data exploration, not results from a trained physics model or evidence for a particle theory.</p>
+            </section>
         </header>
         <div class="main-content">
             <div class="visualization-panel">
@@ -435,7 +440,7 @@
             
             <div class="controls-panel">
                 <div class="control-group">
-                    <h3>Target Particle Configuration</h3>
+                    <h3>Target Model Configuration</h3>
                     <div class="control-row">
                         <label for="particle-type">Particle Type</label>
                         <select id="particle-type" style="flex: 2; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-color); padding: 5px; border-radius: 4px;">
@@ -455,7 +460,7 @@
                         </label>
                     </div>
                     <div class="control-row">
-                        <label for="match-count">Topological Matches</label>
+                        <label for="match-count">Model Matches</label>
                         <span class="property-value" id="match-count">0/3</span>
                     </div>
                 </div>

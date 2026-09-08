@@ -163,7 +163,7 @@ class TopologicalDiffusionGAN {
             showlegend: false
         };
 
-        Plotly.newPlot('topo-map-plot', [topoData], layout);
+        Plotly.newPlot('topo-map-plot', [topoData], Object.assign(layout, { autosize: true, uirevision: 'topology-map' }), PlotlyDefaults.getDefaultConfig());
     }
 
     initializeDiffusionPlot() {
@@ -181,7 +181,7 @@ class TopologicalDiffusionGAN {
             showlegend: false
         };
 
-        Plotly.newPlot('diffusion-plot', [diffusionData], layout);
+        Plotly.newPlot('diffusion-plot', [diffusionData], Object.assign(layout, { autosize: true, uirevision: 'diffusion-path' }), PlotlyDefaults.getDefaultConfig());
     }
 
     initializeGANPlot() {
@@ -199,7 +199,7 @@ class TopologicalDiffusionGAN {
             showlegend: false
         };
 
-        Plotly.newPlot('gan-plot', [ganData], layout);
+        Plotly.newPlot('gan-plot', [ganData], Object.assign(layout, { autosize: true, uirevision: 'gan-distribution' }), PlotlyDefaults.getDefaultConfig());
     }
 
     setupEventListeners() {
@@ -1239,4 +1239,4 @@ document.addEventListener('DOMContentLoaded', initialize);
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const app = new TopologicalDiffusionGAN();
-}); 
+});

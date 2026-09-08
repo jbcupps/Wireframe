@@ -1,12 +1,13 @@
 // Three.js Setup
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight * 0.6), 0.1, 1000);
+const sceneElement = document.getElementById('scene');
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 camera.position.set(0, 5, 15);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight * 0.6);
-document.getElementById('scene').appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+sceneElement.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enablePan = true;
@@ -114,7 +115,7 @@ function updatePlot() {
         type: 'scatter',
         mode: 'lines',
         line: { color: PlotlyDefaults.colors.realColor }
-    }], PlotlyDefaults.getDefaultLayout('Probability Density |ψ|²', 'Position (x)', '|ψ|²'));
+    }], PlotlyDefaults.getDefaultLayout('Probability Density |ψ|²', 'Position (x)', '|ψ|²'), PlotlyDefaults.getDefaultConfig());
 }
 
 // Calculate Probabilities
@@ -190,15 +191,20 @@ function resetSimulation() {
     calculateProbabilities();
 }
 
-// Window Resize Handler
-window.addEventListener('resize', () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight * 0.6;
+function resizeScene() {
+    const bounds = sceneElement.getBoundingClientRect();
+    const width = Math.max(1, bounds.width);
+    const height = Math.max(240, bounds.height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-});
+    renderer.setSize(width, height, false);
+}
+
+const sceneResizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resizeScene);
+if (sceneResizeObserver) sceneResizeObserver.observe(sceneElement);
+window.addEventListener('resize', resizeScene, { passive: true });
+resizeScene();
 
 // Initial Setup
 resetSimulation();
-updatePlot(); 
+updatePlot();

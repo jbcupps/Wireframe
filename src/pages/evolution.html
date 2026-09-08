@@ -612,6 +612,11 @@
         <header>
             <h1>Evolutionary Algorithm for 4D Manifolds</h1>
             <p class="subtitle">Evolving Topological Structures for Compatibility</p>
+            <section class="lab-brief" aria-label="How to use this lab">
+                <span class="lab-status lab-status--research">Research hypothesis</span>
+                <div><h2>Try this</h2><p>Generate a population, step through a few generations, and compare the best score with the target settings.</p></div>
+                <p class="lab-brief__notice"><strong>Notice:</strong> the scores measure compatibility within this exploratory algorithm. They do not establish the existence or properties of physical hadrons.</p>
+            </section>
             
             <div class="nav-links">
                 <a href="/">Home</a>
@@ -652,19 +657,19 @@
                 </div>
             </div>
             
-            <!-- Stable Hadrons Section -->
+            <!-- Candidate-model matches section -->
             <div class="control-card" id="stable-hadrons-section" style="display: none; margin-bottom: 20px;">
                 <div class="card-header">
-                    <h3 class="card-title">Stable Hadrons Found</h3>
+                    <h3 class="card-title">Candidate Model Matches</h3>
                     <div class="tooltip">
                         <i class="fas fa-info-circle tooltip-icon"></i>
-                        <span class="tooltip-text">Sets of three Sub-SKBs that can form stable hadrons. These have been removed from the evolutionary process.</span>
+                        <span class="tooltip-text">Triplets that score as compatible under this exploratory model. They are removed from later generations so you can inspect them.</span>
                     </div>
                 </div>
                 
                 <div id="stable-hadrons-container">
-                    <!-- Stable hadrons will be listed here -->
-                    <p id="no-stable-hadrons-message">No stable hadrons found yet. Continue evolving to find compatible triplets.</p>
+                    <!-- Candidate model matches will be listed here -->
+                    <p id="no-stable-hadrons-message">No candidate matches yet. Continue evolving to compare compatible triplets in this model.</p>
                 </div>
             </div>
         </header>
@@ -673,25 +678,25 @@
             <div class="controls-panel" style="flex: 1; min-width: 250px;">
                 <div class="control-card">
                     <div class="card-header">
-                        <h3 class="card-title">Top Matched Triplets</h3>
+                        <h3 class="card-title">Top Candidate Triplets</h3>
                         <div class="tooltip">
                             <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Triplets that best match the target quark configuration. Higher fitness values indicate better matches.</span>
+                            <span class="tooltip-text">Triplets that best match the chosen model target. Higher fitness values mean a closer match within this algorithm.</span>
                         </div>
                     </div>
                     
                     <div id="top-triplets-container">
-                        <p id="no-triplets-message">Generate population and evolve to find triplets that match quark characteristics.</p>
+                        <p id="no-triplets-message">Generate a population and evolve it to find triplets that match the selected model target.</p>
                     </div>
                 </div>
                 
                 <!-- Target Configuration -->
                 <div class="control-card">
                     <div class="card-header">
-                        <h3 class="card-title">Target Quark Configuration</h3>
+                        <h3 class="card-title">Target Model Configuration</h3>
                         <div class="tooltip">
                             <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">The target quark configuration we are evolving toward. Currently set to a proton with two up quarks and one down quark.</span>
+                            <span class="tooltip-text">The model target used by this simulation. Its labels borrow familiar particle terminology but do not represent a measured particle calculation.</span>
                         </div>
                     </div>
                     
@@ -757,7 +762,7 @@
                         <button id="reset-btn" title="Reset evolution">
                             <i class="fas fa-undo"></i> Reset
                         </button>
-                        <button id="find-hadrons-btn" title="Find stable hadrons">
+                        <button id="find-hadrons-btn" title="Find candidate model matches">
                             <i class="fas fa-search"></i> Find Hadrons
                         </button>
                     </div>
@@ -854,7 +859,7 @@
                         <h3 class="card-title">Target Topological Properties</h3>
                         <div class="tooltip">
                             <i class="fas fa-info-circle tooltip-icon"></i>
-                            <span class="tooltip-text">Define target values for topological properties of a stable hadron.</span>
+                            <span class="tooltip-text">Define target values for topological properties in this candidate model.</span>
                         </div>
                     </div>
                     
@@ -950,7 +955,7 @@
                 </div>
                 <div class="legend-item incompatible">
                     <div class="legend-color"></div>
-                    <span>Incompatible: Cannot form stable hadrons</span>
+                    <span>Incompatible under this model</span>
                 </div>
                 <div class="legend-item neutral">
                     <div class="legend-color"></div>
@@ -962,7 +967,7 @@
                 </div>
                 <div class="legend-item stable-hadron">
                     <div class="legend-color"></div>
-                    <span>Stable Hadron: Part of a compatible triplet</span>
+                    <span>Candidate match: Part of a compatible model triplet</span>
                 </div>
             </div>
             

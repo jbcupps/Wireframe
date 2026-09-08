@@ -1,578 +1,179 @@
-/**
- * Fermion Evolution Visualization
- * Interactive demonstration of fermions as Klein bottle structures in the SKB framework
- */
+/* Interactive research-model adapter for the Fermion Evolution page. */
+(function () {
+    'use strict';
 
-class FermionEvolution {
-    constructor() {
-        this.isPlaying = false;
-        this.currentTime = 0;
-        this.animationSpeed = 1.0;
-        this.selectedParticle = 'up';
-        this.evolutionType = 'beta_decay';
-        this.twistAngle = 2.09; // 2π/3
-        this.ctcStrength = 0.5;
-        this.animationFrame = null;
-        
-        // Particle properties based on the paper
-        this.particles = {
-            up: {
-                name: 'Up Quark',
-                mass: 2.3, // MeV/c²
-                charge: 2/3,
-                twist: 2*Math.PI/3 + 0.10,
-                color: '#ff4444',
-                period: 1.2
-            },
-            down: {
-                name: 'Down Quark', 
-                mass: 4.8, // MeV/c²
-                charge: -1/3,
-                twist: 4*Math.PI/3 - 0.20,
-                color: '#4444ff',
-                period: 0.9
-            },
-            electron: {
-                name: 'Electron',
-                mass: 0.511, // MeV/c²
-                charge: -1,
-                twist: Math.PI,
-                color: '#44ff44',
-                period: 2.1
-            },
-            muon: {
-                name: 'Muon',
-                mass: 105.7, // MeV/c²
-                charge: -1,
-                twist: Math.PI + 0.3,
-                color: '#ff44ff',
-                period: 0.3
-            },
-            neutrino: {
-                name: 'Neutrino',
-                mass: 0.001, // MeV/c²
-                charge: 0,
-                twist: Math.PI/2,
-                color: '#ffff44',
-                period: 10.0
-            }
-        };
-        
-        this.initializeControls();
-        this.initializeVisualization();
-        this.setupTabSwitching();
-    }
-    
-    initializeControls() {
-        // Control elements
-        this.particleSelect = document.getElementById('particleType');
-        this.evolutionSelect = document.getElementById('evolutionType');
-        this.twistSlider = document.getElementById('twistAngle');
-        this.timeSlider = document.getElementById('timeParam');
-        this.ctcSlider = document.getElementById('ctcStrength');
-        this.speedSlider = document.getElementById('animationSpeed');
-        this.playPauseBtn = document.getElementById('playPause');
-        this.resetBtn = document.getElementById('reset');
-        this.showEquationsBtn = document.getElementById('showEquations');
-        
-        // Value displays
-        this.twistValue = document.getElementById('twistValue');
-        this.timeValue = document.getElementById('timeValue');
-        this.ctcValue = document.getElementById('ctcValue');
-        this.speedValue = document.getElementById('speedValue');
-        
-        // Property displays
-        this.currentMass = document.getElementById('currentMass');
-        this.currentCharge = document.getElementById('currentCharge');
-        this.currentSpin = document.getElementById('currentSpin');
-        this.currentPeriod = document.getElementById('currentPeriod');
-        this.currentEnergy = document.getElementById('currentEnergy');
-        this.currentTopology = document.getElementById('currentTopology');
-        
-        // Event listeners
-        this.particleSelect.addEventListener('change', () => this.onParticleChange());
-        this.evolutionSelect.addEventListener('change', () => this.onEvolutionChange());
-        this.twistSlider.addEventListener('input', () => this.onTwistChange());
-        this.timeSlider.addEventListener('input', () => this.onTimeChange());
-        this.ctcSlider.addEventListener('input', () => this.onCTCChange());
-        this.speedSlider.addEventListener('input', () => this.onSpeedChange());
-        this.playPauseBtn.addEventListener('click', () => this.toggleAnimation());
-        this.resetBtn.addEventListener('click', () => this.reset());
-        this.showEquationsBtn.addEventListener('click', () => this.showEquations());
-        
-        // Initialize displays
-        this.updateDisplays();
-    }
-    
-    initializeVisualization() {
-        this.createFermionPlot();
-        this.createTimelinePlot();
-    }
-    
-    createFermionPlot() {
-        const container = document.getElementById('fermionPlot');
-        
-        // Generate Klein bottle surface for fermion
-        const data = this.generateKleinBottleData();
-        
-        const layout = {
-            ...getCommonPlotLayout(),
-            title: '',
-            scene: {
-                xaxis: { title: 'X (space)', range: [-2, 2] },
-                yaxis: { title: 'Y (space)', range: [-2, 2] },
-                zaxis: { title: 'Z (space)', range: [-2, 2] },
-                camera: {
-                    eye: { x: 1.5, y: 1.5, z: 1.5 }
-                },
-                aspectmode: 'cube',
-                bgcolor: 'rgba(0,0,0,0)'
-            },
-            margin: { l: 0, r: 0, t: 0, b: 0 },
-            showlegend: false
-        };
-        
-        Plotly.newPlot(container, data, layout, {
-            displayModeBar: false,
-            responsive: true
-        });
-    }
-    
-    generateKleinBottleData() {
-        const particle = this.particles[this.selectedParticle];
-        const u_vals = [];
-        const v_vals = [];
-        const x_vals = [];
-        const y_vals = [];
-        const z_vals = [];
-        const colors = [];
-        
-        const resolution = 40;
-        const time = this.currentTime;
-        const twist = this.twistAngle;
-        const ctc = this.ctcStrength;
-        
-        // Generate Klein bottle parameterization with CTC effects
-        for (let i = 0; i <= resolution; i++) {
-            const u_row = [];
-            const v_row = [];
-            const x_row = [];
-            const y_row = [];
-            const z_row = [];
-            const color_row = [];
-            
-            for (let j = 0; j <= resolution; j++) {
-                const u = (i / resolution) * 2 * Math.PI;
-                const v = (j / resolution) * 2 * Math.PI;
-                
-                // Klein bottle with CTC modulation
-                const r = 2 + Math.cos(u/2) * Math.sin(v) - Math.sin(u/2) * Math.sin(2*v);
-                const temporal_mod = 1 + ctc * Math.sin(time * 2 * Math.PI / particle.period);
-                
-                // Spatial coordinates with twist and time evolution
-                const x = r * Math.cos(v) * temporal_mod;
-                const y = r * Math.sin(v) * temporal_mod;
-                const z = Math.cos(u/2) * Math.cos(v) + Math.sin(u/2) * Math.cos(2*v);
-                
-                // Apply twist angle rotation
-                const x_twisted = x * Math.cos(twist) - z * Math.sin(twist);
-                const z_twisted = x * Math.sin(twist) + z * Math.cos(twist);
-                
-                u_row.push(u);
-                v_row.push(v);
-                x_row.push(x_twisted);
-                y_row.push(y);
-                z_row.push(z_twisted);
-                
-                // Color based on curvature and charge density
-                const curvature = Math.abs(Math.sin(u) * Math.cos(v));
-                const charge_density = particle.charge * curvature;
-                color_row.push(charge_density);
-            }
-            
-            u_vals.push(u_row);
-            v_vals.push(v_row);
-            x_vals.push(x_row);
-            y_vals.push(y_row);
-            z_vals.push(z_row);
-            colors.push(color_row);
+    const particles = {
+        electron: { name: 'Electron', mass: 0.511, charge: '-1e', color: '#65d6ff' },
+        muon: { name: 'Muon', mass: 105.7, charge: '-1e', color: '#d7a6ff' },
+        tau: { name: 'Tau', mass: 1777, charge: '-1e', color: '#ffad77' }
+    };
+
+    class FermionEvolution {
+        constructor() {
+            this.plot = document.getElementById('klein-bottle-plot');
+            this.timeline = document.getElementById('timeline');
+            this.frame = null;
+            this.playing = false;
+            this.view = '3d';
+            if (!this.plot || !this.timeline || typeof Plotly === 'undefined') return;
+            this.bindControls();
+            this.watchCanvases();
+            this.render();
         }
-        
-        // Create the surface trace
-        const surface_trace = {
-            type: 'surface',
-            x: x_vals,
-            y: y_vals,
-            z: z_vals,
-            surfacecolor: colors,
-            colorscale: [
-                [0, particle.color + '33'],
-                [0.5, particle.color + '88'],
-                [1, particle.color + 'ff']
-            ],
-            opacity: 0.8,
-            showscale: false,
-            hovertemplate: 
-                'Position: (%{x:.2f}, %{y:.2f}, %{z:.2f})<br>' +
-                'Charge Density: %{surfacecolor:.3f}<br>' +
-                '<extra></extra>'
-        };
-        
-        // Add CTC path trace
-        const ctc_trace = this.generateCTCPath();
-        
-        // Add field lines for charged particles
-        const field_traces = this.generateFieldLines();
-        
-        return [surface_trace, ctc_trace, ...field_traces];
-    }
-    
-    generateCTCPath() {
-        const particle = this.particles[this.selectedParticle];
-        const t_vals = [];
-        const x_vals = [];
-        const y_vals = [];
-        const z_vals = [];
-        
-        const resolution = 100;
-        const radius = 1.5;
-        
-        for (let i = 0; i <= resolution; i++) {
-            const t = (i / resolution) * 2 * Math.PI;
-            const phase = this.currentTime * 2 * Math.PI / particle.period;
-            
-            // Closed timelike curve parameterization
-            const x = radius * Math.cos(t + phase) * this.ctcStrength;
-            const y = radius * Math.sin(t + phase) * this.ctcStrength;
-            const z = 0.5 * Math.sin(2 * t + phase) * this.ctcStrength;
-            
-            t_vals.push(t);
-            x_vals.push(x);
-            y_vals.push(y);
-            z_vals.push(z);
-        }
-        
-        return {
-            type: 'scatter3d',
-            mode: 'lines',
-            x: x_vals,
-            y: y_vals,
-            z: z_vals,
-            line: {
-                color: '#ffffff',
-                width: 8,
-                opacity: 0.9
-            },
-            name: 'CTC Path',
-            hovertemplate: 'CTC: (%{x:.2f}, %{y:.2f}, %{z:.2f})<extra></extra>'
-        };
-    }
-    
-    generateFieldLines() {
-        const particle = this.particles[this.selectedParticle];
-        const traces = [];
-        
-        if (Math.abs(particle.charge) > 0.01) {
-            // Generate electric field lines for charged particles
-            const num_lines = 8;
-            
-            for (let i = 0; i < num_lines; i++) {
-                const angle = (i / num_lines) * 2 * Math.PI;
-                const x_vals = [];
-                const y_vals = [];
-                const z_vals = [];
-                
-                for (let r = 0.5; r <= 3; r += 0.1) {
-                    const x = r * Math.cos(angle);
-                    const y = r * Math.sin(angle);
-                    const z = 0.2 * Math.sin(r * 2);
-                    
-                    x_vals.push(x);
-                    y_vals.push(y);
-                    z_vals.push(z);
-                }
-                
-                traces.push({
-                    type: 'scatter3d',
-                    mode: 'lines',
-                    x: x_vals,
-                    y: y_vals,
-                    z: z_vals,
-                    line: {
-                        color: particle.charge > 0 ? '#ff6666' : '#6666ff',
-                        width: 2,
-                        opacity: 0.6
-                    },
-                    showlegend: false,
-                    hoverinfo: 'skip'
+
+        number(id) { return Number(document.getElementById(id).value); }
+        selected() { return particles[document.querySelector('input[name="particle"]:checked').value]; }
+
+        bindControls() {
+            const render = () => this.render();
+            document.querySelectorAll('input[name="particle"], input[type="checkbox"]').forEach(input => input.addEventListener('change', render));
+            ['twist-angle', 'temporal-phase', 'field-strength', 'evolution-speed', 'timeline'].forEach(id => document.getElementById(id).addEventListener('input', render));
+            document.getElementById('play-btn').addEventListener('click', () => this.start());
+            document.getElementById('pause-btn').addEventListener('click', () => this.pause());
+            document.getElementById('reset-btn').addEventListener('click', () => this.reset());
+            document.querySelectorAll('.view-btn').forEach(button => {
+                button.setAttribute('aria-pressed', String(button.dataset.view === this.view));
+                button.addEventListener('click', () => {
+                    this.view = button.dataset.view;
+                    document.querySelectorAll('.view-btn').forEach(candidate => candidate.setAttribute('aria-pressed', String(candidate === button)));
+                    this.render();
                 });
-            }
-        }
-        
-        return traces;
-    }
-    
-    createTimelinePlot() {
-        const container = document.getElementById('evolutionTimeline');
-        
-        const time_data = this.generateTimelineData();
-        
-        const layout = {
-            ...getCommonPlotLayout(),
-            title: '',
-            xaxis: { title: 'Time (units)', range: [0, 10] },
-            yaxis: { title: 'Observable Properties' },
-            margin: { l: 50, r: 20, t: 20, b: 50 },
-            showlegend: true,
-            legend: { x: 0.02, y: 0.98 }
-        };
-        
-        Plotly.newPlot(container, time_data, layout, {
-            displayModeBar: false,
-            responsive: true
-        });
-    }
-    
-    generateTimelineData() {
-        const particle = this.particles[this.selectedParticle];
-        const time_points = [];
-        const mass_vals = [];
-        const energy_vals = [];
-        const twist_vals = [];
-        
-        for (let t = 0; t <= 10; t += 0.1) {
-            time_points.push(t);
-            
-            // Mass evolution based on CTC period modulation
-            const mass_factor = 1 + 0.1 * Math.sin(t * 2 * Math.PI / particle.period);
-            mass_vals.push(particle.mass * mass_factor);
-            
-            // Energy from mass-energy relation
-            const energy = particle.mass * mass_factor * 0.511; // Convert to MeV
-            energy_vals.push(energy);
-            
-            // Twist angle evolution
-            const twist_evolution = particle.twist + 0.1 * Math.sin(t * 0.5);
-            twist_vals.push(twist_evolution);
-        }
-        
-        return [
-            {
-                x: time_points,
-                y: mass_vals,
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Mass (MeV/c²)',
-                line: { color: '#ff6b6b', width: 3 }
-            },
-            {
-                x: time_points,
-                y: energy_vals.map(e => e / 100), // Scale for visibility
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Energy/100 (MeV)',
-                line: { color: '#4ecdc4', width: 3 }
-            },
-            {
-                x: time_points,
-                y: twist_vals,
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Twist Angle (rad)',
-                line: { color: '#45b7d1', width: 3 },
-                yaxis: 'y2'
-            }
-        ];
-    }
-    
-    onParticleChange() {
-        this.selectedParticle = this.particleSelect.value;
-        this.twistAngle = this.particles[this.selectedParticle].twist;
-        this.twistSlider.value = this.twistAngle;
-        this.updateDisplays();
-        this.updateVisualization();
-    }
-    
-    onEvolutionChange() {
-        this.evolutionType = this.evolutionSelect.value;
-        this.updateVisualization();
-    }
-    
-    onTwistChange() {
-        this.twistAngle = parseFloat(this.twistSlider.value);
-        this.updateDisplays();
-        this.updateVisualization();
-    }
-    
-    onTimeChange() {
-        this.currentTime = parseFloat(this.timeSlider.value);
-        this.updateDisplays();
-        this.updateVisualization();
-    }
-    
-    onCTCChange() {
-        this.ctcStrength = parseFloat(this.ctcSlider.value);
-        this.updateDisplays();
-        this.updateVisualization();
-    }
-    
-    onSpeedChange() {
-        this.animationSpeed = parseFloat(this.speedSlider.value);
-        this.updateDisplays();
-    }
-    
-    updateDisplays() {
-        const particle = this.particles[this.selectedParticle];
-        
-        // Update slider displays
-        this.twistValue.textContent = (this.twistAngle / Math.PI).toFixed(2) + 'π';
-        this.timeValue.textContent = this.currentTime.toFixed(1);
-        this.ctcValue.textContent = this.ctcStrength.toFixed(2);
-        this.speedValue.textContent = this.animationSpeed.toFixed(1) + 'x';
-        
-        // Update property displays
-        const mass_factor = 1 + 0.1 * Math.sin(this.currentTime * 2 * Math.PI / particle.period);
-        this.currentMass.textContent = (particle.mass * mass_factor).toFixed(3) + ' MeV/c²';
-        this.currentCharge.textContent = particle.charge > 0 ? `+${particle.charge.toFixed(2)}e` : `${particle.charge.toFixed(2)}e`;
-        this.currentSpin.textContent = '½ℏ';
-        this.currentPeriod.textContent = particle.period.toFixed(1) + ' τ_c';
-        
-        const energy = particle.mass * mass_factor * 0.511;
-        this.currentEnergy.textContent = energy.toFixed(1) + ' MeV';
-        this.currentTopology.textContent = 'Klein Bottle (χ=0)';
-    }
-    
-    updateVisualization() {
-        // Update main fermion plot
-        const fermion_data = this.generateKleinBottleData();
-        Plotly.restyle('fermionPlot', {
-            x: [fermion_data[0].x],
-            y: [fermion_data[0].y],
-            z: [fermion_data[0].z],
-            surfacecolor: [fermion_data[0].surfacecolor]
-        }, [0]);
-        
-        // Update CTC path
-        if (fermion_data[1]) {
-            Plotly.restyle('fermionPlot', {
-                x: [fermion_data[1].x],
-                y: [fermion_data[1].y],
-                z: [fermion_data[1].z]
-            }, [1]);
-        }
-        
-        // Update timeline
-        const timeline_data = this.generateTimelineData();
-        Plotly.restyle('evolutionTimeline', {
-            y: timeline_data.map(trace => trace.y)
-        });
-        
-        // Add current time marker
-        this.addTimeMarker();
-    }
-    
-    addTimeMarker() {
-        const marker_data = {
-            x: [this.currentTime, this.currentTime],
-            y: [0, 10],
-            type: 'scatter',
-            mode: 'lines',
-            line: { color: '#ff0000', width: 2, dash: 'dash' },
-            name: 'Current Time',
-            showlegend: false,
-            hoverinfo: 'skip'
-        };
-        
-        Plotly.addTraces('evolutionTimeline', [marker_data]);
-    }
-    
-    toggleAnimation() {
-        if (this.isPlaying) {
-            this.stopAnimation();
-        } else {
-            this.startAnimation();
-        }
-    }
-    
-    startAnimation() {
-        this.isPlaying = true;
-        this.playPauseBtn.innerHTML = '⏸ Pause Evolution';
-        this.playPauseBtn.classList.add('playing');
-        
-        const animate = () => {
-            if (this.isPlaying) {
-                this.currentTime += 0.1 * this.animationSpeed;
-                if (this.currentTime > 10) {
-                    this.currentTime = 0;
-                }
-                
-                this.timeSlider.value = this.currentTime;
-                this.updateDisplays();
-                this.updateVisualization();
-                
-                this.animationFrame = requestAnimationFrame(animate);
-            }
-        };
-        
-        this.animationFrame = requestAnimationFrame(animate);
-    }
-    
-    stopAnimation() {
-        this.isPlaying = false;
-        this.playPauseBtn.innerHTML = '▶ Play Evolution';
-        this.playPauseBtn.classList.remove('playing');
-        
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-        }
-    }
-    
-    reset() {
-        this.stopAnimation();
-        this.currentTime = 0;
-        this.twistAngle = this.particles[this.selectedParticle].twist;
-        this.ctcStrength = 0.5;
-        this.animationSpeed = 1.0;
-        
-        // Reset sliders
-        this.timeSlider.value = 0;
-        this.twistSlider.value = this.twistAngle;
-        this.ctcSlider.value = 0.5;
-        this.speedSlider.value = 1.0;
-        
-        this.updateDisplays();
-        this.updateVisualization();
-    }
-    
-    showEquations() {
-        // Toggle equation visibility or show modal
-        const mathPanel = document.querySelector('.math-panel');
-        mathPanel.scrollIntoView({ behavior: 'smooth' });
-        mathPanel.classList.add('fade-in');
-    }
-    
-    setupTabSwitching() {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetTab = button.getAttribute('data-tab');
-                
-                // Remove active class from all tabs
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                button.classList.add('active');
-                document.getElementById(targetTab).classList.add('active');
             });
-        });
-    }
-}
+        }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    const fermionEvolution = new FermionEvolution();
-    window.fermionEvolution = fermionEvolution; // Make globally accessible for debugging
-}); 
+        start() {
+            if (this.playing) return;
+            this.playing = true;
+            const button = document.getElementById('play-btn');
+            button.setAttribute('aria-pressed', 'true');
+            button.innerHTML = '<i class="fas fa-play"></i> Playing';
+            let previous = performance.now();
+            const advance = now => {
+                if (!this.playing) return;
+                const delta = Math.min((now - previous) / 1000, .1);
+                previous = now;
+                this.timeline.value = Math.round((this.number('timeline') + delta * this.number('evolution-speed') * 115) % 1000);
+                this.render();
+                this.frame = requestAnimationFrame(advance);
+            };
+            this.frame = requestAnimationFrame(advance);
+        }
+
+        pause() {
+            this.playing = false;
+            if (this.frame) cancelAnimationFrame(this.frame);
+            this.frame = null;
+            const button = document.getElementById('play-btn');
+            button.setAttribute('aria-pressed', 'false');
+            button.innerHTML = '<i class="fas fa-play"></i> Play Evolution';
+        }
+
+        reset() {
+            this.pause();
+            document.querySelector('input[name="particle"][value="electron"]').checked = true;
+            [['twist-angle', 0], ['temporal-phase', 0], ['field-strength', 50], ['evolution-speed', 1], ['timeline', 0]].forEach(([id, value]) => document.getElementById(id).value = value);
+            ['show-field-lines', 'show-topology-changes'].forEach(id => document.getElementById(id).checked = true);
+            ['show-ctc-paths', 'show-mass-generation'].forEach(id => document.getElementById(id).checked = false);
+            this.view = '3d';
+            document.querySelectorAll('.view-btn').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === this.view)));
+            this.render();
+        }
+
+        state() {
+            const particle = this.selected();
+            const phase = this.number('temporal-phase') / 100;
+            const progress = this.number('timeline') / 1000;
+            const massFactor = 1 + .06 * Math.sin(progress * Math.PI * 2 + phase);
+            document.getElementById('twist-value').textContent = `${this.number('twist-angle')}°`;
+            document.getElementById('phase-value').textContent = `${phase.toFixed(2)} rad`;
+            document.getElementById('field-value').textContent = `${this.number('field-strength')}%`;
+            document.getElementById('speed-value').textContent = `${this.number('evolution-speed').toFixed(1)}×`;
+            document.getElementById('current-particle').textContent = `${particle.name} Klein Bottle Projection`;
+            document.getElementById('current-mass').textContent = `${(particle.mass * massFactor).toFixed(particle.mass < 1 ? 3 : 1)} MeV/c²`;
+            document.getElementById('current-charge').textContent = particle.charge;
+            return { particle, phase, progress, massFactor };
+        }
+
+        surface(state) {
+            const resolution = 34;
+            const twist = this.number('twist-angle') * Math.PI / 180;
+            const field = this.number('field-strength') / 100;
+            const x = [], y = [], z = [], color = [];
+            for (let row = 0; row <= resolution; row += 1) {
+                const xr = [], yr = [], zr = [], cr = [];
+                const u = row * 2 * Math.PI / resolution;
+                for (let column = 0; column <= resolution; column += 1) {
+                    const v = column * 2 * Math.PI / resolution;
+                    const radius = 2 + Math.cos(u / 2) * Math.sin(v) - Math.sin(u / 2) * Math.sin(2 * v);
+                    const pulse = 1 + .11 * Math.sin(state.progress * Math.PI * 2 + state.phase);
+                    const baseX = radius * Math.cos(v) * pulse;
+                    const baseY = radius * Math.sin(v) * pulse;
+                    const baseZ = Math.cos(u / 2) * Math.cos(v) + Math.sin(u / 2) * Math.cos(2 * v);
+                    xr.push(baseX * Math.cos(twist) - baseZ * Math.sin(twist));
+                    yr.push(baseY); zr.push(baseX * Math.sin(twist) + baseZ * Math.cos(twist));
+                    cr.push(Math.sin(u) * Math.cos(v) + field * .35);
+                }
+                x.push(xr); y.push(yr); z.push(zr); color.push(cr);
+            }
+            const traces = [{ type: 'surface', x, y, z, surfacecolor: color, opacity: .82, showscale: false,
+                colorscale: [[0, '#132238'], [.48, state.particle.color], [1, '#fff0cf']],
+                hovertemplate: 'Projected coordinate<br>x: %{x:.2f}<br>y: %{y:.2f}<br>z: %{z:.2f}<extra></extra>' }];
+            if (document.getElementById('show-field-lines').checked) traces.push(this.loopTrace(2.7 + field * .4, .45, state.phase, '#f8d66d', 'Field guide'));
+            if (document.getElementById('show-ctc-paths').checked) traces.push(this.loopTrace(1.25, .7, 0, '#ff9fbd', 'Hypothetical CTC path'));
+            return traces;
+        }
+
+        loopTrace(radius, height, phase, color, name) {
+            const x = [], y = [], z = [];
+            for (let index = 0; index <= 100; index += 1) {
+                const t = index * Math.PI * 2 / 100;
+                x.push(radius * Math.cos(t)); y.push(radius * Math.sin(t)); z.push(height * Math.sin(2 * t + phase));
+            }
+            return { type: 'scatter3d', mode: 'lines', x, y, z, name, line: { color, width: 4 }, hoverinfo: 'skip' };
+        }
+
+        layout() {
+            const projection = this.view === 'projection' ? { type: 'orthographic' } : { type: 'perspective' };
+            const camera = this.view === 'cross-section' ? { eye: { x: 0, y: .15, z: 2.7 }, up: { x: 0, y: 1, z: 0 }, projection } : { eye: { x: 1.55, y: 1.55, z: 1.35 }, projection };
+            return { autosize: true, uirevision: `fermion-${this.view}`, margin: { l: 0, r: 0, b: 0, t: 10 }, paper_bgcolor: 'rgba(0,0,0,0)', font: { color: '#f7fafc' }, legend: { orientation: 'h', y: .98, x: .02, bgcolor: 'rgba(15,20,25,.72)' }, scene: { aspectmode: 'cube', camera, bgcolor: 'rgba(0,0,0,0)', xaxis: { title: 'x' }, yaxis: { title: 'y' }, zaxis: { title: 'z' } } };
+        }
+
+        render() {
+            const state = this.state();
+            Plotly.react(this.plot, this.surface(state), this.layout(), { responsive: true, displaylogo: false, scrollZoom: true });
+            this.drawCharts(state);
+        }
+
+        watchCanvases() {
+            const redraw = () => this.drawCharts(this.state());
+            if (typeof ResizeObserver !== 'undefined') {
+                this.canvasObserver = new ResizeObserver(redraw);
+                document.querySelectorAll('.mini-plot-container').forEach(container => this.canvasObserver.observe(container));
+            }
+            window.addEventListener('resize', redraw, { passive: true });
+        }
+
+        chart(id, color, values, label) {
+            const canvas = document.getElementById(id), rect = canvas.getBoundingClientRect();
+            const width = Math.max(220, Math.round(rect.width || 300)), height = Math.max(140, Math.round(rect.height || 160));
+            const scale = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = width * scale; canvas.height = height * scale;
+            const ctx = canvas.getContext('2d'); ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(8, 15, 27, .45)'; ctx.fillRect(0, 0, width, height); ctx.strokeStyle = 'rgba(255,255,255,.18)';
+            for (let line = 1; line < 4; line += 1) { const y = 18 + line * (height - 42) / 4; ctx.beginPath(); ctx.moveTo(30, y); ctx.lineTo(width - 12, y); ctx.stroke(); }
+            const low = Math.min(...values), span = Math.max(Math.max(...values) - low, .001); ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+            values.forEach((value, index) => { const x = 30 + index * (width - 42) / (values.length - 1), y = 18 + (1 - (value - low) / span) * (height - 42); if (index) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+            ctx.stroke(); ctx.fillStyle = '#e2e8f0'; ctx.font = '12px system-ui'; ctx.fillText(label, 30, height - 10);
+        }
+
+        drawCharts(state) {
+            const samples = Array.from({ length: 44 }, (_, index) => index * Math.PI * 2 / 43), phase = state.phase + state.progress * Math.PI * 2;
+            this.chart('mass-chart', state.particle.color, samples.map(t => state.particle.mass * (1 + .06 * Math.sin(t + phase))), 'relative mass (model)');
+            this.chart('topology-chart', '#b58cff', samples.map(t => .5 + .4 * Math.sin(t + phase) * Math.cos(t / 2)), 'topology indicator (model)');
+            this.chart('field-chart', '#f8d66d', samples.map(t => this.number('field-strength') + 14 * Math.sin(t + phase)), 'field setting (%)');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { window.fermionEvolution = new FermionEvolution(); });
+    window.FermionEvolution = FermionEvolution;
+})();
