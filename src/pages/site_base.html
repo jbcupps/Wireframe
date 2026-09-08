@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Spacetime Manifolds{% endblock %}</title>
     <meta name="description" content="Interactive topology explorer for spacetime manifolds, Klein bottles, non-orientable surfaces, and SKB-inspired geometry.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/spacetime.css') }}">
     {% block head_extra %}{% endblock %}
 </head>

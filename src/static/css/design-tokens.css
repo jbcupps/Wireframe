@@ -1,0 +1,44 @@
+/* Shared observatory vocabulary for the new topology site and legacy labs. */
+:root {
+    color-scheme: dark;
+    --obs-bg: #080d15;
+    --obs-panel: #111923;
+    --obs-panel-raised: #182331;
+    --obs-text: #f1f5f8;
+    --obs-muted: #b5bec9;
+    --obs-faint: #8f9aa8;
+    --obs-line: rgba(218, 229, 239, 0.16);
+    --obs-interaction: #62d7df;
+    --obs-interaction-strong: #8be7ed;
+    --obs-data-blue: #75a9ce;
+    --obs-data-amber: #dfb35a;
+    --obs-data-vermilion: #d87d61;
+    --obs-data-green: #7cab8a;
+    --obs-data-violet: #ab95c5;
+    --obs-focus: #8be7ed;
+    --obs-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    --obs-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:focus-visible {
+    outline: 3px solid var(--obs-focus);
+    outline-offset: 3px;
+}
+
+.lab-status {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 2rem;
+    padding: .25rem .65rem;
+    border: 1px solid rgba(139, 231, 237, .32);
+    border-radius: 999px;
+    background: rgba(98, 215, 223, .1);
+    color: var(--obs-text);
+    font-size: .83rem;
+    font-weight: 700;
+}
+
+.lab-status--research { border-color: rgba(223, 179, 90, .35); background: rgba(223, 179, 90, .12); }
+.lab-status--concept { border-color: rgba(171, 149, 197, .38); background: rgba(171, 149, 197, .12); }
+.lab-status--development { border-color: rgba(143, 154, 168, .42); background: rgba(143, 154, 168, .12); }

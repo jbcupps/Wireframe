@@ -1,62 +1,45 @@
 /* 4D Manifold Explorer - Main Stylesheet */
 
 :root {
-    /* Dark theme (default) */
-    --dark-bg: #121212;
-    --surface: #1e1e1e;
-    --surface-light: #2d2d2d;
-    --primary: #BB86FC;
-    --primary-variant: #3700B3;
-    --secondary: #03DAC6;
-    --accent: #CF6679;
-    --text-primary: rgba(255, 255, 255, 0.87);
-    --text-secondary: rgba(255, 255, 255, 0.6);
-    --border-color: rgba(255, 255, 255, 0.12);
-    --header-bg: rgba(18, 18, 18, 0.9);
-    
-    /* Specific visualization colors */
-    --real-color: #FF6E91;  /* Vivid pink */
-    --imag-color: #33C4FF;  /* Bright blue */
-    --envelope-color: #65FF8F;  /* Bright green */
-    --skb1-color: #FF6E91;  /* Vivid pink */
-    --skb2-color: #33C4FF;  /* Bright blue */
-    --skb3-color: #65FF8F;  /* Bright green */
-    --skb-merged: #BB86FC;  /* Purple */
-    
-    /* Core Scientific Theme Colors */
-    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-    --secondary-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-    --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    
-    /* SKB-specific colors with better contrast */
-    --skb1-color: #ff6b9d; /* Enhanced pink with better visibility */
-    --skb2-color: #4fc3f7; /* Enhanced blue */
-    --skb3-color: #81c784; /* Enhanced green */
-    --skb-merged: #bb86fc; /* Purple for merged states */
-    
-    /* Enhanced background gradients */
-    --background: linear-gradient(135deg, #0f1419 0%, #1a202c 25%, #2d3748 50%, #1a202c 75%, #0f1419 100%);
-    --surface: rgba(45, 55, 72, 0.95);
-    --surface-light: rgba(74, 85, 104, 0.8);
-    --surface-elevated: rgba(45, 55, 72, 0.98);
-    
-    /* Enhanced text colors */
-    --text-primary: #f7fafc;
-    --text-secondary: #e2e8f0;
-    --text-tertiary: #cbd5e0;
-    --text-accent: #a0aec0;
-    
-    /* Scientific visualization specific */
-    --grid-color: rgba(226, 232, 240, 0.1);
-    --axis-color: rgba(226, 232, 240, 0.3);
-    --highlight-glow: 0 0 20px rgba(99, 102, 241, 0.4);
-    --data-glow: 0 0 15px rgba(139, 92, 246, 0.3);
-    
-    /* Animation and interaction */
-    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --border-radius-elegant: 16px;
-    --shadow-elegant: 0 10px 40px rgba(0, 0, 0, 0.3);
+    --dark-bg: var(--obs-bg, #080d15);
+    --background: var(--obs-bg, #080d15);
+    --surface: var(--obs-panel, #111923);
+    --surface-light: var(--obs-panel-raised, #182331);
+    --surface-elevated: var(--obs-panel-raised, #182331);
+    --card-bg: var(--obs-panel, #111923);
+    --bg-primary: var(--obs-bg, #080d15);
+    --bg-secondary: var(--obs-panel, #111923);
+    --primary: var(--obs-interaction, #62d7df);
+    --primary-variant: var(--obs-interaction-strong, #8be7ed);
+    --secondary: var(--obs-data-amber, #dfb35a);
+    --accent: var(--obs-data-vermilion, #d87d61);
+    --accent-primary: var(--obs-interaction, #62d7df);
+    --accent-secondary: var(--obs-data-blue, #75a9ce);
+    --text-primary: var(--obs-text, #f1f5f8);
+    --text-secondary: var(--obs-muted, #b5bec9);
+    --text-tertiary: var(--obs-faint, #8f9aa8);
+    --text-accent: var(--obs-faint, #8f9aa8);
+    --border-color: var(--obs-line, rgba(218, 229, 239, 0.16));
+    --header-bg: rgba(8, 13, 21, 0.94);
+    --real-color: var(--obs-data-vermilion, #d87d61);
+    --imag-color: var(--obs-data-blue, #75a9ce);
+    --envelope-color: var(--obs-data-green, #7cab8a);
+    --skb1-color: var(--obs-data-vermilion, #d87d61);
+    --skb2-color: var(--obs-data-blue, #75a9ce);
+    --skb3-color: var(--obs-data-green, #7cab8a);
+    --skb-merged: var(--obs-data-violet, #ab95c5);
+    --primary-gradient: var(--primary);
+    --secondary-gradient: var(--secondary);
+    --accent-gradient: var(--accent);
+    --grid-color: rgba(218, 229, 239, 0.1);
+    --axis-color: rgba(218, 229, 239, 0.28);
+    --highlight-glow: none;
+    --data-glow: none;
+    --transition-smooth: all 180ms ease;
+    --transition-bounce: all 180ms ease;
+    --border-radius-elegant: 12px;
+    --shadow-elegant: var(--obs-shadow, 0 12px 32px rgba(0, 0, 0, 0.2));
+    --shadow-lg: var(--shadow-elegant);
 }
 
 /* Light theme */
@@ -1132,6 +1115,33 @@ h3::before {
 .legacy-visualization [id$="-plot"] {
     max-width: 100%;
     min-width: 0;
+}
+
+/* Calm the legacy navigation and preserve the shared accessibility contract. */
+.nav-link:hover,
+.nav-link:focus,
+.nav-link.active,
+.dropdown-link:hover,
+.dropdown-link:focus,
+.dropdown-link.active {
+    background-color: rgba(98, 215, 223, 0.1);
+    box-shadow: none;
+}
+
+.nav-link:focus-visible,
+.dropdown-link:focus-visible,
+.theme-toggle-label:focus-visible,
+.mobile-menu-toggle:focus-visible {
+    outline: 3px solid var(--obs-focus, var(--primary));
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 .legacy-visualization .js-plotly-plot,

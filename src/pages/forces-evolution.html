@@ -1,24 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Forces Evolution - Guided Spacetime Deformations{% endblock %}
 {% block head_extra %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script src="{{ url_for('static', filename='js/forces-tentacles-evolution.js') }}"></script>
 <style>
-  #forces-canvas { width: 100%; height: 70vh; background: #0a0a1f; border: 1px solid #334455; }
-  .stage { position: absolute; top: 20px; left: 20px; background: rgba(10,10,30,0.85); padding: 12px 24px; border-radius: 8px; color: #0ff; font-family: monospace; }
+  .forces-page { max-width: 960px; margin: 7rem auto 4rem; padding: 0 20px; }
+  .forces-page > p { max-width: 720px; color: var(--text-secondary); }
+  .forces-development { display: grid; gap: 1.25rem; margin-top: 1.5rem; padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid var(--border-color); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-elegant); }
+  .forces-development h2, .forces-development p { margin: 0; }
+  .forces-development > p { max-width: 680px; color: var(--text-secondary); }
+  .forces-roadmap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: .5rem 0; padding: 0; list-style: none; }
+  .forces-roadmap li { padding: 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-primary); color: var(--text-secondary); }
+  .forces-roadmap strong { display: block; margin-bottom: .35rem; color: var(--text-primary); }
+  .forces-note { padding: 1rem 1.1rem; border-left: 3px solid var(--text-tertiary); background: rgba(255,255,255,.035); color: var(--text-secondary); }
+  @media (max-width: 680px) { .forces-page { margin-top: 6rem; } .forces-roadmap { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 {% block content %}
-<div style="position:relative">
+<main class="forces-page">
+  <section class="lab-brief" aria-label="Page status">
+    <span class="lab-status lab-status--development">In development</span>
+    <div><h2>Concept workbench</h2><p>This route is reserved for a future guided visualization of geometric ideas about forces.</p></div>
+    <p class="lab-brief__notice"><strong>Current scope:</strong> no physical simulation, staged evolution, or particle claim is running on this page.</p>
+  </section>
   <h1>Forces as Continuous Spacetime Deformations</h1>
-  <p>7-stage guided evolution: flat fabric → defect → inseparable tentacles (gluons) → torsion tension → curvature deformation → mass emergence → baryon confinement</p>
-  <div id="forces-canvas"></div>
-  <div class="stage" id="stage-display">Stage 1: Flat Spacetime</div>
-  <div id="math-overlay"></div>
-</div>
-<script>
-  window.onload = () => ForcesEvolution.init();
-</script>
+  <p>A future version will distinguish established field-theory concepts from illustrative geometric analogies, rather than presenting a decorative canvas as a finished learning simulation.</p>
+  <section class="forces-development" aria-labelledby="forces-next">
+    <h2 id="forces-next">What this page will need before it becomes interactive</h2>
+    <ol class="forces-roadmap">
+      <li><strong>Defined model</strong>State the equations, units, and simplifying assumptions.</li>
+      <li><strong>Inspectable stages</strong>Show each transformation with controls and plain-language interpretation.</li>
+      <li><strong>Honest limits</strong>Separate established results from any speculative geometric framing.</li>
+    </ol>
+    <p class="forces-note">No simulation is running here yet. For an available geometric exploration, use the topology models from the main site.</p>
+    <p><a class="button" href="/explore/mobius">Explore a topology model</a></p>
+  </section>
+</main>
 {% endblock %}

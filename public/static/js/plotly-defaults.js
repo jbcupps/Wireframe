@@ -12,16 +12,16 @@
 // Enhanced color schemes for scientific visualization
 const ScienceColorSchemes = {
     skb: {
-        primary: '#6366f1',
-        secondary: '#8b5cf6',
-        accent: '#a855f7',
-        merged: '#bb86fc'
+        primary: '#d87d61',
+        secondary: '#75a9ce',
+        accent: '#7cab8a',
+        merged: '#ab95c5'
     },
     topology: {
-        klein: '#ff6b9d',
-        mobius: '#4fc3f7', 
-        torus: '#81c784',
-        intersection: '#ffd54f'
+        klein: '#d87d61',
+        mobius: '#75a9ce',
+        torus: '#7cab8a',
+        intersection: '#dfb35a'
     },
     field: {
         strong: 'rgba(255, 200, 100, 0.8)',
@@ -41,52 +41,52 @@ const EnhancedLayout = {
             projection: { type: 'perspective' }
         },
         xaxis: {
-            title: { text: 'X', font: { color: '#e2e8f0', size: 14 } },
+            title: { text: 'X', font: { color: '#f1f5f8', size: 14 } },
             showspikes: false,
             showgrid: true,
             zeroline: true,
             showline: false,
             showticklabels: true,
-            gridcolor: 'rgba(226, 232, 240, 0.15)',
-            zerolinecolor: 'rgba(226, 232, 240, 0.3)',
-            tickfont: { color: '#a0aec0', size: 10 },
+            gridcolor: 'rgba(218, 229, 239, 0.1)',
+            zerolinecolor: 'rgba(218, 229, 239, 0.25)',
+            tickfont: { color: '#b5bec9', size: 10 },
             range: [-4, 4]
         },
         yaxis: {
-            title: { text: 'Y', font: { color: '#e2e8f0', size: 14 } },
+            title: { text: 'Y', font: { color: '#f1f5f8', size: 14 } },
             showspikes: false,
             showgrid: true,
             zeroline: true,
             showline: false,
             showticklabels: true,
-            gridcolor: 'rgba(226, 232, 240, 0.15)',
-            zerolinecolor: 'rgba(226, 232, 240, 0.3)',
-            tickfont: { color: '#a0aec0', size: 10 },
+            gridcolor: 'rgba(218, 229, 239, 0.1)',
+            zerolinecolor: 'rgba(218, 229, 239, 0.25)',
+            tickfont: { color: '#b5bec9', size: 10 },
             range: [-4, 4]
         },
         zaxis: {
-            title: { text: 'Z', font: { color: '#e2e8f0', size: 14 } },
+            title: { text: 'Z', font: { color: '#f1f5f8', size: 14 } },
             showspikes: false,
             showgrid: true,
             zeroline: true,
             showline: false,
             showticklabels: true,
-            gridcolor: 'rgba(226, 232, 240, 0.15)',
-            zerolinecolor: 'rgba(226, 232, 240, 0.3)',
-            tickfont: { color: '#a0aec0', size: 10 },
+            gridcolor: 'rgba(218, 229, 239, 0.1)',
+            zerolinecolor: 'rgba(218, 229, 239, 0.25)',
+            tickfont: { color: '#b5bec9', size: 10 },
             range: [-3, 3]
         },
-        bgcolor: 'rgba(15, 20, 25, 0.95)',
+        bgcolor: '#111923',
         dragmode: 'orbit'
     },
-    paper_bgcolor: 'rgba(15, 20, 25, 0.98)',
-    plot_bgcolor: 'rgba(15, 20, 25, 0.95)',
+    paper_bgcolor: '#111923',
+    plot_bgcolor: '#111923',
     margin: { l: 0, r: 0, b: 0, t: 40, pad: 5 },
     autosize: true,
     legend: {
-        font: { color: '#e2e8f0', size: 12 },
-        bgcolor: 'rgba(45, 55, 72, 0.9)',
-        bordercolor: 'rgba(255, 255, 255, 0.1)',
+        font: { color: '#f1f5f8', size: 12 },
+        bgcolor: '#182331',
+        bordercolor: 'rgba(218, 229, 239, 0.16)',
         borderwidth: 1,
         y: 0.98,
         x: 0.02,
@@ -95,7 +95,7 @@ const EnhancedLayout = {
     hovermode: 'closest',
     showlegend: true,
     title: {
-        font: { color: '#e2e8f0', size: 16 },
+        font: { color: '#f1f5f8', size: 16 },
         x: 0.5,
         y: 0.95
     }
@@ -138,11 +138,11 @@ const PlotlyDefaults = {
     // Kept as a small stable palette for the older labs. Newer code can use
     // getCurrentThemeColors() when it needs to follow the theme exactly.
     colors: {
-        primary: '#8b5cf6',
-        secondary: '#03dac6',
-        realColor: '#ff6e91',
-        imagColor: '#33c4ff',
-        envelopeColor: '#65ff8f'
+        primary: '#62d7df',
+        secondary: '#dfb35a',
+        realColor: '#d87d61',
+        imagColor: '#75a9ce',
+        envelopeColor: '#7cab8a'
     },
 
     getDefaultConfig: function() {

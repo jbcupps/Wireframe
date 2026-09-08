@@ -16,6 +16,9 @@
         <span class="sp-kicker">{{ explorer.level }}</span>
         <h1>{{ explorer.title }}</h1>
         <p>{{ explorer.tagline }}</p>
+        {% if explorer.get("scope") %}
+        <p class="model-scope"><strong>{{ explorer.scope_label }}</strong> {{ explorer.scope }}</p>
+        {% endif %}
         <div class="invariant-pill">{{ explorer.invariant }}</div>
 
         <section class="observation-card" aria-labelledby="notice-heading">

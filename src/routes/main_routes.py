@@ -50,6 +50,8 @@ EXPLORERS = {
         "time": "10 min",
         "look_for": "Turn the model and notice where an apparent seam is a feature of the 3D projection.",
         "control_hint": "Try a lower resolution first; it makes the construction easier to read.",
+        "scope_label": "Conceptual topology model",
+        "scope": "This geometric model is for exploring non-orientable defects; it is not a current particle-physics simulation.",
         "next_slug": "immersion",
     },
     "projective": {
