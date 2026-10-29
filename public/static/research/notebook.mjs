@@ -66,7 +66,7 @@ function candidate(raw) {
 }
 
 function vertex(value) {
-  if (!(text(value, 80, true) || Number.isSafeInteger(value))) fail('Vertex labels must be safe integers or nonempty strings of at most 80 characters.');
+  if (!((typeof value === 'string' && value.length >= 1 && value.length <= 80) || Number.isSafeInteger(value))) fail('Vertex labels must be safe integers or nonempty strings of at most 80 characters.');
   return vertexKey(value);
 }
 
