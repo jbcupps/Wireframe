@@ -7,7 +7,7 @@
   <header class="research-hero"><div><h1>From words to<br><em>testable structures.</em></h1><p>Compose three independent pieces. Declare their geometry.<br>Inspect what the evidence actually establishes.</p></div><div class="hero-mark" aria-hidden="true"><span>A</span><span>B</span><span>C</span><i>4D<br>NOD</i></div></header>
   <div class="research-notice"><strong>Symbolic descriptions ≠ physical particles.</strong> Twist and loop labels are provisional. Geometry, joining maps and physical observables need separate definitions.</div>
   <div class="stats"><div><strong>32</strong><span>operation labels</span></div><div><strong>33,825</strong><span>words of length 0–3</span></div><div><strong>38,700,218,390,625</strong><span>ordered triples in that slice</span></div></div>
-  <nav class="workspace-tabs" aria-label="Workspace sections"><a href="#catalog">01 Catalog</a><a href="#batch">Batch runner</a><a href="#builder">02 Assemble</a><a href="#geometry">03 Define geometry</a><a href="#evidence">04 Evidence</a></nav>
+  <nav class="workspace-tabs" aria-label="Workspace sections"><a href="#catalog">01 Catalog</a><a href="#workbook">Spreadsheet</a><a href="#batch">Batch runner</a><a href="#builder">02 Assemble</a><a href="#geometry">03 Define geometry</a><a href="#evidence">04 Evidence</a></nav>
   <div id="message" role="status" aria-live="polite"></div>
   <div id="storage-warning" class="research-notice" role="alert" hidden></div>
   <section id="catalog" class="panel"><div class="section-heading"><div><span class="eyebrow">01 / SYMBOLIC CATALOG</span><h2>Explore the vocabulary</h2></div><button id="export-page">Export this CSV page</button></div>
@@ -16,6 +16,16 @@
     <p id="catalog-summary" class="muted"></p><div class="table-scroll"><table><thead id="catalog-head"></thead><tbody id="catalog-body"></tbody></table></div>
     <div class="toolbar pager"><button id="catalog-prev">← Previous 20</button><button id="catalog-next">Next 20 →</button><span id="catalog-range" class="muted"></span></div>
     <p class="fine">Order and repetitions are preserved. Opposite signs do not cancel. Bounded triples use C-fastest Cartesian ordering; unbounded triples use nested Cantor pairing. Row ranks are not candidate IDs. Pages contain at most 20 rows; CSV imports at most 1,000 rows. There is no theoretical repetition limit; this session accepts 4,096 operations per piece.</p>
+  </section>
+  <section id="workbook" class="panel">
+    <div class="section-heading"><div><span class="eyebrow">EXISTING RESEARCH</span><h2>Upload your spreadsheet</h2></div><label class="file-button">Choose Excel workbook<input id="workbook-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label></div>
+    <p>Open your 4D-NOD twist/loop workbook directly. Browse its sheets, load a configuration into piece A, B or C, or save a page of triple examples to the notebook.</p>
+    <p id="workbook-status" class="fine" role="status" aria-live="polite">Choose an .xlsx file up to 3 MB. The upload is processed for this request and is not saved on the server.</p>
+    <div id="workbook-controls" hidden><div class="toolbar"><label class="grow">Worksheet<select id="workbook-sheet"></select></label><label>First data row (1-based)<input id="workbook-start" type="number" min="1" value="1"></label><button id="workbook-go">Go to row</button><button id="workbook-prev">← Previous 20</button><button id="workbook-next">Next 20 →</button></div>
+    <p id="workbook-summary" class="muted"></p>
+    <div class="table-scroll"><table><thead id="workbook-head"></thead><tbody id="workbook-body"></tbody></table></div>
+    <div class="toolbar"><button id="workbook-catalog" disabled>Show this page in catalog</button><button id="workbook-save" disabled>Add displayed triples to notebook</button><button id="workbook-notebook">Open saved notebook</button></div>
+    <p class="fine">Source sheet names, Excel rows and source IDs are preserved. Candidate identities are checked against the operation sequences. Spreadsheet status text supplies no geometry or assessment evidence. Save or export selected candidates before leaving; reopening the workbook requires selecting the file again.</p></div>
   </section>
   <section id="batch" class="panel">
     <div class="section-heading"><div><span class="eyebrow">AUTOMATED RESEARCH</span><h2>Run a bounded batch</h2></div><span class="badge">Runs while this page is open</span></div>
@@ -40,7 +50,7 @@
   <section id="builder" class="panel"><div class="section-heading"><div><span class="eyebrow">02 / THREE LABELED PIECES</span><h2>Assemble a candidate</h2></div><button id="save-candidate">Save to notebook</button></div>
     <p class="muted">Choose any sequence for each piece, including the empty word and repeated operations. Piece colors identify A, B and C; they are not QCD color charge.</p>
     <div id="pieces" class="piece-grid"></div><p class="identity">Candidate ID <code id="candidate-id"></code></p>
-    <details><summary>Session notebook &amp; resumable queue</summary><p class="fine">Browser-local storage only; no account or server database is configured for research results. Export a JSON backup for durable retention. Results remain attached to their original inputs.</p><div class="toolbar"><button id="export-session">Export notebook JSON</button><button id="export-selected">Export selected CSV</button><label class="file-button">Import notebook JSON<input id="session-file" type="file" accept=".json,application/json"></label><button id="run-queue">Assess pending records</button><button id="stop-queue" disabled>Pause queue</button></div><p id="queue-status" role="status"></p><div id="notebook"></div></details>
+    <details id="notebook-section"><summary>Session notebook &amp; resumable queue</summary><p class="fine">Browser-local storage only; no account or server database is configured for research results. Export a JSON backup for durable retention. Results remain attached to their original inputs.</p><div class="toolbar"><button id="export-session">Export notebook JSON</button><button id="export-selected">Export selected CSV</button><label class="file-button">Import notebook JSON<input id="session-file" type="file" accept=".json,application/json"></label><button id="run-queue">Assess pending records</button><button id="stop-queue" disabled>Pause queue</button></div><p id="queue-status" role="status"></p><div id="notebook"></div></details>
   </section>
   <section id="geometry" class="panel"><div class="section-heading"><div><span class="eyebrow">03 / EXPLICIT MODEL</span><h2>Define what is being joined</h2></div><span id="geometry-status" class="badge">Geometry not yet defined</span></div>
     <p>Load a control or supply a versioned finite simplicial complex. Shared vertex labels identify shared faces. This abstract format cannot express every triangulation, self-identification, smooth atlas or physical geometry.</p>

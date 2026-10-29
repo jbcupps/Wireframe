@@ -6,6 +6,8 @@ The `/research` workspace keeps symbolic descriptions, explicit geometry, and as
 
 The **Batch runner** generates a bounded range of ordered triples, matches explicitly supplied notebook geometry by exact candidate identity, assesses sequentially, checkpoints after each response, and exports qualified results. See [Research batches](research-batches.md) for the workflow, pause/resume behavior, checkpoint imports and limits. It runs while the page is open; it does not create a scheduled server job.
 
+The **Spreadsheet** panel accepts the existing `.xlsx` twist/loop workbook directly. It previews reference sheets and paginates configurations and triple examples, validates source identities, and can save displayed triples to the notebook with file hash, sheet, Excel row and source ID. See [Workbook import](research-workbook-import.md) for supported layouts and limits. Worksheet text never supplies geometry or current assessment evidence.
+
 ## Provenance and identities
 
 The catalog ports the local `topological_assessment/candidate_feed.py` and the `Twist_and_Loop_Table_Explorer.html` conventions. The assessment adapts `topological_assessment/topology.py` and the explicit controls. The earlier `quark-wireframe.html` is a schematic illustration, not imported as assessed geometry.

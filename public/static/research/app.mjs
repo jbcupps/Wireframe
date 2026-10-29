@@ -2,12 +2,14 @@ import {ALPHABET,parseWord,formatWord,wordId,tripleFromWords,catalogPage,lookupW
 import {mountVisualization} from './visualization.mjs';
 import {validateNotebook,assertNotebookBudget} from './notebook.mjs';
 import {prepareBatch,summarizeBatch,exportBatchCsv} from './batch.mjs';
+import {mountWorkbook} from './workbook.mjs';
 
 const $=id=>document.getElementById(id);
 const labels=['A','B','C'], colors=['#62d6d0','#d6a3fa','#f0bd72'];
 const KEY='4d-nod-research-notebook-v1';
 let words=[[],[],[]], geometry=null, result=null, controls=[], page, records=[], activeRequest=null, revision=0, queueStopped=false, queueRunning=false, activeBatchId=null;
 let visual=mountVisualization($('visualization'),{geometry,result,candidate:tripleFromWords(words)});
+let workbookUI=null;
 const clone=value=>JSON.parse(JSON.stringify(value));
 function notice(text,error=false){$('message').textContent=text;$('message').className=error?'error':'';}
 function guard(fn){return async(...args)=>{try{await fn(...args);}catch(e){notice(e.message,true);}};}
@@ -122,7 +124,7 @@ function generateBatch(){
   const generated=prepareBatch({start:$('batch-start').value.trim(),count:Number($('batch-count').value),maxOperations:$('batch-scope').value==='bounded'?Number($('batch-bound').value):null,geometryMode:$('batch-geometry').value},records);
   records.push(...generated.records);activeBatchId=generated.batch.id;const saved=persist();renderNotebook();$('batch-status').textContent=`Prepared ${generated.records.length} ordered triples. Next starting rank: ${generated.batch.next_rank}.`;if(saved)notice(`Prepared ${generated.records.length} candidates. Each geometry assignment is matched by its exact candidate ID.`);return saved;
 }
-function queueControls(running){queueRunning=running;$('run-queue').disabled=running;$('stop-queue').disabled=!running;$('assess').disabled=running;$('save-candidate').disabled=running;$('session-file').disabled=running;$('batch-pause').disabled=!running;renderBatch();}
+function queueControls(running){queueRunning=running;$('run-queue').disabled=running;$('stop-queue').disabled=!running;$('assess').disabled=running;$('save-candidate').disabled=running;$('session-file').disabled=running;$('batch-pause').disabled=!running;renderBatch();workbookUI?.refreshControls();}
 async function runRecords({batchId=null,autoExport=false}={}){
   if(queueRunning||activeRequest)throw Error('Another assessment is already running.');
   const targets=records.filter(r=>(batchId===null||r.batch?.id===batchId)&&!r.result);
@@ -158,5 +160,9 @@ on('batch-scope',()=>{$('batch-bound').disabled=$('batch-scope').value==='unboun
 on('batch-use-catalog',()=>{$('batch-scope').value=$('catalog-scope').value;$('batch-bound').value=$('catalog-bound').value;$('batch-start').value=$('catalog-start').value;$('batch-bound').disabled=$('batch-scope').value==='unbounded';notice('Copied numeric bounds. Batch ranks always index ordered triples, even when the catalog is showing individual words.');});
 on('batch-import',()=>{$('session-file').click();});on('batch-export-json',exportBatch);on('batch-export-csv',()=>download('4d-nod-batch-results.csv',exportBatchCsv(batchRecords()),'text/csv;charset=utf-8'));
 try{const stored=localStorage.getItem(KEY);if(stored)records=validateNotebook({schema_version:'1',records:JSON.parse(stored)},{restore:true});}catch{notice('Saved browser notebook could not be loaded. Import a JSON backup to recover it.',true);}
+workbookUI=mountWorkbook({useItem,isQueueBusy:()=>queueRunning,notice,openNotebook:()=>{$('notebook-section').open=true;$('notebook-section').scrollIntoView({behavior:'smooth'});},
+  showCatalog:source=>{page={kind:source.kind,rows:source.rows};renderCatalog(page.rows,page.kind);$('catalog-summary').textContent=`${source.filename} · ${source.sheet} · ${source.rows.length} displayed rows. Source rows are Excel row numbers.`;$('catalog-range').textContent='Uploaded workbook page';$('catalog-prev').disabled=true;$('catalog-next').disabled=true;notice('Spreadsheet page loaded into the catalog. Choose a piece or triple to populate the builder.');$('catalog').scrollIntoView({behavior:'smooth'});},
+  saveTriples:source=>{if(queueRunning)throw Error('Pause the queue before adding spreadsheet triples.');if(source.kind!=='triples')throw Error('Only explicit three-piece rows can be added to the notebook.');const incoming=validateNotebook({schema_version:'1',records:source.rows.map(row=>({candidate:row.item,geometry:null,result:null,created_at:new Date().toISOString(),source:{type:'xlsx',filename:source.filename,sha256:source.sha256,sheet:source.sheet,excel_row:row.excel_row,source_id:row.source_id}}))});const next=[...records,...incoming];assertNotebookBudget(next);records=next;const saved=persist();renderNotebook();if(saved)notice(`Added ${incoming.length} spreadsheet triples to the notebook. Geometry is not defined. Open saved notebook and use Assess pending records, or export these inputs.`);}
+});
 renderPieces();loadPage();renderNotebook();
 fetch('/api/research/controls').then(r=>{if(!r.ok)throw Error('Control endpoint unavailable.');return r.json();}).then(data=>{controls=data.controls;controls.forEach(c=>{const option=el('option',c.title);option.value=c.id;$('control-select').append(option);});}).catch(e=>notice(e.message,true));

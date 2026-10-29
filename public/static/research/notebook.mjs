@@ -49,6 +49,15 @@ function canonical(value) {
   return JSON.stringify(value);
 }
 
+function sourceProvenance(raw) {
+  if (!object(raw) || raw.type !== 'xlsx' || !text(raw.filename, 255, true) || !text(raw.sheet, 128, true)
+      || !text(raw.source_id, 100) || typeof raw.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(raw.sha256)
+      || typeof raw.excel_row !== 'string' || !/^[1-9]\d{0,6}$/.test(raw.excel_row) || Number(raw.excel_row) > 1048576) {
+    fail('Spreadsheet provenance requires a filename, sheet, SHA-256, source ID and valid Excel row.');
+  }
+  return {type: 'xlsx', filename: raw.filename, sha256: raw.sha256, sheet: raw.sheet, excel_row: raw.excel_row, source_id: raw.source_id};
+}
+
 function candidate(raw) {
   if (!object(raw) || !Array.isArray(raw.pieces) || raw.pieces.length !== 3) fail('Notebook candidate must contain three ordered pieces A, B, C.');
   const normalized = tripleFromWords(raw.pieces.map((piece, i) => {
@@ -251,6 +260,7 @@ export function validateNotebook(data, {restore = false} = {}) {
       archived_result: retained ? raw.archived_result ?? null : raw.result ?? raw.archived_result ?? null,
       created_at: text(raw.created_at, 80, true) && Number.isFinite(Date.parse(raw.created_at)) ? raw.created_at : new Date().toISOString(),
       ...(batch ? {batch} : {}),
+      ...(raw.source != null ? {source: sourceProvenance(raw.source)} : {}),
       ...(restore && text(raw.error, 8000, true) ? {error: raw.error} : {}),
     };
   });
