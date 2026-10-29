@@ -32,6 +32,21 @@ function record(geometry = sphere) {
 }
 const notebook = records => ({schema_version: '1', records});
 
+test('spreadsheet provenance survives import and restore without becoming geometry or evidence', () => {
+  const source = {type: 'xlsx', filename: 'research.xlsx', sha256: 'a'.repeat(64), sheet: 'Triple examples', excel_row: '6', source_id: 'C0001'};
+  const input = {...record(null), result: null, source};
+  for (const restore of [false, true]) {
+    const saved = validateNotebook(notebook([input]), {restore})[0];
+    assert.deepEqual(saved.source, source);
+    assert.equal(saved.geometry, null);
+    assert.equal(saved.result, null);
+    assert.deepEqual(saved.candidate, candidate);
+  }
+  for (const changed of [{sha256: 'bad'}, {excel_row: '0'}, {excel_row: '1048577'}, {source_id: 'x'.repeat(101)}, {sheet: ''}, {type: 'instructions'}]) {
+    assert.throws(() => validateNotebook(notebook([{...input, source: {...source, ...changed}}])), /Spreadsheet provenance/);
+  }
+});
+
 test('imports always quarantine reports, even when their input matches', () => {
   const original = record(), result = validateNotebook(notebook([original]))[0];
   assert.equal(result.result, null);

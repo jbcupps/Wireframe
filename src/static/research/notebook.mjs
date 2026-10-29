@@ -3,6 +3,7 @@
  * Restoration binds a report to its saved input; this is not a report signature.
  */
 import {tripleFromWords} from './catalog.mjs';
+import {validateBatchMetadata} from './batch-meta.mjs';
 
 export const NOTEBOOK_LIMITS = Object.freeze({records: 100, bytes: 9000000, inputBytes: 524288});
 const names = ['A', 'B', 'C'];
@@ -46,6 +47,15 @@ function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (object(value)) return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
   return JSON.stringify(value);
+}
+
+function sourceProvenance(raw) {
+  if (!object(raw) || raw.type !== 'xlsx' || !text(raw.filename, 255, true) || !text(raw.sheet, 128, true)
+      || !text(raw.source_id, 100) || typeof raw.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(raw.sha256)
+      || typeof raw.excel_row !== 'string' || !/^[1-9]\d{0,6}$/.test(raw.excel_row) || Number(raw.excel_row) > 1048576) {
+    fail('Spreadsheet provenance requires a filename, sheet, SHA-256, source ID and valid Excel row.');
+  }
+  return {type: 'xlsx', filename: raw.filename, sha256: raw.sha256, sheet: raw.sheet, excel_row: raw.excel_row, source_id: raw.source_id};
 }
 
 function candidate(raw) {
@@ -130,7 +140,7 @@ function geometry(raw) {
       if (!['illustrative_phase', 'fourth_coordinate_slice', 'model_evolution'].includes(embedding.animation_kind) || !text(embedding.description, 8000, true)) fail('Animation requires its meaning and a description.');
       let previous = -Infinity;
       for (const frame of embedding.frames) {
-        if (!object(frame) || typeof frame.value !== 'number' || !Number.isFinite(frame.value) || frame.value <= previous) fail('Frame values must be finite and strictly increasing.');
+        if (!object(frame) || typeof frame.value !== 'number' || !Number.isFinite(frame.value) || Math.abs(frame.value) > 1e12 || frame.value <= previous) fail('Frame values must be finite, strictly increasing and have magnitude at most 10¹².');
         previous = frame.value;
         if (coordinates(frame.coordinates, vertices) !== dimension) fail('Frame coordinates must match the embedding dimension.');
       }
@@ -218,6 +228,8 @@ export function validateNotebook(data, {restore = false} = {}) {
   if (!object(data) || data.schema_version !== '1') fail('Expected notebook schema_version 1.');
   assertNotebookBudget(data.records);
   finiteJson(data.records);
+  const importedBatchIds = new Map();
+  const batchGroups = new Map();
   const records = data.records.map(raw => {
     if (!object(raw)) fail('Notebook records must be objects.');
     const normalized = candidate(raw.candidate);
@@ -227,6 +239,19 @@ export function validateNotebook(data, {restore = false} = {}) {
     finiteJson(payload, {depthLimit: 24, itemLimit: 60000});
     const vertices = geometry(inputGeometry);
     const retained = restore && raw.result != null && safeReport(raw.result, normalized, inputGeometry, vertices);
+    let batch;
+    if (raw.batch != null) {
+      batch = validateBatchMetadata(raw.batch, normalized, inputGeometry);
+      const signature = canonical({start: batch.start, count: batch.count, indexing: batch.indexing, max_operations: batch.max_operations, created_at: batch.created_at});
+      const group = batchGroups.get(batch.id);
+      if (group && (group.signature !== signature || group.rows.has(batch.row_rank))) fail('Batch records must have consistent range metadata and unique row ranks within each batch.');
+      if (!group) batchGroups.set(batch.id, {signature, rows: new Set([batch.row_rank])});
+      else group.rows.add(batch.row_rank);
+      if (!restore) {
+        if (!importedBatchIds.has(batch.id)) importedBatchIds.set(batch.id, globalThis.crypto.randomUUID());
+        batch.id = importedBatchIds.get(batch.id);
+      }
+    }
     return {
       id: restore && text(raw.id, 100, true) ? raw.id : globalThis.crypto.randomUUID(),
       candidate: normalized,
@@ -234,6 +259,9 @@ export function validateNotebook(data, {restore = false} = {}) {
       result: retained ? raw.result : null,
       archived_result: retained ? raw.archived_result ?? null : raw.result ?? raw.archived_result ?? null,
       created_at: text(raw.created_at, 80, true) && Number.isFinite(Date.parse(raw.created_at)) ? raw.created_at : new Date().toISOString(),
+      ...(batch ? {batch} : {}),
+      ...(raw.source != null ? {source: sourceProvenance(raw.source)} : {}),
+      ...(restore && text(raw.error, 8000, true) ? {error: raw.error} : {}),
     };
   });
   assertNotebookBudget(records);
