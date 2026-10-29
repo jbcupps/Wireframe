@@ -7,14 +7,35 @@
   <header class="research-hero"><div><h1>From words to<br><em>testable structures.</em></h1><p>Compose three independent pieces. Declare their geometry.<br>Inspect what the evidence actually establishes.</p></div><div class="hero-mark" aria-hidden="true"><span>A</span><span>B</span><span>C</span><i>4D<br>NOD</i></div></header>
   <div class="research-notice"><strong>Symbolic descriptions ≠ physical particles.</strong> Twist and loop labels are provisional. Geometry, joining maps and physical observables need separate definitions.</div>
   <div class="stats"><div><strong>32</strong><span>operation labels</span></div><div><strong>33,825</strong><span>words of length 0–3</span></div><div><strong>38,700,218,390,625</strong><span>ordered triples in that slice</span></div></div>
-  <nav class="workspace-tabs" aria-label="Workspace sections"><a href="#catalog">01 Catalog</a><a href="#builder">02 Assemble</a><a href="#geometry">03 Define geometry</a><a href="#evidence">04 Evidence</a></nav>
+  <nav class="workspace-tabs" aria-label="Workspace sections"><a href="#catalog">01 Catalog</a><a href="#batch">Batch runner</a><a href="#builder">02 Assemble</a><a href="#geometry">03 Define geometry</a><a href="#evidence">04 Evidence</a></nav>
   <div id="message" role="status" aria-live="polite"></div>
+  <div id="storage-warning" class="research-notice" role="alert" hidden></div>
   <section id="catalog" class="panel"><div class="section-heading"><div><span class="eyebrow">01 / SYMBOLIC CATALOG</span><h2>Explore the vocabulary</h2></div><button id="export-page">Export this CSV page</button></div>
     <div class="toolbar"><label>Browse<select id="catalog-kind"><option value="words">Individual words</option><option value="triples">Ordered triples A · B · C</option></select></label><label>Catalog scope<select id="catalog-scope"><option value="bounded">Bounded slice</option><option value="unbounded">Unbounded index</option></select></label><label>Maximum operations<input id="catalog-bound" type="number" min="0" max="4096" value="3"></label><label>Zero-based row rank<input id="catalog-start" inputmode="numeric" value="0"></label><button id="catalog-go" class="primary">Go to rank</button></div>
     <div class="toolbar"><label>Rows per page<select id="page-size"><option value="20">20</option><option value="5">5</option><option value="1">1 (long words)</option></select></label><label class="grow">Find exact word, stable P ID, or word rank<input id="catalog-search" placeholder="Txy+ · Lw− · Pzw+ or P00001"></label><button id="search-word">Find word</button><label class="file-button">Import explorer CSV<input id="csv-file" type="file" accept=".csv,text/csv"></label></div>
     <p id="catalog-summary" class="muted"></p><div class="table-scroll"><table><thead id="catalog-head"></thead><tbody id="catalog-body"></tbody></table></div>
     <div class="toolbar pager"><button id="catalog-prev">← Previous 20</button><button id="catalog-next">Next 20 →</button><span id="catalog-range" class="muted"></span></div>
     <p class="fine">Order and repetitions are preserved. Opposite signs do not cancel. Bounded triples use C-fastest Cartesian ordering; unbounded triples use nested Cantor pairing. Row ranks are not candidate IDs. Pages contain at most 20 rows; CSV imports at most 1,000 rows. There is no theoretical repetition limit; this session accepts 4,096 operations per piece.</p>
+  </section>
+  <section id="batch" class="panel">
+    <div class="section-heading"><div><span class="eyebrow">AUTOMATED RESEARCH</span><h2>Run a bounded batch</h2></div><span class="badge">Runs while this page is open</span></div>
+    <p>Generate an exact range of ordered A/B/C triples, assess each saved geometry assignment, and checkpoint every result. Unmatched candidates remain <strong>not tested</strong>. No twist or loop label is interpreted as a geometry.</p>
+    <fieldset id="batch-settings"><legend>Generate triples</legend><div class="toolbar">
+      <label>Indexing scope<select id="batch-scope"><option value="bounded">Bounded slice · C changes fastest</option><option value="unbounded">Unbounded · Cantor pairing</option></select></label>
+      <label>Maximum operations per piece<input id="batch-bound" type="number" min="0" max="4096" value="3"></label>
+      <label>Starting triple rank (zero-based)<input id="batch-start" inputmode="numeric" value="0"></label>
+      <label>Number of triples<input id="batch-count" type="number" min="1" max="100" value="10"></label>
+      <button id="batch-use-catalog" type="button">Use catalog bounds</button>
+    </div><div class="toolbar"><label class="grow">Geometry source<select id="batch-geometry"><option value="notebook">Match saved notebook geometry by candidate ID</option><option value="symbolic">Symbolic only · no geometry</option></select></label><button id="batch-import" type="button">Import prepared notebook</button></div>
+    <p class="fine">Save a candidate with its supplied geometry below, or import a notebook. Only an exact ordered candidate ID can match. Conflicting geometries require a choice; controls are never assigned to other words automatically. Each run is limited to 100 records and available notebook capacity. The full range must fit your selected bounds.</p>
+    <div class="toolbar"><button id="batch-generate">Prepare batch</button><button id="batch-run" class="primary">Generate &amp; run</button><label class="checkbox-label"><input id="batch-auto-export" type="checkbox" checked>Download checkpoint JSON on completion</label></div></fieldset>
+    <div class="toolbar"><label class="grow">Prepared batches<select id="batch-select"><option value="">No prepared batch</option></select></label><button id="batch-resume" disabled>Run / resume selected batch</button><button id="batch-pause" disabled>Pause</button></div>
+    <p id="batch-summary" class="muted" role="status" aria-live="polite">Prepare a batch to see its exact range and geometry assignments.</p>
+    <progress id="batch-progress" value="0" max="1" aria-label="Batch assessment progress"></progress>
+    <p id="batch-status" class="fine" role="status"></p>
+    <div class="table-scroll"><table><thead><tr><th>Triple rank</th><th>Candidate / A · B · C</th><th>Supplied geometry</th><th>Assessment</th><th>Inspect</th></tr></thead><tbody id="batch-results"></tbody></table></div>
+    <div class="toolbar"><button id="batch-export-json" disabled>Export batch checkpoint JSON</button><button id="batch-export-csv" disabled>Export results CSV</button></div>
+    <p class="fine">Completed means the available checks ran, not that a particle or manifold was established. Keep this tab open during execution. After reload, select the saved batch and resume pending records. Imported reports are archived until rerun. Checkpoints include the range, candidate IDs, supplied inputs, model versions and evidence; browser storage is not a durable server database.</p>
   </section>
   <section id="builder" class="panel"><div class="section-heading"><div><span class="eyebrow">02 / THREE LABELED PIECES</span><h2>Assemble a candidate</h2></div><button id="save-candidate">Save to notebook</button></div>
     <p class="muted">Choose any sequence for each piece, including the empty word and repeated operations. Piece colors identify A, B and C; they are not QCD color charge.</p>

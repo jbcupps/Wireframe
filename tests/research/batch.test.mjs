@@ -1,0 +1,156 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {prepareBatch, summarizeBatch, exportBatchCsv} from '../../src/static/research/batch.mjs';
+import {batchRange} from '../../src/static/research/batch-meta.mjs';
+import {validateNotebook, NOTEBOOK_LIMITS} from '../../src/static/research/notebook.mjs';
+import {catalogPage, tripleFromWords, boundedTripleRank, parseCsv} from '../../src/static/research/catalog.mjs';
+
+const clone = value => JSON.parse(JSON.stringify(value));
+const sphere = {
+  schema_version: '1', model: {id: 'three_piece_s4', version: '1.0'},
+  pieces: [
+    {name: 'A', maximal_simplices: [[1,2,3,4,5], [0,2,3,4,5]]},
+    {name: 'B', maximal_simplices: [[0,1,3,4,5], [0,1,2,4,5]]},
+    {name: 'C', maximal_simplices: [[0,1,2,3,5], [0,1,2,3,4]]},
+  ], joining: {method: 'shared_vertex_labels', target: 'closed'},
+};
+const empty = tripleFromWords([[], [], []]);
+function saved(candidate = empty, geometry = sphere) {
+  return {id: 'saved', candidate: clone(candidate), geometry: clone(geometry), result: null, created_at: '2026-10-29T12:00:00.000Z'};
+}
+function report(record) {
+  const geometry = record.geometry;
+  return {schema_version: '1', test_version: '4d-nod-finite-complex/1.0.0', status: geometry ? 'completed' : 'not_tested',
+    assessed_at: '2026-10-29T12:00:00.000Z', input_sha256: 'a'.repeat(64),
+    input: {candidate: clone(record.candidate), geometry: clone(geometry)}, candidate: clone(record.candidate), model: geometry?.model ?? null,
+    checks: geometry ? [
+      {id:'dimension',label:'Dimension is four',status:'passed',evidence:{dimension:4}},
+      {id:'facet_incidence',label:'Facet incidence',status:'failed',evidence:{facet:[0,1,2,3],incidence:3}},
+      {id:'physical_identity',label:'Physical identity',status:'not_tested',evidence:'No observable derivation'},
+    ] : [{id:'geometry',label:'Explicit geometry',status:'not_tested',evidence:'Not supplied'}],
+    assembled: geometry ? {dimension:4,component_count:1,euler_characteristic:2,betti_numbers_mod2:[1,0,0,0,1],boundary_tetrahedra:[],overfull_tetrahedra:[]} : null,
+    visualization: geometry ? {kind:'incidence_schematic',boundary_faces:[],overfull_faces:[],seams:[]} : null};
+}
+
+test('bounded batch has exact range provenance and creates independent symbolic snapshots', () => {
+  const prepared = prepareBatch({start:'0',count:3,maxOperations:1}, []);
+  assert.equal(prepared.batch.next_rank,'3');
+  assert.equal(prepared.batch.count,3);
+  assert.equal(prepared.batch.indexing,'bounded-cartesian-c-fastest');
+  assert.deepEqual(prepared.records.map(r=>r.candidate),catalogPage({kind:'triples',start:'0',count:3,maxOperations:1}).rows.map(r=>r.item));
+  assert.deepEqual(prepared.records.map(r=>r.batch.row_rank),['0','1','2']);
+  assert(prepared.records.every(r=>r.geometry===null && r.result===null && r.batch.geometry_source==='none' && r.batch.id===prepared.batch.id));
+  assert.equal(new Set(prepared.records.map(r=>r.id)).size,3);
+  prepared.records[0].candidate.pieces[2].operations.push('Lx+');
+  assert.deepEqual(prepared.records[1].candidate.pieces[2].operations,['Txy+']);
+});
+
+test('finite ranges never truncate and large ranks retain exact decimal identity', () => {
+  assert.throws(()=>prepareBatch({start:'0',count:2,maxOperations:0}),/exceeds the bounded/);
+  const last=prepareBatch({start:'38700218390624',count:1,maxOperations:3});
+  assert.equal(last.batch.next_rank,'38700218390625');
+  assert.throws(()=>prepareBatch({start:'38700218390624',count:2,maxOperations:3}),/exceeds/);
+  const start='90071992547409931234567890';
+  const large=prepareBatch({start,count:2,maxOperations:null});
+  assert.equal(large.records[0].batch.row_rank,start);
+  assert.equal(large.records[1].batch.row_rank,(BigInt(start)+1n).toString());
+  assert.equal(large.batch.next_rank,(BigInt(start)+2n).toString());
+  assert.equal(large.batch.indexing,'cantor-pairing');
+  assert.deepEqual(large.records.map(r=>r.candidate),catalogPage({kind:'triples',start,count:2,maxOperations:null}).rows.map(r=>r.item));
+});
+
+test('only an exact ordered ID receives a saved geometry; copies do not imply a symbolic map', () => {
+  const selected=tripleFromWords([[], [], ['Txy+']]);
+  const swapped=tripleFromWords([['Txy+'], [], []]);
+  const source=[saved(selected),saved(swapped)];
+  source[0].result={status:'completed',invented:'old report never reused'};
+  const before=clone(source);
+  const prepared=prepareBatch({start:'0',count:3,maxOperations:1,geometryMode:'notebook'},source);
+  assert.equal(prepared.records[0].geometry,null);
+  assert.deepEqual(prepared.records[1].geometry,sphere);
+  assert.equal(prepared.records[2].geometry,null);
+  assert.equal(prepared.records[1].batch.geometry_source,'notebook');
+  assert.equal(prepared.records[1].result,null);
+  assert.deepEqual(source,before);
+  source[0].geometry.model.version='changed after generation';
+  assert.equal(prepared.records[1].geometry.model.version,'1.0');
+  prepared.records[1].geometry.pieces[0].maximal_simplices[0][0]='changed';
+  assert.equal(source[0].geometry.pieces[0].maximal_simplices[0][0],1);
+  assert(prepareBatch({start:'0',count:3,maxOperations:1,geometryMode:'symbolic'},source).records.every(r=>r.geometry===null));
+});
+
+test('ambiguous candidate geometry stops atomically; identical duplicates are accepted', () => {
+  const one=saved(),two=saved();two.geometry.model.version='2';
+  const source=[one,two], before=JSON.stringify(source);
+  assert.throws(()=>prepareBatch({count:1,geometryMode:'notebook'},source),/Ambiguous supplied geometry/);
+  assert.equal(JSON.stringify(source),before);
+  two.geometry=clone(sphere);
+  two.geometry.model={version:'1.0',id:'three_piece_s4'};
+  const prepared=prepareBatch({count:1,geometryMode:'notebook'},source);
+  assert.deepEqual(prepared.records[0].geometry,two.geometry);
+  two.candidate.pieces[0].candidate_id='P99999';
+  assert.throws(()=>prepareBatch({count:1,geometryMode:'notebook'},source),/identity/);
+});
+
+test('batch checkpoints retain rank and geometry association; imports remap whole groups', () => {
+  const batch=prepareBatch({count:3,geometryMode:'notebook'},[saved()]);
+  batch.records[0].result=report(batch.records[0]);
+  const source={schema_version:'1',records:batch.records};
+  const restored=validateNotebook(clone(source),{restore:true});
+  assert.equal(restored[0].batch.id,batch.batch.id);
+  assert.equal(restored[0].result.status,'completed');
+  assert.deepEqual(restored.map(r=>r.batch.row_rank),['0','1','2']);
+  const interrupted=clone(source);interrupted.records[1].error='Stopped at the request resource bound';
+  assert.equal(validateNotebook(interrupted,{restore:true})[1].error,'Stopped at the request resource bound');
+  const imported=validateNotebook(clone(source)),again=validateNotebook(clone(source));
+  assert.notEqual(imported[0].batch.id,batch.batch.id);
+  assert.notEqual(imported[0].batch.id,again[0].batch.id);
+  assert.equal(new Set(imported.map(r=>r.batch.id)).size,1);
+  assert.equal(imported[0].result,null);assert.equal(imported[0].archived_result.status,'completed');
+  const bad=clone(source);bad.records[1].batch.row_rank='2';
+  assert.throws(()=>validateNotebook(bad),/does not match the candidate/);
+  for(const mutate of [m=>m.indexing='cantor-pairing',m=>m.count=101,m=>m.geometry_source='none',m=>m.id='x'.repeat(101),m=>m.created_at='no date',m=>m.start='5']) {
+    const changed=clone(source);mutate(changed.records[0].batch);assert.throws(()=>validateNotebook(changed));
+  }
+  const missing=clone(source);delete missing.records[0].batch.max_operations;
+  assert.throws(()=>validateNotebook(missing),/requires explicit/);
+  const duplicate=clone(source);duplicate.records.push(clone(duplicate.records[0]));
+  assert.throws(()=>validateNotebook(duplicate),/unique row ranks/);
+  const inconsistent=clone(source);inconsistent.records[1].batch.count=2;
+  assert.throws(()=>validateNotebook(inconsistent),/consistent range metadata/);
+});
+
+test('summary separates supplied geometry, symbolic responses, pending and errors', () => {
+  const {records}=prepareBatch({count:4,geometryMode:'notebook'},[saved()]);
+  records[0].result=report(records[0]);records[1].result=report(records[1]);records[2].error='Resource limit';
+  assert.deepEqual(summarizeBatch(records),{total:4,completed:2,pending:2,errors:1,geometric:1,symbolic:3,assessed_geometry:1,not_tested:1,passed_checks:1,failed_checks:1,not_tested_checks:2});
+});
+
+test('CSV includes all words, qualifications, versions and witnesses; formulas stay inert', () => {
+  const unsafe=saved();unsafe.geometry.model.id=' =HYPERLINK("bad")';unsafe.geometry.model.version='@version';
+  const {records}=prepareBatch({count:2,geometryMode:'notebook'},[unsafe]);
+  records[0].result=report(records[0]);records[1].error='+error';
+  const [header,first,second]=parseCsv(exportBatchCsv(records));
+  assert.equal(header.length,16);
+  assert.equal(first[2],empty.candidate_id);
+  assert.deepEqual(first.slice(3,6),['∅','∅','∅']);
+  assert.equal(first[7],"' =HYPERLINK(\"bad\")");assert.equal(first[8],"'@version");
+  assert.equal(first[9],'completed');assert.equal(first[10],'Dimension is four');assert.equal(first[11],'Facet incidence');assert.equal(first[12],'Physical identity');
+  assert.match(first[13],/"incidence":3/);assert.match(first[15],/No full manifold, smoothness or physical particle determination/);
+  assert.equal(second[9],'error');assert.equal(second[14],"'+error");
+  const stale=clone(records);stale[0].geometry.model.version='changed';
+  const staleRows=parseCsv(exportBatchCsv(stale));assert.equal(staleRows[1][9],'pending');assert.equal(staleRows[1][13],'');
+});
+
+test('count, operation, and total notebook budgets fail before any mutation', () => {
+  for(const config of [{count:0},{count:101},{count:1.5},{count:'1'},{start:-1},{start:Number.MAX_SAFE_INTEGER+1},{maxOperations:-1},{maxOperations:4097},{geometryMode:'same-control-for-all'}]) assert.throws(()=>prepareBatch(config));
+  const source=Array.from({length:99},()=>saved(empty,null));
+  assert.throws(()=>prepareBatch({count:2},source),/100-record/);assert.equal(source.length,99);
+  const big=[{padding:'x'.repeat(NOTEBOOK_LIMITS.bytes-100)}];
+  assert.throws(()=>prepareBatch({count:1},big),/9,000,000-byte/);
+  assert.equal(big[0].padding.length,NOTEBOOK_LIMITS.bytes-100);
+  const longWord=Array(200).fill('Txy+');
+  const start=boundedTripleRank([longWord,longWord,longWord],200).toString();
+  assert.throws(()=>prepareBatch({start,count:40,maxOperations:200}),/operation display budget/);
+  assert.equal(batchRange({start:'000',count:1,maxOperations:0}).start,'0');
+});
