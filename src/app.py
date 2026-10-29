@@ -5,10 +5,12 @@ This file has been significantly refactored for better maintainability and organ
 
 import os
 import logging
+import mimetypes
 from flask import Flask
 
 from .config import settings, get_logging_config, get_cache_config
 from .routes import main_bp, api_bp, quantum_bp
+from .routes.research_routes import research_bp
 from .utils.cache import initialize_cache
 
 # Configure simple logging for application startup
@@ -28,6 +30,8 @@ def create_app():
     Application factory for creating Flask application instances.
     This approach supports better testing and deployment flexibility.
     """
+    # Windows registry mappings can label .mjs as text/plain, blocking modules.
+    mimetypes.add_type('text/javascript', '.mjs')
     # Initialize Flask app with proper template and static folder paths
     app = Flask(
         __name__,
@@ -55,6 +59,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(quantum_bp)
+    app.register_blueprint(research_bp)
     
     logger.info(f"Flask application created in {settings.environment.value} mode")
     
@@ -71,4 +76,4 @@ if __name__ == '__main__':
         host=settings.host,
         port=settings.port,
         debug=settings.debug
-    ) 
+    )
