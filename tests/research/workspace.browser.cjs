@@ -13,7 +13,10 @@ const { chromium } = require('playwright');
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, acceptDownloads: true });
   const errors = [], outcomes = [];
   page.on('pageerror', error => errors.push(error.message));
-  page.on('console', message => { if (message.type() === 'error' && !message.text().includes('404 (NOT FOUND)')) errors.push(message.text()); });
+  page.on('console', message => {
+    const missingFavicon = message.text().includes('404') && /\/favicon\.ico(?:\?|$)/.test(message.location().url || '');
+    if (message.type() === 'error' && !missingFavicon) errors.push(message.text());
+  });
   const base = process.env.RESEARCH_BASE_URL || 'http://127.0.0.1:5055';
   const record = name => { outcomes.push(name); console.log(`PASS ${name}`); };
   const waitNotice = text => page.waitForFunction(value => document.querySelector('#message')?.textContent.includes(value), text);
