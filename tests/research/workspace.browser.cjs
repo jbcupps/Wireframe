@@ -73,6 +73,9 @@ const { chromium } = require('playwright');
     assert.equal(await page.locator('#candidate-id').innerText(), catalog.tripleFromWords([['Lw-', 'Pxy+', 'Lw-'], ['Txy-', 'Txy+', 'Txy-'], []]).candidate_id);
     record('independent A/B/C builder, repeat, reorder, remove and normalization');
 
+    assert.equal(await page.locator('#catalog-kind').isDisabled(), true);
+    await page.locator('#catalog-generated').click();
+    assert.equal(await page.locator('#catalog-kind').isEnabled(), true);
     await page.locator('#catalog-kind').selectOption('triples');
     assert.match(await page.locator('#catalog-summary').innerText(), /38,700,218,390,625/);
     await page.locator('#catalog-start').fill('38700218390624'); await page.locator('#catalog-go').click();

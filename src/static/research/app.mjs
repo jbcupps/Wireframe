@@ -1,4 +1,4 @@
-import {ALPHABET,parseWord,formatWord,wordId,tripleFromWords,catalogPage,lookupWord,readExplorerCsv,exportExplorerCsv} from './catalog.mjs';
+import {ALPHABET,LIMITS,parseWord,formatWord,wordId,tripleFromWords,catalogPage,importedCatalogPage,lookupWord,readExplorerCsv,exportExplorerCsv} from './catalog.mjs';
 import {mountVisualization} from './visualization.mjs';
 import {validateNotebook,assertNotebookBudget} from './notebook.mjs';
 import {prepareBatch,summarizeBatch,exportBatchCsv} from './batch.mjs';
@@ -10,6 +10,7 @@ const KEY='4d-nod-research-notebook-v1';
 let words=[[],[],[]], geometry=null, result=null, controls=[], page, records=[], activeRequest=null, revision=0, queueStopped=false, queueRunning=false, activeBatchId=null;
 let visual=mountVisualization($('visualization'),{geometry,result,candidate:tripleFromWords(words)});
 let workbookUI=null;
+let catalogSource=null, catalogRevision=0;
 const clone=value=>JSON.parse(JSON.stringify(value));
 function notice(text,error=false){$('message').textContent=text;$('message').className=error?'error':'';}
 function guard(fn){return async(...args)=>{try{await fn(...args);}catch(e){notice(e.message,true);}};}
@@ -44,17 +45,44 @@ function renderCatalog(rows,kind){
   $('catalog-head').replaceChildren();const heading=el('tr');['Source row','Stable identity',kind==='words'?'Ordered sequence':'A / B / C sequences','Use'].forEach(t=>heading.append(el('th',t)));$('catalog-head').append(heading);$('catalog-body').replaceChildren();
   rows.forEach(row=>{const tr=el('tr'),item=row.item;tr.append(el('td',row.source_row));const id=el('td');id.append(el('code',item.candidate_id));tr.append(id);const seq=el('td');if(item.pieces)item.pieces.forEach((p,i)=>seq.append(el('div',`${labels[i]} · ${formatWord(p.operations)}`)));else seq.textContent=formatWord(item.operations);tr.append(seq);const actions=el('td');if(item.pieces)actions.append(button('Use triple',()=>useItem(item)));else labels.forEach((l,i)=>actions.append(button(l,()=>useItem(item,i),`Use ${item.candidate_id} for piece ${l}`)));tr.append(actions);$('catalog-body').append(tr);});
 }
-function loadPage(){
-  const scope=$('catalog-scope').value,size=Number($('page-size').value);page=catalogPage({kind:$('catalog-kind').value,start:$('catalog-start').value,count:size,maxOperations:scope==='bounded'?Number($('catalog-bound').value):null});renderCatalog(page.rows,page.kind);
-  $('catalog-summary').textContent=`${page.total===null?'Infinitely many formal descriptions':BigInt(page.total).toLocaleString()+' formal descriptions'} · ${page.indexing} · ${scope==='bounded'?'length 0–'+page.maxOperations:'no theoretical length bound'}`;
-  $('catalog-range').textContent=`Showing source rows ${page.rows[0]?.source_row}–${page.rows.at(-1)?.source_row}`;$('catalog-bound').disabled=scope==='unbounded';$('catalog-prev').disabled=page.start==='0';$('catalog-next').disabled=page.total!==null&&BigInt(page.start)+BigInt(size)>=BigInt(page.total);$('catalog-prev').textContent=`← Previous ${size}`;$('catalog-next').textContent=`Next ${size} →`;
+function showCatalogPage(next){
+  page=next;const size=Number($('page-size').value),scope=$('catalog-scope').value;
+  renderCatalog(page.rows,page.kind);$('catalog-start').value=page.start;$('catalog-kind').value=page.kind;
+  $('catalog-summary').textContent=catalogSource?`${catalogSource.label} · ${Number(page.total).toLocaleString()} imported rows. Source row numbers retained; identities checked from words.`:`${page.total===null?'Infinitely many formal descriptions':BigInt(page.total).toLocaleString()+' formal descriptions'} · ${page.indexing} · ${scope==='bounded'?'length 0–'+page.maxOperations:'no theoretical length bound'}`;
+  const range=`Showing source rows ${page.rows[0]?.source_row}–${page.rows.at(-1)?.source_row}`;
+  $('catalog-range').textContent=catalogSource?`Rows ${Number(page.start)+1}–${Number(page.start)+page.rows.length} of ${Number(page.total).toLocaleString()} · ${range}`:range;
+  $('catalog-kind').disabled=Boolean(catalogSource);$('catalog-scope').disabled=Boolean(catalogSource);$('catalog-bound').disabled=Boolean(catalogSource)||scope==='unbounded';
+  $('catalog-start-label').textContent=catalogSource?'Zero-based imported row':'Zero-based row rank';$('catalog-go').textContent=catalogSource?'Go to row':'Go to rank';$('catalog-generated').hidden=!catalogSource;
+  $('batch-use-catalog').disabled=Boolean(catalogSource);
+  $('catalog-prev').disabled=page.start==='0';$('catalog-next').disabled=page.total!==null&&BigInt(page.start)+BigInt(size)>=BigInt(page.total);$('catalog-prev').textContent=`← Previous ${size}`;$('catalog-next').textContent=`Next ${size} →`;
 }
+function loadPage(){
+  catalogRevision++;
+  const scope=$('catalog-scope').value,size=Number($('page-size').value),start=$('catalog-start').value;
+  const next=catalogSource?importedCatalogPage(catalogSource.rows,{start,count:size}):catalogPage({kind:$('catalog-kind').value,start,count:size,maxOperations:scope==='bounded'?Number($('catalog-bound').value):null});
+  showCatalogPage(next);
+}
+function useCatalogSource(rows,label){
+  const next=importedCatalogPage(rows,{start:'0',count:Number($('page-size').value)});
+  catalogRevision++;catalogSource={rows,label};showCatalogPage(next);
+}
+on('catalog-generated',()=>{
+  const next=catalogPage({kind:$('catalog-kind').value,start:'0',count:Number($('page-size').value),maxOperations:$('catalog-scope').value==='bounded'?Number($('catalog-bound').value):null});
+  catalogRevision++;catalogSource=null;showCatalogPage(next);notice('Generated catalog restored.');
+});
 on('catalog-go',loadPage);on('catalog-kind',()=>{$('catalog-start').value='0';loadPage();},'change');on('catalog-scope',()=>{$('catalog-start').value='0';loadPage();},'change');
 on('page-size',loadPage,'change');
 on('catalog-prev',()=>{const n=BigInt($('page-size').value);$('catalog-start').value=String(BigInt(page.start)>n?BigInt(page.start)-n:0n);loadPage();});on('catalog-next',()=>{$('catalog-start').value=String(BigInt(page.start)+BigInt($('page-size').value));loadPage();});
-on('search-word',()=>{const item=lookupWord($('catalog-search').value);page={kind:'words',rows:[{source_row:(BigInt(item.word_rank)+1n).toString(),item}]};renderCatalog(page.rows,'words');$('catalog-summary').textContent='Exact lookup · full 32-label vocabulary';$('catalog-range').textContent='1 matching word';$('catalog-prev').disabled=true;$('catalog-next').disabled=true;});
+on('search-word',()=>{const item=lookupWord($('catalog-search').value);useCatalogSource([{source_row:(BigInt(item.word_rank)+1n).toString(),item}],'Exact lookup · full 32-label vocabulary');});
 on('export-page',()=>download('4d-nod-displayed-page.csv',exportExplorerCsv(page),'text/csv;charset=utf-8'));
-on('csv-file',async()=>{const text=await fileText('csv-file');if(text===null)return;const imported=readExplorerCsv(text);if(!imported.length)throw Error('CSV contains no candidate rows.');page={kind:imported[0].item.pieces?'triples':'words',rows:imported};renderCatalog(imported,page.kind);$('catalog-summary').textContent=`Imported ${imported.length} displayed rows. Source row numbers retained; identities recalculated from words.`;$('catalog-range').textContent='Imported page';$('catalog-prev').disabled=true;$('catalog-next').disabled=true;notice('CSV imported. Select a row to populate the builder.');},'change');
+on('csv-file',async()=>{
+  const file=$('csv-file').files[0];if(!file)return;
+  const request=++catalogRevision;$('csv-file').value='';
+  if(file.size>LIMITS.importBytes)throw Error(`CSV exceeds the ${LIMITS.importBytes.toLocaleString()} byte import limit.`);
+  const text=await file.text();if(request!==catalogRevision)return;
+  const imported=readExplorerCsv(text);if(!imported.length)throw Error('CSV contains no candidate rows.');
+  useCatalogSource(imported,`CSV · ${file.name}`);notice(`CSV imported: all ${imported.length.toLocaleString()} rows. Browse pages or go to an imported row, then select a piece or triple to populate the builder.`);
+},'change');
 function validatePreview(value){
   if(value===null)return;
   if(new TextEncoder().encode(JSON.stringify(value)).length>524288)throw Error('Geometry exceeds the 512 KiB application limit.');
@@ -157,11 +185,11 @@ on('batch-generate',generateBatch);on('batch-run',async()=>{const autoExport=$('
 on('batch-resume',()=>runRecords({batchId:activeBatchId,autoExport:$('batch-auto-export').checked}));on('batch-pause',pauseQueue);
 on('batch-select',()=>{activeBatchId=$('batch-select').value;renderBatch();$('batch-status').textContent='Selected batch ready to inspect, export or resume.';},'change');
 on('batch-scope',()=>{$('batch-bound').disabled=$('batch-scope').value==='unbounded';},'change');
-on('batch-use-catalog',()=>{$('batch-scope').value=$('catalog-scope').value;$('batch-bound').value=$('catalog-bound').value;$('batch-start').value=$('catalog-start').value;$('batch-bound').disabled=$('batch-scope').value==='unbounded';notice('Copied numeric bounds. Batch ranks always index ordered triples, even when the catalog is showing individual words.');});
+on('batch-use-catalog',()=>{if(catalogSource)throw Error('Imported row positions do not define generated triple ranks. Choose batch bounds directly.');$('batch-scope').value=$('catalog-scope').value;$('batch-bound').value=$('catalog-bound').value;$('batch-start').value=$('catalog-start').value;$('batch-bound').disabled=$('batch-scope').value==='unbounded';notice('Copied numeric bounds. Batch ranks always index ordered triples, even when the catalog is showing individual words.');});
 on('batch-import',()=>{$('session-file').click();});on('batch-export-json',exportBatch);on('batch-export-csv',()=>download('4d-nod-batch-results.csv',exportBatchCsv(batchRecords()),'text/csv;charset=utf-8'));
 try{const stored=localStorage.getItem(KEY);if(stored)records=validateNotebook({schema_version:'1',records:JSON.parse(stored)},{restore:true});}catch{notice('Saved browser notebook could not be loaded. Import a JSON backup to recover it.',true);}
 workbookUI=mountWorkbook({useItem,isQueueBusy:()=>queueRunning,notice,openNotebook:()=>{$('notebook-section').open=true;$('notebook-section').scrollIntoView({behavior:'smooth'});},
-  showCatalog:source=>{page={kind:source.kind,rows:source.rows};renderCatalog(page.rows,page.kind);$('catalog-summary').textContent=`${source.filename} · ${source.sheet} · ${source.rows.length} displayed rows. Source rows are Excel row numbers.`;$('catalog-range').textContent='Uploaded workbook page';$('catalog-prev').disabled=true;$('catalog-next').disabled=true;notice('Spreadsheet page loaded into the catalog. Choose a piece or triple to populate the builder.');$('catalog').scrollIntoView({behavior:'smooth'});},
+  showCatalog:source=>{useCatalogSource(source.rows,`${source.filename} · ${source.sheet} · Source rows are Excel row numbers`);notice('Spreadsheet page loaded into the catalog. Choose a piece or triple to populate the builder.');$('catalog').scrollIntoView({behavior:'smooth'});},
   saveTriples:source=>{if(queueRunning)throw Error('Pause the queue before adding spreadsheet triples.');if(source.kind!=='triples')throw Error('Only explicit three-piece rows can be added to the notebook.');const incoming=validateNotebook({schema_version:'1',records:source.rows.map(row=>({candidate:row.item,geometry:null,result:null,created_at:new Date().toISOString(),source:{type:'xlsx',filename:source.filename,sha256:source.sha256,sheet:source.sheet,excel_row:row.excel_row,source_id:row.source_id}}))});const next=[...records,...incoming];assertNotebookBudget(next);records=next;const saved=persist();renderNotebook();if(saved)notice(`Added ${incoming.length} spreadsheet triples to the notebook. Geometry is not defined. Open saved notebook and use Assess pending records, or export these inputs.`);}
 });
 renderPieces();loadPage();renderNotebook();
