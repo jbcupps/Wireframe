@@ -11,7 +11,7 @@ export const ALPHABET = Object.freeze([
 ]);
 export const BASE = 32n;
 export const CATALOG_VERSION = '4d-nod-symbolic/1';
-export const LIMITS = Object.freeze({maxOperations: 4096, pageSize: 200, pageOperations: 20000, importRows: 1000, importOperations: 100000, importCharacters: 2000000, rankDigits: 30000});
+export const LIMITS = Object.freeze({maxOperations: 4096, pageSize: 200, pageOperations: 20000, pageCharacters: 500000, importRows: 50000, importOperations: 200000, importCharacters: 8000000, importBytes: 8000000, importColumns: 64, importCells: 750000, rankDigits: 30000});
 const DIGITS = new Map(ALPHABET.map((code, i) => [code, BigInt(i)]));
 
 export function nonnegativeInteger(value, name = 'rank') {
@@ -168,17 +168,53 @@ export function catalogPage({kind = 'words', start = '0', count = 25, maxOperati
   return {kind, indexing: kind === 'words' ? 'length-first' : maxOperations === null ? 'cantor-pairing' : 'bounded-cartesian-c-fastest', start: first.toString(), total: total === null ? null : total.toString(), maxOperations, rows};
 }
 
+/** Page imported order without confusing source row labels with catalog ranks. */
+export function importedCatalogPage(records, {start = '0', count = 25} = {}) {
+  if (!Array.isArray(records) || records.length > LIMITS.importRows) throw new Error(`Imported catalog must contain at most ${LIMITS.importRows.toLocaleString()} records.`);
+  if (!Number.isSafeInteger(count) || count < 1 || count > LIMITS.pageSize) throw new Error(`Page size must be 1–${LIMITS.pageSize}.`);
+  const first = nonnegativeInteger(start, 'Starting imported row');
+  if (first >= BigInt(records.length) && (records.length || first !== 0n)) throw new Error('Starting row is outside the imported catalog.');
+  const kind = records[0]?.item?.pieces ? 'triples' : 'words';
+  const rows = [];
+  let operations = 0, characters = 0;
+  for (let index = Number(first); index < Math.min(records.length, Number(first) + count); index++) {
+    const record = records[index], raw = record?.item;
+    if (!raw || Boolean(raw.pieces) !== (kind === 'triples')) throw new Error('Imported catalog records must have a consistent words or triples kind.');
+    if (typeof record.source_row !== 'string' || nonnegativeInteger(record.source_row, 'Source row') < 1n) throw new Error('Imported source rows must be positive decimal strings.');
+    if (kind === 'triples' && (!Array.isArray(raw.pieces) || raw.pieces.length !== 3)) throw new Error('Imported triples must contain exactly three ordered pieces.');
+    const item = kind === 'words' ? candidateFromWord(raw.operations) : tripleFromWords(raw.pieces.map(piece => piece?.operations));
+    if (raw.candidate_id !== item.candidate_id) throw new Error('Imported candidate identity does not match its operation sequences.');
+    const parts = kind === 'words' ? [[raw, item]] : raw.pieces.map((piece, i) => [piece, item.pieces[i]]);
+    for (const [input, normalized] of parts) {
+      if ((input.candidate_id !== undefined && input.candidate_id !== normalized.candidate_id)
+          || (input.word_rank !== undefined && nonnegativeInteger(input.word_rank, 'Piece rank').toString() !== normalized.word_rank)) throw new Error('Imported piece identity or rank does not match its operation sequence.');
+    }
+    operations += kind === 'words' ? item.operations.length : item.pieces.reduce((sum, piece) => sum + piece.operations.length, 0);
+    if (operations > LIMITS.pageOperations) throw new Error(`This page exceeds the ${LIMITS.pageOperations.toLocaleString()}-operation display budget. Reduce the page size (down to one row for long sequences).`);
+    const row = {row_rank: String(index), source_row: record.source_row, item};
+    characters += JSON.stringify(row).length;
+    if (characters > LIMITS.pageCharacters) throw new Error(`This page exceeds the ${LIMITS.pageCharacters.toLocaleString()}-character display budget. Reduce the page size to preserve complete source labels.`);
+    rows.push(row);
+  }
+  return {kind, indexing: 'imported-order', start: first.toString(), total: String(records.length), maxOperations: null, rows};
+}
+
 /** Strict RFC4180-style parser, including BOM, CRLF, quoted commas and newlines. */
 export function parseCsv(text) {
   if (typeof text !== 'string' || text.length > LIMITS.importCharacters) throw new Error(`CSV must be text of at most ${LIMITS.importCharacters} characters.`);
+  if (new TextEncoder().encode(text).byteLength > LIMITS.importBytes) throw new Error(`CSV exceeds the ${LIMITS.importBytes.toLocaleString()}-byte UTF-8 import limit.`);
   text = text.replace(/^\uFEFF/, '');
-  const rows = []; let row = [], field = '', quoted = false, closed = false;
-  const finishField = () => { row.push(field); field = ''; closed = false; };
+  const rows = []; let row = [], field = '', quoted = false, closed = false, cells = 0;
+  const finishField = () => {
+    if (row.length >= LIMITS.importColumns) throw new Error(`CSV rows may contain at most ${LIMITS.importColumns} columns.`);
+    if (++cells > LIMITS.importCells) throw new Error(`CSV exceeds the ${LIMITS.importCells.toLocaleString()}-cell import budget, including empty cells.`);
+    row.push(field); field = ''; closed = false;
+  };
   const finishRow = () => {
     finishField();
     if (row.some(cell => cell !== '')) rows.push(row);
     row = [];
-    if (rows.length > LIMITS.importRows + 1) throw new Error(`Import is limited to ${LIMITS.importRows} displayed rows per file.`);
+    if (rows.length > LIMITS.importRows + 1) throw new Error(`Import is limited to ${LIMITS.importRows.toLocaleString()} data rows per file.`);
   };
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
@@ -213,8 +249,15 @@ export function readExplorerCsv(text) {
       if (!/^\d+$/.test(source_row) || nonnegativeInteger(source_row) < 1n) throw new Error('Row must be a positive decimal integer.');
       const item = kind === 'words' ? candidateFromWord(row[idx('Ordered operation sequence')]) : tripleFromWords(['Piece A sequence', 'Piece B sequence', 'Piece C sequence'].map(name => row[idx(name)]));
       operations += kind === 'words' ? item.operations.length : item.pieces.reduce((sum, piece) => sum + piece.operations.length, 0);
-      if (operations > LIMITS.importOperations) throw new Error(`CSV exceeds the ${LIMITS.importOperations.toLocaleString()}-operation import budget. Import a smaller displayed page.`);
+      if (operations > LIMITS.importOperations) throw new Error(`CSV exceeds the ${LIMITS.importOperations.toLocaleString()}-operation import budget. Import a smaller file.`);
       if (kind === 'words' && idx('Length') >= 0 && row[idx('Length')] !== '' && nonnegativeInteger(row[idx('Length')], 'Length') !== BigInt(item.operations.length)) throw new Error('Reported Length does not match sequence.');
+      for (const name of kind === 'words' ? ['ID', 'Candidate ID'] : ['Candidate ID']) {
+        if (idx(name) >= 0 && row[idx(name)] !== item.candidate_id) throw new Error(`Reported ${name} does not match the operation sequences.`);
+      }
+      if (kind === 'triples') for (const [index, label] of ['A', 'B', 'C'].entries()) {
+        const name = `Piece ${label} ID`;
+        if (idx(name) >= 0 && row[idx(name)] !== item.pieces[index].candidate_id) throw new Error(`Reported ${name} does not match its operation sequence.`);
+      }
       return {source_row, item};
     } catch (error) { throw new Error(`CSV record ${i + 2}: ${error.message}`); }
   });
