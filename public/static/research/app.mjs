@@ -1,4 +1,6 @@
-import {ALPHABET,LIMITS,parseWord,formatWord,wordId,tripleFromWords,catalogPage,importedCatalogPage,lookupWord,readExplorerCsv,exportExplorerCsv} from './catalog.mjs';
+import {ALPHABET,parseWord,formatWord,wordId,tripleFromWords,catalogPage,importedCatalogPage,lookupWord,exportExplorerCsv} from './catalog.mjs';
+import {createCsvClient} from './csv-client.mjs';
+import {CSV_STREAM_LIMITS} from './csv-stream.mjs';
 import {mountVisualization} from './visualization.mjs';
 import {validateNotebook,assertNotebookBudget} from './notebook.mjs';
 import {prepareBatch,summarizeBatch,exportBatchCsv} from './batch.mjs';
@@ -10,7 +12,7 @@ const KEY='4d-nod-research-notebook-v1';
 let words=[[],[],[]], geometry=null, result=null, controls=[], page, records=[], activeRequest=null, revision=0, queueStopped=false, queueRunning=false, activeBatchId=null;
 let visual=mountVisualization($('visualization'),{geometry,result,candidate:tripleFromWords(words)});
 let workbookUI=null;
-let catalogSource=null, catalogRevision=0;
+let catalogSource=null, catalogRevision=0, pendingCsv=null;
 const clone=value=>JSON.parse(JSON.stringify(value));
 function notice(text,error=false){$('message').textContent=text;$('message').className=error?'error':'';}
 function guard(fn){return async(...args)=>{try{await fn(...args);}catch(e){notice(e.message,true);}};}
@@ -56,33 +58,61 @@ function showCatalogPage(next){
   $('batch-use-catalog').disabled=Boolean(catalogSource);
   $('catalog-prev').disabled=page.start==='0';$('catalog-next').disabled=page.total!==null&&BigInt(page.start)+BigInt(size)>=BigInt(page.total);$('catalog-prev').textContent=`← Previous ${size}`;$('catalog-next').textContent=`Next ${size} →`;
 }
-function loadPage(){
-  catalogRevision++;
+function cancelCsvImport(){
+  if(!pendingCsv)return;
+  pendingCsv.dispose();pendingCsv=null;$('csv-progress-panel').hidden=true;
+}
+function replaceCatalogSource(source,next){
+  catalogSource?.csv?.dispose();catalogSource=source;showCatalogPage(next);
+}
+async function loadPage(){
+  cancelCsvImport();const request=++catalogRevision,source=catalogSource;
   const scope=$('catalog-scope').value,size=Number($('page-size').value),start=$('catalog-start').value;
-  const next=catalogSource?importedCatalogPage(catalogSource.rows,{start,count:size}):catalogPage({kind:$('catalog-kind').value,start,count:size,maxOperations:scope==='bounded'?Number($('catalog-bound').value):null});
-  showCatalogPage(next);
+  try{
+    const next=source?.csv?await source.csv.page({start,count:size}):source?importedCatalogPage(source.rows,{start,count:size}):catalogPage({kind:$('catalog-kind').value,start,count:size,maxOperations:scope==='bounded'?Number($('catalog-bound').value):null});
+    if(request===catalogRevision&&source===catalogSource)showCatalogPage(next);
+  }catch(error){if(request===catalogRevision&&error.name!=='AbortError')throw error;}
 }
 function useCatalogSource(rows,label){
   const next=importedCatalogPage(rows,{start:'0',count:Number($('page-size').value)});
-  catalogRevision++;catalogSource={rows,label};showCatalogPage(next);
+  cancelCsvImport();catalogRevision++;replaceCatalogSource({rows,label},next);
 }
 on('catalog-generated',()=>{
   const next=catalogPage({kind:$('catalog-kind').value,start:'0',count:Number($('page-size').value),maxOperations:$('catalog-scope').value==='bounded'?Number($('catalog-bound').value):null});
-  catalogRevision++;catalogSource=null;showCatalogPage(next);notice('Generated catalog restored.');
+  cancelCsvImport();catalogRevision++;replaceCatalogSource(null,next);notice('Generated catalog restored.');
 });
-on('catalog-go',loadPage);on('catalog-kind',()=>{$('catalog-start').value='0';loadPage();},'change');on('catalog-scope',()=>{$('catalog-start').value='0';loadPage();},'change');
+on('catalog-go',loadPage);on('catalog-kind',()=>{$('catalog-start').value='0';return loadPage();},'change');on('catalog-scope',()=>{$('catalog-start').value='0';return loadPage();},'change');
 on('page-size',loadPage,'change');
-on('catalog-prev',()=>{const n=BigInt($('page-size').value);$('catalog-start').value=String(BigInt(page.start)>n?BigInt(page.start)-n:0n);loadPage();});on('catalog-next',()=>{$('catalog-start').value=String(BigInt(page.start)+BigInt($('page-size').value));loadPage();});
+on('catalog-prev',()=>{const n=BigInt($('page-size').value);$('catalog-start').value=String(BigInt(page.start)>n?BigInt(page.start)-n:0n);return loadPage();});on('catalog-next',()=>{$('catalog-start').value=String(BigInt(page.start)+BigInt($('page-size').value));return loadPage();});
 on('search-word',()=>{const item=lookupWord($('catalog-search').value);useCatalogSource([{source_row:(BigInt(item.word_rank)+1n).toString(),item}],'Exact lookup · full 32-label vocabulary');});
 on('export-page',()=>download('4d-nod-displayed-page.csv',exportExplorerCsv(page),'text/csv;charset=utf-8'));
 on('csv-file',async()=>{
   const file=$('csv-file').files[0];if(!file)return;
-  const request=++catalogRevision;$('csv-file').value='';
-  if(file.size>LIMITS.importBytes)throw Error(`CSV exceeds the ${LIMITS.importBytes.toLocaleString()} byte import limit.`);
-  const text=await file.text();if(request!==catalogRevision)return;
-  const imported=readExplorerCsv(text);if(!imported.length)throw Error('CSV contains no candidate rows.');
-  useCatalogSource(imported,`CSV · ${file.name}`);notice(`CSV imported: all ${imported.length.toLocaleString()} rows. Browse pages or go to an imported row, then select a piece or triple to populate the builder.`);
+  cancelCsvImport();const request=++catalogRevision;$('csv-file').value='';
+  if(file.size>CSV_STREAM_LIMITS.importBytes)throw Error(`CSV exceeds the ${CSV_STREAM_LIMITS.importBytes.toLocaleString()} byte (250 MB) import limit.`);
+  const client=createCsvClient({onProgress:progress=>{
+    if(pendingCsv!==client||request!==catalogRevision)return;
+    $('csv-progress').value=progress.totalBytes?progress.bytes/progress.totalBytes:0;
+    $('csv-progress-text').textContent=`${progress.rows.toLocaleString()} rows validated · ${(progress.bytes/1000000).toFixed(1)} / ${(progress.totalBytes/1000000).toFixed(1)} MB`;
+  }});
+  pendingCsv=client;$('csv-progress-panel').hidden=false;$('csv-progress').value=0;$('csv-progress-text').textContent=`Reading ${file.name} · ${(file.size/1000000).toFixed(1)} MB`;
+  try{
+    const metadata=await client.open(file);
+    if(request!==catalogRevision)return;
+    if(!metadata.total)throw Error('CSV contains no candidate rows.');
+    const next=await client.page({start:'0',count:Number($('page-size').value)});
+    if(request!==catalogRevision)return;
+    pendingCsv=null;$('csv-progress-panel').hidden=true;
+    replaceCatalogSource({csv:client,label:`CSV · ${file.name}`},next);
+    notice(`CSV imported: all ${metadata.total.toLocaleString()} rows. Browse pages or go to an imported row, then select a piece or triple to populate the builder.`);
+  }catch(error){
+    if(request===catalogRevision&&error.name!=='AbortError')throw error;
+  }finally{
+    if(catalogSource?.csv!==client)client.dispose();
+    if(pendingCsv===client){pendingCsv=null;$('csv-progress-panel').hidden=true;}
+  }
 },'change');
+on('csv-cancel',()=>{catalogRevision++;cancelCsvImport();notice('CSV import cancelled. Your previous catalog is still available.');});
 function validatePreview(value){
   if(value===null)return;
   if(new TextEncoder().encode(JSON.stringify(value)).length>524288)throw Error('Geometry exceeds the 512 KiB application limit.');
@@ -193,4 +223,16 @@ workbookUI=mountWorkbook({useItem,isQueueBusy:()=>queueRunning,notice,openNotebo
   saveTriples:source=>{if(queueRunning)throw Error('Pause the queue before adding spreadsheet triples.');if(source.kind!=='triples')throw Error('Only explicit three-piece rows can be added to the notebook.');const incoming=validateNotebook({schema_version:'1',records:source.rows.map(row=>({candidate:row.item,geometry:null,result:null,created_at:new Date().toISOString(),source:{type:'xlsx',filename:source.filename,sha256:source.sha256,sheet:source.sheet,excel_row:row.excel_row,source_id:row.source_id}}))});const next=[...records,...incoming];assertNotebookBudget(next);records=next;const saved=persist();renderNotebook();if(saved)notice(`Added ${incoming.length} spreadsheet triples to the notebook. Geometry is not defined. Open saved notebook and use Assess pending records, or export these inputs.`);}
 });
 renderPieces();loadPage();renderNotebook();
+const loadedVersion=document.querySelector('[data-research-version]')?.dataset.researchVersion;
+async function checkWorkspaceVersion(){
+  if(!loadedVersion||document.hidden)return;
+  try{
+    const response=await fetch('/api/research/version',{cache:'no-store'});
+    if(!response.ok)return;
+    const current=await response.json();
+    if(current.version&&current.version!==loadedVersion)$('workspace-update').hidden=false;
+  }catch{/* An unavailable version check must not interrupt local research. */}
+}
+checkWorkspaceVersion();setInterval(checkWorkspaceVersion,60000);
+document.addEventListener('visibilitychange',checkWorkspaceVersion);
 fetch('/api/research/controls').then(r=>{if(!r.ok)throw Error('Control endpoint unavailable.');return r.json();}).then(data=>{controls=data.controls;controls.forEach(c=>{const option=el('option',c.title);option.value=c.id;$('control-select').append(option);});}).catch(e=>notice(e.message,true));

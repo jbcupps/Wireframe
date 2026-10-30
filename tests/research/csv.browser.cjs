@@ -108,12 +108,9 @@ const { chromium } = require('playwright');
 
     await rejectedFile('malformed.csv', Buffer.from('Row,Ordered operation sequence\n6,"Txy+'), 'Unterminated CSV quote');
     await rejectedFile('invalid-sequence.csv', Buffer.from('Row,Ordered operation sequence\n6,not-an-operation'), 'Invalid operation');
-    await rejectedFile('oversize.csv', Buffer.alloc(8000001, 'x'), '8,000,000.*byte|8000000.*byte');
-    const tooManyRows = ['Row,Ordered operation sequence', ...Array.from({ length: 50001 }, (_, index) => `${index + 1},Txy+`)].join('\n');
-    await rejectedFile('too-many-rows.csv', Buffer.from(tooManyRows), '50,000|50000');
     await assertImportedPage(6, 20);
     await page.locator('#catalog-next').click(); await assertImportedPage(26, 20);
-    pass('malformed and resource-limited uploads leave the prior imported view usable');
+    pass('malformed and invalid uploads leave the prior imported view usable');
 
     await page.locator('#catalog').evaluate(node => window.scrollTo({ top: node.getBoundingClientRect().top + window.scrollY - 125, behavior: 'instant' }));
     await page.screenshot({ path: path.join(evidence, 'csv-import-desktop.png'), fullPage: false });
