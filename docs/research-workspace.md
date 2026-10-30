@@ -87,11 +87,15 @@ The deployment uses Vercel's Python 3.12 runtime and the existing Flask entry po
 | Supplied animation | 120 frames; finite frame values with magnitude ≤10¹² |
 | Candidate | 4,096 operations per piece per request |
 | Catalog page | 1–200 rows, at most 20,000 operations across the displayed page; decimal rank inputs up to 30,000 digits |
-| Explorer CSV import | 50,000 rows, 200,000 operations total, 8,000,000 UTF-8 bytes and characters, 64 columns, 750,000 cells including empty cells |
+| Browser CSV import | 250,000,000 UTF-8 bytes, 2,000,000 rows, 30,000,000 operations, 64 columns, 64,000,000 cells including empty cells; 1,000,000 bytes per record |
 | Imported CSV display | Up to 20 rows in the UI, 20,000 operations and 500,000 serialized characters per page |
 | Notebook | 100 records, 9 MB serialized records; imports capped at 10 MB |
 
-The complete 33,825-row workbook configuration CSV can be loaded with **Catalog → Import explorer CSV**. It is parsed locally in the browser and displayed in pages; previous/next, page size and the zero-based imported-row input navigate that file. Source row numbers stay separate from imported positions and generated ranks. Select A, B or C to load a configuration into the builder. **Return to generated catalog** restores generated browsing. A failed import leaves the existing catalog available. **Export this CSV page** exports only the currently displayed rows, so retain the original full file. Imported rows are not automatically saved to the notebook or assessed; extra spreadsheet status columns are not geometry or assessment evidence.
+The complete 33,825-row workbook configuration CSV and larger research catalogs can be loaded with **Catalog → Import explorer CSV**. A module worker streams UTF-8 records, validates candidate identities and retains compact byte offsets into the local file. It does not retain all candidate objects or send the complete file to the main thread or server. Only a requested page is decoded for display. Progress shows bytes read and rows validated; **Cancel import** terminates the new worker and retains the previous catalog. A replacement becomes active only after every row and its first display page validate. Late page replies cannot overwrite a newer navigation or source selection.
+
+Previous/next, page size and the zero-based imported-row input navigate that file. Source row numbers stay separate from imported positions and generated ranks. Select A, B or C to load a configuration into the builder. **Return to generated catalog** restores generated browsing. **Export this CSV page** exports only the currently displayed rows, so retain the original full file. Imported rows are not automatically saved to the notebook or assessed; extra spreadsheet status columns are not geometry or assessment evidence. The synchronous `readExplorerCsv` helper retains its smaller bounds for small-file tools/tests; the browser upload uses the separate indexed streaming engine and the limits above.
+
+The HTML and `/api/research/version` are not cached. Research scripts, workers, styles and their relative module dependencies share a content-derived `/research-assets/<version>/` path. Old version paths fail closed rather than mixing module releases. A visible tab checks for an update on load, on visibility changes and once a minute; an update notice asks the researcher to export work and reload. It never reloads a workspace automatically.
 
 These are resource bounds, not theoretical repetition limits. Long words may require a one-row page. Catalog generation is direct and paginated; no infinite table or full triple product is materialized. Larger work must be split into bounded requests; completed reports can be exported and resumed as separate requests. Interrupting a browser request does not guarantee immediate server cancellation; the server's calculation budget remains in effect.
 
@@ -114,6 +118,7 @@ Open `http://127.0.0.1:5000/research`. Focused checks:
 
 ```sh
 node --test tests/research/catalog.test.mjs tests/research/visualization.test.mjs tests/research/notebook.test.mjs tests/research/batch.test.mjs
+node --test tests/research/csv-stream.test.mjs
 python -m pytest -o addopts='' tests/unit tests/integration tests/research
 ```
 
@@ -122,5 +127,7 @@ python -m pytest -o addopts='' tests/unit tests/integration tests/research
 `node tests/research/workspace.browser.cjs` runs the end-to-end research workflow against `RESEARCH_BASE_URL` (default `http://127.0.0.1:5055`). It checks selection/import, assessment, controls, notebooks, queue interruption/resume, desktop/mobile rendering and absence of browser errors. The unchanged `origin/main` baseline has three unit/integration assertions passing, but only 36.29% repository-wide coverage against its existing 80% threshold. That pre-existing gate is not weakened by this implementation.
 
 `node tests/research/csv.browser.cjs` checks the complete workbook CSV, pagination, final-row selection, current-page export and recovery after invalid uploads. Set `CSV_PATH` to the full 33,825-row configuration CSV and `BASE_URL` to the running application (default `http://127.0.0.1:5055`). The workbook and exported data are not committed to the repository.
+
+`node tests/research/large-csv.browser.cjs` exercises larger generated catalogs, worker progress, responsive controls, cancellation, source replacement and out-of-order page replies. Generated fixtures and evidence remain outside the repository.
 
 Catalog tests exhaustively check all 33,825 bounded words, rank/ID round trips, repetitions, large ranks, both triple orders, Unicode/quoted CSV, malformed CSV rejection, and operational budgets. Python controls and visualization checks establish only their documented properties; successful tests do not validate the 4D-NOD physical hypothesis.

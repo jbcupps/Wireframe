@@ -1,9 +1,10 @@
 {% extends "site_base.html" %}
 {% block title %}4D-NOD Research Workspace{% endblock %}
-{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='research/research.css') }}">{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('research.research_asset', version=research_version, filename='research.css') }}">{% endblock %}
 {% block content %}
-<div class="research">
-  <div class="eyebrow">RESEARCH WORKSPACE <span>EXPERIMENTAL · v1</span></div>
+<div class="research" data-research-version="{{ research_version }}">
+  <div class="eyebrow">RESEARCH WORKSPACE <span>EXPERIMENTAL · LARGE CSV IMPORTS</span></div>
+  <div id="workspace-update" class="research-notice" hidden><strong>A workspace update is available.</strong> Export any work you want to keep, then <a href="/research">reload the workspace</a> to use the latest importer.</div>
   <header class="research-hero"><div><h1>From words to<br><em>testable structures.</em></h1><p>Compose three independent pieces. Declare their geometry.<br>Inspect what the evidence actually establishes.</p></div><div class="hero-mark" aria-hidden="true"><span>A</span><span>B</span><span>C</span><i>4D<br>NOD</i></div></header>
   <div class="research-notice"><strong>Symbolic descriptions ≠ physical particles.</strong> Twist and loop labels are provisional. Geometry, joining maps and physical observables need separate definitions.</div>
   <div class="stats"><div><strong>32</strong><span>operation labels</span></div><div><strong>33,825</strong><span>words of length 0–3</span></div><div><strong>38,700,218,390,625</strong><span>ordered triples in that slice</span></div></div>
@@ -13,9 +14,11 @@
   <section id="catalog" class="panel"><div class="section-heading"><div><span class="eyebrow">01 / SYMBOLIC CATALOG</span><h2>Explore the vocabulary</h2></div><button id="export-page">Export this CSV page</button></div>
     <div class="toolbar"><label>Browse<select id="catalog-kind"><option value="words">Individual words</option><option value="triples">Ordered triples A · B · C</option></select></label><label>Catalog scope<select id="catalog-scope"><option value="bounded">Bounded slice</option><option value="unbounded">Unbounded index</option></select></label><label>Maximum operations<input id="catalog-bound" type="number" min="0" max="4096" value="3"></label><label><span id="catalog-start-label">Zero-based row rank</span><input id="catalog-start" inputmode="numeric" value="0"></label><button id="catalog-go" class="primary">Go to rank</button><button id="catalog-generated" hidden>Return to generated catalog</button></div>
     <div class="toolbar"><label>Rows per page<select id="page-size"><option value="20">20</option><option value="5">5</option><option value="1">1 (long words)</option></select></label><label class="grow">Find exact word, stable P ID, or word rank<input id="catalog-search" placeholder="Txy+ · Lw− · Pzw+ or P00001"></label><button id="search-word">Find word</button><label class="file-button">Import explorer CSV<input id="csv-file" type="file" accept=".csv,text/csv"></label></div>
+    <div id="csv-progress-panel" class="csv-import-progress" hidden><progress id="csv-progress" max="1" value="0" aria-label="CSV import progress"></progress><span id="csv-progress-text" role="status" aria-live="polite"></span><button id="csv-cancel" type="button">Cancel import</button></div>
     <p id="catalog-summary" class="muted"></p><div class="table-scroll"><table><thead id="catalog-head"></thead><tbody id="catalog-body"></tbody></table></div>
     <div class="toolbar pager"><button id="catalog-prev">← Previous 20</button><button id="catalog-next">Next 20 →</button><span id="catalog-range" class="muted"></span></div>
-    <p class="fine">Import the complete 33,825-configuration CSV in one upload, then browse up to 20 rows per page. CSV imports accept up to 50,000 rows and 8 MB and remain in this tab until replaced or reloaded. Export this CSV page saves only the displayed rows. Imported row positions are separate from source row numbers and generated ranks.</p>
+    <p class="fine"><strong>Large CSV imports: up to 250 MB and 2,000,000 rows.</strong> Files are read in the background and stay on your device. Browse up to 20 rows per page after validation completes. You can cancel an import and keep your previous catalog. Files remain available in this tab until replaced or reloaded. Export this CSV page saves only the displayed rows. <span id="research-release">Release {{ research_version[:12] }}.</span></p>
+    <details><summary>CSV capacity and format</summary><p class="fine">Use UTF-8 CSV with the explorer headers. Imports support 30,000,000 operations across all rows, 64 columns, 64,000,000 cells and up to 1 MB per CSV record. Each piece can contain up to 4,096 operations. Long sequences may require a one-row display. Imported positions are separate from source row numbers and generated ranks. CSV import supplies candidate descriptions; geometry assessment and notebook limits are separate.</p></details>
     <p class="fine">Order and repetitions are preserved. Opposite signs do not cancel. Bounded triples use C-fastest Cartesian ordering; unbounded triples use nested Cantor pairing. Row ranks are not candidate IDs. There is no theoretical repetition limit; this session accepts 4,096 operations per piece. Symbolic CSV rows supply no geometry or assessment evidence.</p>
   </section>
   <section id="workbook" class="panel">
@@ -66,4 +69,4 @@
   <aside class="research-notice limits"><strong>Limits of this workflow</strong><p>Facet incidence is necessary in the applicable setting, but it does not establish manifold neighborhoods. Exact mod-2 homology does not classify manifolds or prove orientability. Smoothness, Pin structure, causality, stability and particle identity are not established. A passing report can still hide an untested singularity. Operations involving w do not imply Lorentzian isometries or physical time evolution.</p></aside>
 </div>
 {% endblock %}
-{% block scripts %}<script type="module" src="{{ url_for('static', filename='research/app.mjs') }}"></script>{% endblock %}
+{% block scripts %}<script type="module" src="{{ url_for('research.research_asset', version=research_version, filename='app.mjs') }}"></script>{% endblock %}
