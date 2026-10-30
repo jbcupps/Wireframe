@@ -102,6 +102,15 @@ def workspace():
     response.headers['X-Research-Version'] = version
     return response
 
+@research_bp.get('/research/guide')
+@research_bp.get('/research/guide/')
+def guide():
+    version, _ = _research_release()
+    response = Response(render_template('research_guide.html', research_version=version), mimetype='text/html')
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
 @research_bp.get('/api/research/controls')
 def controls():
     return jsonify({'controls': control_cases(), 'limits': LIMITS})

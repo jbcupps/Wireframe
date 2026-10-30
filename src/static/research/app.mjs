@@ -5,6 +5,9 @@ import {mountVisualization} from './visualization.mjs';
 import {validateNotebook,assertNotebookBudget} from './notebook.mjs';
 import {prepareBatch,summarizeBatch,exportBatchCsv} from './batch.mjs';
 import {mountWorkbook} from './workbook.mjs';
+import {mountHelp} from './help.mjs';
+
+mountHelp(document.querySelector('.research'));
 
 const $=id=>document.getElementById(id);
 const labels=['A','B','C'], colors=['#62d6d0','#d6a3fa','#f0bd72'];
