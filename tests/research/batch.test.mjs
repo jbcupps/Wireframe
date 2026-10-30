@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareBatch, summarizeBatch, exportBatchCsv} from '../../src/static/research/batch.mjs';
+import {prepareBatch, prepareExplicitBatch, summarizeBatch, exportBatchCsv} from '../../src/static/research/batch.mjs';
 import {batchRange} from '../../src/static/research/batch-meta.mjs';
-import {validateNotebook, NOTEBOOK_LIMITS} from '../../src/static/research/notebook.mjs';
-import {catalogPage, tripleFromWords, boundedTripleRank, parseCsv} from '../../src/static/research/catalog.mjs';
+import {validateNotebook, assertNotebookBudget, NOTEBOOK_LIMITS} from '../../src/static/research/notebook.mjs';
+import {catalogPage, tripleFromWords, boundedTripleRank, parseCsv, wordFromId} from '../../src/static/research/catalog.mjs';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const sphere = {
@@ -131,7 +131,9 @@ test('CSV includes all words, qualifications, versions and witnesses; formulas s
   const {records}=prepareBatch({count:2,geometryMode:'notebook'},[unsafe]);
   records[0].result=report(records[0]);records[1].error='+error';
   const [header,first,second]=parseCsv(exportBatchCsv(records));
-  assert.equal(header.length,16);
+  assert.equal(header.length,19);
+  assert.equal(header[1],'Position / rank (zero-based)');
+  assert.equal(first[16],'bounded-cartesian-c-fastest');
   assert.equal(first[2],empty.candidate_id);
   assert.deepEqual(first.slice(3,6),['∅','∅','∅']);
   assert.equal(first[7],"' =HYPERLINK(\"bad\")");assert.equal(first[8],"'@version");
@@ -153,4 +155,123 @@ test('count, operation, and total notebook budgets fail before any mutation', ()
   const start=boundedTripleRank([longWord,longWord,longWord],200).toString();
   assert.throws(()=>prepareBatch({start,count:40,maxOperations:200}),/operation display budget/);
   assert.equal(batchRange({start:'000',count:1,maxOperations:0}).start,'0');
+});
+
+function workbookExamples() {
+  const words=['P00001','P00013','P00021','P01907','P01074','P15334'].map(wordFromId);
+  const records=[];
+  for(const a of words)for(const b of words)for(const c of words) {
+    const index=records.length;
+    records.push({candidate:tripleFromWords([a,b,c]),source:{type:'xlsx',filename:'4D_NOD_twist_loop_tables.xlsx',
+      sha256:'a'.repeat(64),sheet:'Triple examples',excel_row:String(index+6),source_id:`C${String(index+1).padStart(4,'0')}`}});
+  }
+  return records;
+}
+
+test('explicit workbook examples retain exact noncontiguous candidates in 100/100/16 batches', () => {
+  const source=workbookExamples(), prepared=[];
+  for(const start of [0,100,200]) {
+    const selected=source.slice(start,start+100);
+    const result=prepareExplicitBatch({start:String(start),label:`Workbook examples ${start+1}–${start+selected.length}`},selected);
+    prepared.push(result);
+    assert.equal(result.batch.indexing,'explicit-list');
+    assert.equal(result.batch.max_operations,null);
+    assert.equal(result.batch.next_rank,String(start+selected.length));
+    assert.deepEqual(result.batch.candidate_ids,selected.map(record=>record.candidate.candidate_id));
+    assert.deepEqual(result.records.map(record=>record.candidate),selected.map(record=>record.candidate));
+    assert.deepEqual(result.records.map(record=>record.source),selected.map(record=>record.source));
+    assert.deepEqual(result.records.map(record=>record.batch.row_rank),selected.map((_,index)=>String(start+index)));
+    assert(result.records.every(record=>record.geometry===null&&record.result===null&&record.archived_result===null));
+    assert(result.records.every(record=>record.batch.geometry_source==='none'&&record.batch.id===result.batch.id));
+    assert.doesNotThrow(()=>validateNotebook({schema_version:'1',records:result.records}));
+  }
+  assert.deepEqual(prepared.map(result=>result.records.length),[100,100,16]);
+  assert.equal(new Set(prepared.map(result=>result.batch.id)).size,3);
+  assert.equal(prepared[0].records[0].candidate.candidate_id,'TR-P00001-P00001-P00001');
+  assert.equal(prepared[2].records.at(-1).candidate.candidate_id,'TR-P15334-P15334-P15334');
+  assert.notEqual(boundedTripleRank(source[0].candidate.pieces.map(piece=>piece.operations),3),0n);
+  assert.deepEqual(prepared.map(result=>[result.records[0].source.source_id,result.records.at(-1).source.source_id]),
+    [['C0001','C0100'],['C0101','C0200'],['C0201','C0216']]);
+  assert.deepEqual(prepared.map(result=>[result.records[0].source.excel_row,result.records.at(-1).source.excel_row]),
+    [['6','105'],['106','205'],['206','221']]);
+});
+
+test('explicit preparation snapshots only supplied candidates and provenance, never old geometry or reports', () => {
+  const source=workbookExamples().slice(0,2);
+  source[0].geometry=clone(sphere);source[0].result={status:'completed',untrusted:'old'};
+  source[0].archived_result={old:true};source[0].batch={id:'old-invalid-batch'};
+  const before=clone(source),prepared=prepareExplicitBatch({start:'100',label:'  Selected examples  '},source);
+  assert.deepEqual(source,before);
+  assert.equal(prepared.batch.label,'Selected examples');
+  assert(prepared.records.every(record=>record.geometry===null&&record.result===null&&record.archived_result===null));
+  source[0].candidate.pieces[0].operations.push('Lx+');source[0].source.source_id='changed';
+  assert.deepEqual(prepared.records[0].candidate.pieces[0].operations,['Txy+']);
+  assert.equal(prepared.records[0].source.source_id,'C0001');
+  prepared.batch.candidate_ids[0]=empty.candidate_id;
+  assert.equal(prepared.records[0].batch.candidate_ids[0],'TR-P00001-P00001-P00001');
+  prepared.records[0].batch.candidate_ids[1]=empty.candidate_id;
+  assert.notEqual(prepared.records[1].batch.candidate_ids[1],empty.candidate_id);
+});
+
+test('explicit manifests bind each position, reject inconsistent groups across combined arrays, and allow partial checkpoints', () => {
+  const {records}=prepareExplicitBatch({start:'100',label:'Selected source rows'},workbookExamples().slice(100,103));
+  assert.doesNotThrow(()=>validateNotebook({schema_version:'1',records:[records[1]]},{restore:true}));
+  for(const mutate of [
+    m=>m.row_rank='99',m=>m.row_rank='103',m=>m.row_rank='101',m=>m.max_operations=3,
+    m=>m.candidate_ids.pop(),m=>m.candidate_ids[0]=empty.candidate_id,
+    m=>m.candidate_ids[1]='TR-P000001-P00000-P00000',m=>m.candidate_ids[1]='TR-P1-P00000-P00000',
+    m=>m.label='',m=>m.label='x'.repeat(161),
+  ]) {
+    const bad=clone(records);mutate(bad[0].batch);
+    assert.throws(()=>validateNotebook({schema_version:'1',records:bad}));
+  }
+  const changed=clone(records[1]);changed.batch.candidate_ids[0]=empty.candidate_id;
+  // The changed row still matches its own position; the shared manifest differs.
+  assert.doesNotThrow(()=>validateNotebook({schema_version:'1',records:[changed]},{restore:true}));
+  assert.throws(()=>assertNotebookBudget([records[0],changed]),/consistent range metadata/);
+  const changedLabel=clone(records[1]);changedLabel.batch.label='A different source list';
+  assert.throws(()=>assertNotebookBudget([records[0],changedLabel]),/consistent range metadata/);
+  assert.throws(()=>assertNotebookBudget([records[0],clone(records[0])]),/unique row ranks/);
+  const repeated=prepareExplicitBatch({},[{candidate:empty},{candidate:empty}]).records;
+  const duplicate=clone(repeated[0]);duplicate.batch.row_rank='1';
+  assert.throws(()=>assertNotebookBudget([repeated[1],duplicate]),/unique row ranks/);
+});
+
+test('explicit imports remap batch IDs, quarantine reports, preserve source positions, and export honest CSV indexing', () => {
+  const prepared=prepareExplicitBatch({start:'200',label:'Workbook examples 201–216'},workbookExamples().slice(200));
+  prepared.records[0].result=report(prepared.records[0]);
+  const document={schema_version:'1',records:prepared.records};
+  const restored=validateNotebook(clone(document),{restore:true});
+  assert.equal(restored[0].result.status,'not_tested');
+  assert.equal(restored[0].batch.id,prepared.batch.id);
+  const imported=validateNotebook(clone(document)),again=validateNotebook(clone(document));
+  assert.notEqual(imported[0].batch.id,prepared.batch.id);
+  assert.notEqual(imported[0].batch.id,again[0].batch.id);
+  assert.equal(new Set(imported.map(record=>record.batch.id)).size,1);
+  assert.equal(imported[0].result,null);assert.equal(imported[0].archived_result.status,'not_tested');
+  assert.equal(imported[0].batch.row_rank,'200');
+  assert.deepEqual(imported[0].batch.candidate_ids,prepared.batch.candidate_ids);
+  assert.deepEqual(imported[0].source,prepared.records[0].source);
+  const [headers,first]=parseCsv(exportBatchCsv(restored));
+  assert.equal(headers[1],'Position / rank (zero-based)');
+  assert.deepEqual(headers.slice(16),['Indexing','Source ID','Excel row']);
+  assert.equal(first[1],'200');assert.equal(first[16],'explicit-list');
+  assert.equal(first[17],'C0201');assert.equal(first[18],'206');
+});
+
+test('explicit selection, candidate, source, operation and combined notebook limits fail without mutation', () => {
+  assert.throws(()=>prepareExplicitBatch({},[]),/1–100/);
+  assert.throws(()=>prepareExplicitBatch({},Array(101).fill({candidate:empty})),/1–100/);
+  assert.throws(()=>prepareExplicitBatch({start:-1},[{candidate:empty}]));
+  const selected=workbookExamples().slice(0,2),existing=Array.from({length:99},()=>saved(empty,null));
+  assert.throws(()=>prepareExplicitBatch({},selected,existing),/100-record/);
+  assert.equal(existing.length,99);
+  const invalid=clone(selected);invalid[0].candidate.candidate_id=empty.candidate_id;
+  assert.throws(()=>prepareExplicitBatch({},invalid),/identity/);
+  invalid[0]=clone(selected[0]);invalid[0].source.sha256='not-a-hash';
+  assert.throws(()=>prepareExplicitBatch({},invalid),/provenance/);
+  const long=tripleFromWords(Array.from({length:3},()=>Array(200).fill('Txy+')));
+  assert.throws(()=>prepareExplicitBatch({},Array.from({length:40},()=>({candidate:long}))),/operation display budget/);
+  const nearlyFull=[{padding:'x'.repeat(NOTEBOOK_LIMITS.bytes-100)}];
+  assert.throws(()=>prepareExplicitBatch({},selected,nearlyFull),/9,000,000-byte/);
 });

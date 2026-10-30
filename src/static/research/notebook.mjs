@@ -3,7 +3,7 @@
  * Restoration binds a report to its saved input; this is not a report signature.
  */
 import {tripleFromWords} from './catalog.mjs';
-import {validateBatchMetadata} from './batch-meta.mjs';
+import {validateBatchMetadata, assertBatchGroups} from './batch-meta.mjs';
 
 export const NOTEBOOK_LIMITS = Object.freeze({records: 100, bytes: 9000000, inputBytes: 524288});
 const names = ['A', 'B', 'C'];
@@ -28,6 +28,7 @@ export function assertNotebookBudget(records) {
   if (!Array.isArray(records) || records.length > NOTEBOOK_LIMITS.records) fail('Notebook limit: at most 100 records. Export and remove records to make room.');
   const size = bytes(records);
   if (size > NOTEBOOK_LIMITS.bytes) fail('Notebook exceeds its 9,000,000-byte UTF-8 budget. Export and remove records before adding more.');
+  assertBatchGroups(records);
   return size;
 }
 
@@ -229,7 +230,6 @@ export function validateNotebook(data, {restore = false} = {}) {
   assertNotebookBudget(data.records);
   finiteJson(data.records);
   const importedBatchIds = new Map();
-  const batchGroups = new Map();
   const records = data.records.map(raw => {
     if (!object(raw)) fail('Notebook records must be objects.');
     const normalized = candidate(raw.candidate);
@@ -242,11 +242,6 @@ export function validateNotebook(data, {restore = false} = {}) {
     let batch;
     if (raw.batch != null) {
       batch = validateBatchMetadata(raw.batch, normalized, inputGeometry);
-      const signature = canonical({start: batch.start, count: batch.count, indexing: batch.indexing, max_operations: batch.max_operations, created_at: batch.created_at});
-      const group = batchGroups.get(batch.id);
-      if (group && (group.signature !== signature || group.rows.has(batch.row_rank))) fail('Batch records must have consistent range metadata and unique row ranks within each batch.');
-      if (!group) batchGroups.set(batch.id, {signature, rows: new Set([batch.row_rank])});
-      else group.rows.add(batch.row_rank);
       if (!restore) {
         if (!importedBatchIds.has(batch.id)) importedBatchIds.set(batch.id, globalThis.crypto.randomUUID());
         batch.id = importedBatchIds.get(batch.id);
