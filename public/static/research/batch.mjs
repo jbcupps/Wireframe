@@ -1,5 +1,5 @@
 /** Generate finite research batches and export qualified evidence. */
-import {catalogPage, formatWord} from './catalog.mjs';
+import {catalogPage, formatWord, LIMITS} from './catalog.mjs';
 import {assertNotebookBudget, validateNotebook} from './notebook.mjs';
 import {batchRange} from './batch-meta.mjs';
 
@@ -49,6 +49,38 @@ export function prepareBatch({start = '0', count = 10, maxOperations = 3, geomet
   return {batch, records};
 }
 
+/** Prepare an exact selected list; list positions are never generated ranks.
+ * Source descriptors are retained input provenance, not authenticated evidence.
+ * Explicit source geometries/reports are deliberately not reused by this helper.
+ */
+export function prepareExplicitBatch({start = '0', label} = {}, explicitRecords, existingRecords = []) {
+  if (!Array.isArray(explicitRecords) || explicitRecords.length < 1 || explicitRecords.length > 100) throw new Error('An explicit batch requires 1–100 selected candidate records.');
+  const range = {...batchRange({start, count: explicitRecords.length, maxOperations: null}), indexing: 'explicit-list'};
+  assertNotebookBudget(existingRecords);
+  if (existingRecords.length + explicitRecords.length > 100) throw new Error('The batch would exceed the 100-record notebook limit. Export and remove records or reduce the batch size.');
+  const created_at = new Date().toISOString();
+  const clean = explicitRecords.map(record => {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('Explicit batch entries must supply a candidate and optional source provenance.');
+    return {candidate: clone(record.candidate), geometry: null, result: null, created_at,
+      ...(record.source == null ? {} : {source: clone(record.source)})};
+  });
+  const normalized = validateNotebook({schema_version: '1', records: clean}, {restore: true});
+  const operations = normalized.reduce((total, record) => total + record.candidate.pieces.reduce((sum, piece) => sum + piece.operations.length, 0), 0);
+  if (operations > LIMITS.pageOperations) throw new Error(`This batch exceeds the ${LIMITS.pageOperations.toLocaleString()}-operation display budget. Select fewer long candidates.`);
+  const candidate_ids = normalized.map(record => record.candidate.candidate_id);
+  const batch = {id: globalThis.crypto.randomUUID(), ...range, created_at, candidate_ids,
+    ...(label === undefined ? {} : {label})};
+  const prepared = normalized.map((record, index) => ({...record,
+    batch: {id: batch.id, start: batch.start, count: batch.count,
+      row_rank: (BigInt(batch.start) + BigInt(index)).toString(), indexing: 'explicit-list', max_operations: null,
+      candidate_ids: [...candidate_ids], ...(label === undefined ? {} : {label}), created_at, geometry_source: 'none'},
+  }));
+  const records = validateNotebook({schema_version: '1', records: prepared}, {restore: true});
+  if (records[0].batch.label !== undefined) batch.label = records[0].batch.label;
+  assertNotebookBudget([...existingRecords, ...records]);
+  return {batch, records};
+}
+
 /** completed includes qualified not_tested responses; pending includes retries. */
 export function summarizeBatch(records = []) {
   const summary = {total: records.length, completed: 0, pending: 0, errors: 0, geometric: 0, symbolic: 0,
@@ -84,8 +116,9 @@ function csvCell(value) {
 export function exportBatchCsv(records = []) {
   assertNotebookBudget(records);
   const normalized = validateNotebook({schema_version: '1', records}, {restore: true});
-  const headers = ['Batch ID', 'Row rank (zero-based)', 'Candidate ID', 'Piece A sequence', 'Piece B sequence', 'Piece C sequence',
-    'Geometry source', 'Model ID', 'Model version', 'Assessment state', 'Passed checks', 'Failed checks', 'Not tested checks', 'Check evidence JSON', 'Error', 'Qualification'];
+  const headers = ['Batch ID', 'Position / rank (zero-based)', 'Candidate ID', 'Piece A sequence', 'Piece B sequence', 'Piece C sequence',
+    'Geometry source', 'Model ID', 'Model version', 'Assessment state', 'Passed checks', 'Failed checks', 'Not tested checks', 'Check evidence JSON', 'Error', 'Qualification',
+    'Indexing', 'Source ID', 'Excel row'];
   const rows = normalized.map((record, i) => {
     const result = record.result, checks = result?.checks || [];
     const state = result?.status || (records[i]?.error ? 'error' : 'pending');
@@ -94,7 +127,8 @@ export function exportBatchCsv(records = []) {
       ...record.candidate.pieces.map(piece => formatWord(piece.operations)), record.batch?.geometry_source || (record.geometry ? 'supplied' : 'none'),
       record.geometry?.model?.id, record.geometry?.model?.version, state,
       labels('passed'), labels('failed'), labels('not_tested'), result ? JSON.stringify(checks) : '', records[i]?.error || '',
-      'Necessary checks only. No full manifold, smoothness or physical particle determination. Symbolic words do not construct this geometry.'];
+      'Necessary checks only. No full manifold, smoothness or physical particle determination. Symbolic words do not construct this geometry.',
+      record.batch?.indexing, record.source?.source_id, record.source?.excel_row];
   });
   return '\uFEFF' + [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
