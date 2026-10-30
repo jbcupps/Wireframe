@@ -1,0 +1,159 @@
+{% extends "site_base.html" %}
+{% block title %}4D-NOD Research Guide{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('research.research_asset', version=research_version, filename='research.css') }}">{% endblock %}
+{% block content %}
+<article class="research research-guide">
+  <div class="eyebrow">RESEARCH WORKSPACE · USER GUIDE</div>
+  <header class="research-hero"><div><h1>Understand each step.</h1><p>Choose symbolic candidates, supply a geometric model, and interpret the evidence.</p><a href="{{ url_for('research.workspace') }}">Open the research workspace</a></div></header>
+  <nav class="workspace-tabs" aria-label="Research guide contents"><a href="#overview">Getting started</a><a href="#catalog">Catalog</a><a href="#csv-import">CSV files</a><a href="#workbook">Spreadsheets</a><a href="#batches">Batch runner</a><a href="#prepared-batches">Prepared batches</a><a href="#geometry">Geometry</a><a href="#evidence">Results</a><a href="#limits">Limits</a></nav>
+
+  <section id="overview" class="panel">
+    <span class="eyebrow">GETTING STARTED</span><h2>What this workspace does</h2>
+    <p>The workspace records three ordered pieces, A, B and C. Each piece is a word: a sequence of twist and loop labels. Browse generated words, import the workbook, or load a prepared batch. A separate, explicitly supplied geometry allows the Python assessor to run its available checks.</p>
+    <ol><li>Choose or assemble a candidate.</li><li>Supply its geometry when you have a defined model.</li><li>Run an assessment or batch and read each check's evidence.</li><li>Export a JSON checkpoint to retain the inputs and reports.</li></ol>
+    <p>Without supplied geometry, candidates remain <strong>not tested</strong>. The labels alone do not define shapes, joining maps or physical particles. This workflow does not yet establish whether a candidate is smooth or dynamically stable.</p>
+  </section>
+
+  <section id="catalog" class="panel">
+    <span class="eyebrow">CATALOG</span><h2>Words and ordered triples</h2>
+    <p><strong>Individual words</strong> lists sequences for one piece. Choose A, B or C beside a row to place it in the builder. <strong>Ordered triples</strong> lists complete A/B/C candidates; <strong>Use triple</strong> loads all three pieces.</p>
+    <p>The vocabulary has 32 labels: 12 twists, 8 axis loops and 12 plane loops. Order and repetitions are preserved. Opposite signs do not cancel automatically. The empty word is a valid sequence with no operations.</p>
+    <p>A maximum of three operations per piece gives 33,825 words and 38,700,218,390,625 ordered triples. These count formal descriptions. The workbook's 216 supplied triple examples are a separate, small selection.</p>
+    <p><strong>Find word</strong> accepts an exact sequence, a stable P ID, or a word rank. Page size changes the displayed rows, not the total catalog. <strong>Export this CSV page</strong> saves only the displayed rows. See <a href="#indexing">indexing</a> and <a href="#identity">candidate identity</a>.</p>
+  </section>
+
+  <section id="indexing" class="panel">
+    <h2>Indexing scope and starting ranks</h2>
+    <p>A rank is a position in a particular ordering. Rank <code>0</code> is the first entry. <strong>Maximum operations</strong> sets the largest word length allowed for each piece in a bounded slice; it does not require every piece to have that length.</p>
+    <div class="table-scroll"><table><thead><tr><th>Scope</th><th>Meaning</th></tr></thead><tbody>
+      <tr><td>Bounded slice</td><td>Words from length zero through the chosen maximum. Triple ordering changes C first, then B, then A, like three nested counters.</td></tr>
+      <tr><td>Unbounded index</td><td>No theoretical length bound. Nested Cantor pairing assigns one rank to the three word ranks. A finite page or batch still has resource limits.</td></tr>
+      <tr><td>Imported catalog</td><td>A zero-based position within the imported rows, separate from the source row and generated rank.</td></tr>
+      <tr><td>Prepared list</td><td>A position in an explicitly supplied candidate list, preserving workbook example order.</td></tr>
+    </tbody></table></div>
+    <p>The same generated triple rank can select different candidates when the scope or maximum changes. Keep those settings with the rank. A batch's full range must fit the chosen slice. <strong>Use catalog bounds</strong> copies generated catalog settings; it is unavailable for an imported catalog.</p>
+  </section>
+
+  <section id="identity" class="panel">
+    <h2>Stable IDs and source references</h2>
+    <p>A piece ID begins with <code>P</code> and encodes its exact ordered sequence. <code>P00000</code> is the empty word. A triple ID has the form <code>TR-P00001-P00013-P00021</code>, in A/B/C order. Swapping pieces generally changes the triple ID.</p>
+    <p>A generated rank, CSV source row, Excel row and workbook label such as <code>C0001</code> are separate references. They are not interchangeable with the stable candidate ID. Imports check supplied identities against their operation sequences.</p>
+  </section>
+
+  <section id="csv-import" class="panel">
+    <h2>Import explorer CSV</h2>
+    <p>Use <strong>Catalog → Import explorer CSV</strong> for the full 33,825-configuration file or a larger compatible catalog. Files must use UTF-8 and the explorer headers. Export a catalog page to inspect the supported format.</p>
+    <p>The browser validates the file in the background and keeps it on your device. Progress shows bytes read and rows validated. <strong>Cancel import</strong> keeps the previous catalog. After validation, browse up to 20 rows per page, or fewer for long words. <strong>Return to generated catalog</strong> restores generated browsing.</p>
+    <p>Limits are 250,000,000 bytes, 2,000,000 data rows and 30,000,000 operations in total, plus 64 columns, 64,000,000 cells and 1,000,000 bytes per CSV record.</p>
+    <p>Keep the original file: the imported catalog lasts in this tab until replacement or reload. CSV import does not automatically save or assess rows. Spreadsheet status text supplies no geometry or assessment evidence.</p>
+  </section>
+
+  <section id="workbook" class="panel">
+    <h2>Upload the existing workbook</h2>
+    <p><strong>Choose Excel workbook</strong> accepts the supported 4D-NOD <code>.xlsx</code> layout, up to 3,000,000 bytes. It is sent to the server for bounded parsing during that request and is not saved as a server-side library. Older <code>.xls</code> and macro-enabled workbooks are unsupported.</p>
+    <p>Select a worksheet. <strong>First data row (1-based)</strong> chooses a position among that sheet's data rows; the table separately shows original Excel row numbers.</p>
+    <ul><li><strong>Configurations:</strong> choose a sequence for A, B or C.</li><li><strong>Triple examples:</strong> use one triple or add the displayed page of up to 20 triples to the notebook.</li><li><strong>Scope and schema / Operation inventory:</strong> read the workbook's reference material.</li></ul>
+    <p><strong>Show this page in catalog</strong> copies only the displayed candidate page. Saved triples retain the filename, workbook hash, sheet, Excel row and source ID. They initially have no geometry or results. Export saved candidates before leaving; reopening the workbook requires selecting the file again.</p>
+  </section>
+
+  <section id="batches" class="panel">
+    <h2>Generate and run a batch</h2>
+    <ol><li>Choose a scope, maximum operations where applicable, starting rank, and number of triples.</li><li>Choose the <a href="#geometry-source">geometry source</a>.</li><li>Use <strong>Prepare batch</strong> to inspect the candidates, or <strong>Generate &amp; run</strong> to create and start the batch.</li><li>Keep the page open. <strong>Pause</strong> stops the queue; <strong>Run / resume selected batch</strong> continues pending records.</li><li><a href="#checkpoints">Export the checkpoint and results</a>.</li></ol>
+    <p>A batch has 1–100 records and shares the notebook's total capacity. It runs one request at a time and checkpoints each returned result. Closing the page stops the browser queue; this is not a scheduled background job.</p>
+    <p>Errors stop the run while keeping completed evidence. A request exceeding 45 seconds is interrupted and left pending for retry. Browser interruption does not guarantee immediate cancellation of server work. For an existing workbook batch, use <a href="#prepared-batches">the prepared-batch workflow</a>.</p>
+  </section>
+
+  <section id="prepared-batches" class="panel">
+    <h2>Run the 216 supplied workbook examples</h2>
+    <p>The prepared notebook files contain explicit ordered lists of 100, 100 and 16 examples. They preserve the workbook's original order and source references, rather than consecutive generated triple ranks.</p>
+    <ol><li>Export existing notebook work you want to retain. The first two files each need all 100 notebook slots free.</li><li>Choose <strong>Import prepared notebook</strong> and select one prepared JSON file.</li><li>Select its named batch under <strong>Prepared batches</strong>, then click <strong>Run / resume selected batch</strong>.</li><li>Save its checkpoint JSON and results CSV.</li><li>Use <strong>Remove selected batch</strong> after saving exports, then import the next file.</li></ol>
+    <p><strong>Generate &amp; run</strong> creates a new generated range; it does not run the imported list. Removal asks for confirmation and removes only the selected batch. Unrelated notebook records remain.</p>
+    <p>The workbook examples have no supplied geometry. Their prepared files start with null geometry and pending results. Running them reports <strong>not tested / symbolic</strong>, not evidence of smoothness or stability.</p>
+  </section>
+
+  <section id="geometry-source" class="panel">
+    <h2>Choose a geometry source</h2>
+    <p><strong>Match saved notebook geometry by candidate ID</strong> uses geometry already saved for the exact ordered A/B/C identity. Save that candidate with its intended geometry first. If saved records assign conflicting geometries to it, preparation stops so you can resolve the conflict.</p>
+    <p><strong>Symbolic only · no geometry</strong> prepares descriptions with null geometry. Unmatched candidates also remain without geometry. The currently loaded control is never automatically assigned to other words. Prepared notebook imports retain their explicitly supplied inputs.</p>
+    <p>The application does not derive a model from twist or loop labels. See <a href="#geometry">the geometry format</a>.</p>
+  </section>
+
+  <section id="checkpoints" class="panel">
+    <h2>Checkpoints and exports</h2>
+    <p><strong>Checkpoint JSON</strong> retains full candidate inputs, geometry, source references, batch information and reports with model versions and evidence. Use it to preserve and later import work. The automatic-download option saves a checkpoint when a batch completes.</p>
+    <p><strong>Results CSV</strong> provides a comparison table with assessment state, geometry source and source references. It is not a complete replacement for JSON. Catalog CSV export is a separate action and contains only the displayed catalog page.</p>
+    <p>Imported reports are archived until rerun and do not immediately become active evidence. Valid results restored from this browser's saved state can be reused when their saved inputs match. Export before removing records, clearing browser data, or reloading after a storage warning.</p>
+  </section>
+
+  <section id="notebook" class="panel">
+    <h2>The session notebook</h2>
+    <p><strong>Save to notebook</strong> retains the current candidate and supplied geometry. The notebook holds up to 100 records and 9,000,000 serialized bytes, subject to browser storage availability. A 100-record prepared batch therefore needs an empty notebook.</p>
+    <p><strong>Assess pending records</strong> processes saved records while the page remains open. The queue can be paused and resumed. Results stay attached to their original inputs.</p>
+    <p>Storage is local to this browser and device. There is no research account database or automatic cloud backup. Export notebook JSON for durable retention and transfer. Import files are capped at 10,000,000 bytes and must still fit the notebook's record and byte budgets.</p>
+  </section>
+
+  <section id="assembly" class="panel">
+    <h2>Assemble A, B and C</h2>
+    <p>Each piece has its own ordered sequence. Add an operation, move it up or down, repeat it, remove it, or apply an edited sequence. The empty word is permitted. Repetitions remain explicit, and opposite signs are not simplified.</p>
+    <p>For example, <code>Txy+ · Lw−</code> has two operations. These are provisional symbolic labels; <code>w</code> does not by itself define physical time. Editing a sequence changes its candidate identity and invalidates the displayed assessment.</p>
+    <p>Piece colors distinguish A, B and C; they do not represent QCD color charge. Supply and inspect the intended geometry separately before saving or assessing the candidate.</p>
+  </section>
+
+  <section id="geometry" class="panel">
+    <h2>Supply an explicit geometric model</h2>
+    <p>The assessor accepts a versioned finite simplicial complex. A simplex lists its vertices; five vertices form a 4-simplex. Each of A, B and C supplies its maximal simplices. Shared vertex labels identify shared faces across pieces.</p>
+    <p>Use <strong>Import geometry JSON</strong> or edit and apply the JSON directly. Load a <a href="#controls">control</a> to inspect a complete valid example, then export it if you need a template. Inputs are declarative data; Python code in them is not executed.</p>
+    <p>Declare <code>joining.target</code> as <code>closed</code>, <code>exterior_interface</code>, or <code>unspecified</code>. An intended exterior interface needs its exact <code>expected_exterior_faces</code> list. A boundary is checked against that target, rather than always being treated as an error.</p>
+    <p>Model fields record the underlying space, operation definitions, composition, equivalence rules, differentiability, metric, time convention and physical mapping. A declaration's presence does not mean the assessor implements or verifies it. This format cannot express every triangulation, self-identification, smooth atlas or physical geometry.</p>
+    <p>Without coordinates, the view is an incidence schematic. With coordinates, it projects the supplied positions. Animation requires supplied frames and is labeled with their declared meaning. Neither projection nor animation proves geometric or physical validity.</p>
+  </section>
+
+  <section id="controls" class="panel">
+    <h2>Use controls to understand the checks</h2>
+    <p>Controls are known mathematical inputs for checking the assessor. Loading one supplies geometry for the current workspace candidate; it does not establish that the symbolic labels imply that geometry.</p>
+    <div class="table-scroll"><table><thead><tr><th>Control</th><th>What it illustrates</th></tr></thead><tbody>
+      <tr><td>Three-piece 4-sphere</td><td>The boundary of a 5-simplex, partitioned into three pieces. No boundary tetrahedra; mod-2 Betti numbers [1, 0, 0, 0, 1].</td></tr>
+      <tr><td>Branched tetrahedron</td><td>Three 4-simplices share one tetrahedron. Its incidence of three is an obstruction detected by the facet check.</td></tr>
+      <tr><td>Singular vertex</td><td>Two 4-sphere boundaries meet at one vertex. Facet incidence passes, but the vertex link is disconnected.</td></tr>
+    </tbody></table></div>
+    <p>These are not particle models. The singular-vertex control demonstrates why passing one check cannot establish a manifold.</p>
+  </section>
+
+  <section id="assessment" class="panel">
+    <h2>Run and interrupt an assessment</h2>
+    <p><strong>Run Python assessment</strong> submits the current candidate and supplied geometry for one bounded calculation. With geometry, reports include dimensions, purity, connectivity, simplex and boundary counts, Euler characteristic, exact mod-2 Betti numbers and applicable obstruction checks.</p>
+    <p>Without geometry, the symbolic candidate is recorded and geometric and physical checks remain <strong>not tested</strong>. A resource-limit response asks you to reduce the input before retrying.</p>
+    <p><strong>Interrupt request</strong> stops the browser from waiting for the response. Server work remains subject to its calculation budget. Export a returned report to retain its inputs, assumptions, assessment time and test version.</p>
+  </section>
+
+  <section id="evidence" class="panel">
+    <h2>Interpret the evidence</h2>
+    <div class="table-scroll"><table><thead><tr><th>Status</th><th>Interpretation</th></tr></thead><tbody>
+      <tr><td>Passed</td><td>The specified check passed for this input under its stated assumptions. Read its evidence and limitations.</td></tr>
+      <tr><td>Failed</td><td>The check found a mismatch or obstruction in its applicable setting. Inspect its witness or explanation.</td></tr>
+      <tr><td>Not tested</td><td>The required input or implemented test is absent. This is not a pass.</td></tr>
+      <tr><td>Undetermined</td><td>The available evidence does not resolve the property. It remains an open question, rather than an established pass or failure.</td></tr>
+      <tr><td>Completed</td><td>The available computation finished. This overall report state does not establish a valid manifold or particle.</td></tr>
+    </tbody></table></div>
+    <p>Facet incidence counts how many top-dimensional simplices meet at a face. A disconnected vertex link gives an obstruction, but a connected link does not prove the required sphere or ball neighborhood. Exact mod-2 homology describes algebraic invariants; it does not classify manifolds or prove orientability.</p>
+    <p>The workflow does not establish full manifold structure, smoothness, orientability, Pin structure, causality, dynamical stability or particle identity. A report can pass its available checks while an untested singularity remains. Physical benchmark values are comparison inputs, not derived predictions.</p>
+  </section>
+
+  <section id="limits" class="panel">
+    <h2>Which limit applies?</h2>
+    <p>Catalog imports, workbook uploads, notebooks and assessments have separate bounds. Importing a large catalog does not increase the size of an individual assessment or notebook.</p>
+    <div class="table-scroll"><table><thead><tr><th>Operation</th><th>Application limit</th><th>If you reach it</th></tr></thead><tbody>
+      <tr><td>Explorer CSV</td><td>250 MB; 2,000,000 rows; 30,000,000 operations</td><td>Split the source file, keeping explorer headers in each part.</td></tr>
+      <tr><td>Excel workbook</td><td>3 MB; supported .xlsx layout</td><td>Use a smaller workbook or explorer CSV for a large candidate catalog.</td></tr>
+      <tr><td>Displayed catalog page</td><td>Up to 20 rows in the UI; 20,000 operations across the page</td><td>Reduce rows per page, down to one for long words.</td></tr>
+      <tr><td>Candidate piece</td><td>4,096 operations</td><td>Use a shorter explicit input.</td></tr>
+      <tr><td>Batch preparation</td><td>1–100 records; 20,000 displayed operations; must fit notebook capacity</td><td>Use smaller batches. Export and remove completed work before the next import.</td></tr>
+      <tr><td>Notebook</td><td>100 records; 9 MB serialized records; imports at most 10 MB</td><td>Export and remove records. Browser storage may impose a smaller practical limit.</td></tr>
+      <tr><td>Assessment request</td><td>512 KiB; 150 maximal simplices; 250 vertices; at most 5 vertices per simplex</td><td>Simplify the complex and keep separate inputs in separate requests.</td></tr>
+      <tr><td>Assessment calculation</td><td>Cooperative 8-second budget</td><td>Reduce the complex after a resource-limit response.</td></tr>
+    </tbody></table></div>
+    <p>MB means 1,000,000 bytes; KiB means 1,024 bytes. Other format and validation bounds are reported when applicable. These are computational bounds, not theoretical limits on repetition or the mathematical search space.</p>
+  </section>
+  <p><a href="#overview">Back to the start of this guide</a> · <a href="{{ url_for('research.workspace') }}">Open the research workspace</a></p>
+</article>
+{% endblock %}
